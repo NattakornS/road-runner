@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tool"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity" >
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true" >
+
+        <fragment
+            android:id="@+id/maps"
+            android:layout_width="match_parent"
+            android:layout_height="459dp"
+            class="com.google.android.gms.maps.MapFragment" />
+
+    </FrameLayout>
+
+    <Button
+        android:id="@+id/btn_track"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:text="track" />
+
+    <Button
+        android:id="@+id/btn_stop_track"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/btn_track"
+        android:text="stop" />
+
+    <Button
+        android:id="@+id/btn_load_track"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/btn_stop_track"
+        android:text="load" />
+
+
+
+</RelativeLayout>
