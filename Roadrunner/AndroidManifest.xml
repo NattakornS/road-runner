@@ -41,7 +41,14 @@
             </intent-filter>
         </activity>
         <activity android:name="com.senior.roadrunner.MapsActivity" />
-        <activity android:name="com.senior.roadrunner.RaceTrackSelectorActivity" />
+        <activity 
+            android:name="com.senior.roadrunner.RaceTrackSelectorActivity" 
+            android:label="Race track"
+            android:parentActivityName="com.senior.roadrunner.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.senior.roadrunner.MainActivity" />
+        </activity>
 
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
