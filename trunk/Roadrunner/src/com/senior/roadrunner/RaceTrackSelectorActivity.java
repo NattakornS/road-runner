@@ -2,12 +2,10 @@ package com.senior.roadrunner;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONStringer;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -16,16 +14,20 @@ import android.app.SearchableInfo;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.app.NavUtils;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.internal.j;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -41,6 +43,7 @@ import com.senior.roadrunner.server.ConnectServer;
 public class RaceTrackSelectorActivity extends Activity implements
 		SearchView.OnQueryTextListener, SearchView.OnCloseListener {
 
+	private static final String URLServer = "http://172.30.2.187";//192.168.1.173
 	ListView list;
 	CustomAdapter adapter;
 	public Activity CustomListView = null;
@@ -51,6 +54,12 @@ public class RaceTrackSelectorActivity extends Activity implements
 	private Resources res;
 	private Button raceBtn;
 	private TextView trackDataTxtView;
+	
+	private DrawerLayout mDrawerLayout;
+	private ListView mDrawerList;
+	private ActionBarDrawerToggle mDrawerToggle;
+	protected CharSequence mTitle;
+	protected CharSequence mDrawerTitle;
 
 	@SuppressLint("NewApi")
 	@Override
@@ -63,12 +72,50 @@ public class RaceTrackSelectorActivity extends Activity implements
 		/******** Take some data in Arraylist ( CustomListViewValuesArr ) ***********/
 		setListData();
 
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_trackselector);
+		mDrawerList = (ListView) findViewById(R.id.right_drawer);
+
+		// set a custom shadow that overlays the main content when the drawer
+		// opens
+		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow,
+				GravityCompat.START);
+		// set up the drawer's list view with items and click listener
+//		mDrawerList.setAdapter(new ArrayAdapter<String>(this,
+//				R.layout.drawer_list_item, mPlanetTitles));
+//		mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+
+		// enable ActionBar app icon to behave as action to toggle nav drawer
+		getActionBar().setDisplayHomeAsUpEnabled(true);
+		getActionBar().setHomeButtonEnabled(true);
+
+		// ActionBarDrawerToggle ties together the the proper interactions
+		// between the sliding drawer and the action bar app icon
+		mDrawerToggle = new ActionBarDrawerToggle(this, /* host Activity */
+		mDrawerLayout, /* DrawerLayout object */
+		R.drawable.ic_drawer, /* nav drawer image to replace 'Up' caret */
+		R.string.drawer_open, /* "open drawer" description for accessibility */
+		R.string.drawer_close /* "close drawer" description for accessibility */
+		) {
+			public void onDrawerClosed(View view) {
+				getActionBar().setTitle(mTitle);
+				invalidateOptionsMenu(); // creates call to
+											// onPrepareOptionsMenu()
+			}
+
+			public void onDrawerOpened(View drawerView) {
+				getActionBar().setTitle(mDrawerTitle);
+				invalidateOptionsMenu(); // creates call to
+											// onPrepareOptionsMenu()
+			}
+		};
+		mDrawerLayout.setDrawerListener(mDrawerToggle);
+		//
 		res = getResources();
-		list = (ListView) findViewById(R.id.list);
 		map = ((MapFragment) getFragmentManager().findFragmentById(R.id.maps))
 				.getMap();
 		raceBtn = (Button)findViewById(R.id.race_btn);
 		trackDataTxtView = (TextView)findViewById(R.id.track_data_txtview);
+		
 
 	}
 
@@ -83,7 +130,16 @@ public class RaceTrackSelectorActivity extends Activity implements
 		setupSearchView(searchItem);
 		return true;
 	}
-
+@Override
+public boolean onOptionsItemSelected(MenuItem item) {
+	switch (item.getItemId()) {
+    // Respond to the action bar's Up/Home button
+    case android.R.id.home:
+        NavUtils.navigateUpFromSameTask(this);
+        return true;
+    }
+	return super.onOptionsItemSelected(item);
+}
 	@SuppressLint({ "NewApi", "NewApi" })
 	private void setupSearchView(MenuItem searchItem) {
 		if (isAlwaysExpanded()) {
@@ -123,7 +179,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 	/****** Function to set data in ArrayList *************/
 	public void setListData() {
 		connectServer = new ConnectServer(this,
-				"http://192.168.1.173/racetracklist.php");
+				URLServer+"/racetracklist.php");
 		connectServer.execute();
 
 	}
@@ -147,8 +203,8 @@ public class RaceTrackSelectorActivity extends Activity implements
 				tempValues.getDoubleLat(), tempValues.getDoubleLon()), 15.0f));
 		
 		connectServer = new ConnectServer(this,
-				"http://192.168.1.173/getTrackPath.php");
-		connectServer.addValue("Rdir", "http://192.168.1.173/racetrack/"+tempValues.getrId()+".xml");
+				URLServer+"/getTrackPath.php");
+		connectServer.addValue("Rdir", URLServer+"/racetrack/"+tempValues.getrId()+".xml");
 		connectServer.execute();
 		
 	}
@@ -193,7 +249,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 				/**************** Create Custom Adapter *********/
 				adapter = new CustomAdapter(CustomListView, CustomListViewValuesArr,
 						res);
-				list.setAdapter(adapter);
+				mDrawerList.setAdapter(adapter);
 			}
 			
 		} catch (JSONException e) {
@@ -212,6 +268,12 @@ public class RaceTrackSelectorActivity extends Activity implements
 		}
 		
 
+	}
+
+	public void cannotConnectToServer() {
+		Toast.makeText(this, "Cannot connect to server", Toast.LENGTH_LONG)
+		.show();
+		
 	}
 
 }

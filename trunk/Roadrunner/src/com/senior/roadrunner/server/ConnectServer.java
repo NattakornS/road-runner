@@ -127,7 +127,13 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 			// à¸–à¹?à¸²à¹€à¸?à¸·à¹?à¸­à¸¡à¸•à¹?à¸­à¸?à¸±à¸? server
 			// à¹?à¸¡à¹?à¹?à¸”à¹?à¸?à¸°à¸—à¸³à¸?à¸²à¸?à¸•à¹?à¸­à¹?à¸?à¸?à¸µà¹?
 		} else {
-			((MapsActivity) context).cannotConnectToServer();
+			if (context instanceof MapsActivity) {
+				((MapsActivity) context).cannotConnectToServer();
+			}
+			if(context instanceof RaceTrackSelectorActivity){
+				((RaceTrackSelectorActivity) context).cannotConnectToServer();
+			}
+			
 		}
 
 		dialogConnect.dismiss();
