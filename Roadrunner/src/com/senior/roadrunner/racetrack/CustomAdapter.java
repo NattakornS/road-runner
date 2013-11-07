@@ -81,7 +81,7 @@ public class CustomAdapter extends BaseAdapter   implements OnClickListener {
             /******** View Holder Object to contain tabitem.xml file elements ************/
             holder=new ViewHolder();
             holder.text=(TextView)vi.findViewById(R.id.text);
-            holder.text1=(TextView)vi.findViewById(R.id.text1);
+//            holder.text1=(TextView)vi.findViewById(R.id.text1);
 //            holder.image=(ImageView)vi.findViewById(R.id.image);
             
            /************  Set holder with LayoutInflater ************/
@@ -103,7 +103,7 @@ public class CustomAdapter extends BaseAdapter   implements OnClickListener {
 	        
 	        /************  Set Model values in Holder elements ***********/
 	         holder.text.setText(tempValues.getRaceTrackName());
-	         holder.text1.setText(tempValues.getPlaceName());
+//	         holder.text1.setText(tempValues.getPlaceName());
 //	         holder.image.setImageResource(res.getIdentifier("com.androidexample.customlistview:drawable/"+tempValues.getImage(),null,null));
 	         
 	         /******** Set Item Click Listner for LayoutInflater for each row ***********/

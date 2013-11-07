@@ -162,8 +162,8 @@ public class MainActivity extends Activity {
 		// update the main content by replacing fragments
 		Fragment fragment = new PlanetFragment();
 		Fragment pf = new PickupFragment();
-//		RaceTrackFragment raceTrackFragment = RaceTrackFragment
-//				.createInstacnce();
+		// RaceTrackFragment raceTrackFragment = RaceTrackFragment
+		// .createInstacnce();
 
 		Bundle args = new Bundle();
 		args.putInt(PlanetFragment.ARG_PLANET_NUMBER, position);
@@ -175,8 +175,8 @@ public class MainActivity extends Activity {
 			fragmentManager.beginTransaction().replace(R.id.content_frame, pf)
 					.commit();
 		} else if (position == 1) {
-//			fragmentManager.beginTransaction()
-//					.replace(R.id.content_frame, raceTrackFragment).commit();
+			// fragmentManager.beginTransaction()
+			// .replace(R.id.content_frame, raceTrackFragment).commit();
 			Intent i = new Intent(this, RaceTrackSelectorActivity.class);
 			startActivity(i);
 		} else if (position == 2) {
@@ -195,11 +195,22 @@ public class MainActivity extends Activity {
 		mDrawerLayout.closeDrawer(mDrawerList);
 	}
 
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+	}
+
 	private void exitApp() {
 		finish();
 		android.os.Process.killProcess(android.os.Process.myPid());
 		super.onDestroy();
-		
+
 	}
 
 	@SuppressLint("NewApi")
@@ -274,5 +285,5 @@ public class MainActivity extends Activity {
 			}
 		}
 		return false;
-	} 
+	}
 }
