@@ -11,6 +11,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -43,7 +44,7 @@ import com.senior.roadrunner.server.ConnectServer;
 public class RaceTrackSelectorActivity extends Activity implements
 		SearchView.OnQueryTextListener, SearchView.OnCloseListener {
 
-	private static final String URLServer = "http://172.30.2.187";//192.168.1.173
+	private static final String URLServer = "http://172.30.2.187/";// 192.168.1.173//http://192.168.1.117/
 	ListView list;
 	CustomAdapter adapter;
 	public Activity CustomListView = null;
@@ -54,7 +55,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 	private Resources res;
 	private Button raceBtn;
 	private TextView trackDataTxtView;
-	
+
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerList;
 	private ActionBarDrawerToggle mDrawerToggle;
@@ -79,43 +80,16 @@ public class RaceTrackSelectorActivity extends Activity implements
 		// opens
 		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow,
 				GravityCompat.START);
-		// set up the drawer's list view with items and click listener
-//		mDrawerList.setAdapter(new ArrayAdapter<String>(this,
-//				R.layout.drawer_list_item, mPlanetTitles));
-//		mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
 		// enable ActionBar app icon to behave as action to toggle nav drawer
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
 
-		// ActionBarDrawerToggle ties together the the proper interactions
-		// between the sliding drawer and the action bar app icon
-		mDrawerToggle = new ActionBarDrawerToggle(this, /* host Activity */
-		mDrawerLayout, /* DrawerLayout object */
-		R.drawable.ic_drawer, /* nav drawer image to replace 'Up' caret */
-		R.string.drawer_open, /* "open drawer" description for accessibility */
-		R.string.drawer_close /* "close drawer" description for accessibility */
-		) {
-			public void onDrawerClosed(View view) {
-				getActionBar().setTitle(mTitle);
-				invalidateOptionsMenu(); // creates call to
-											// onPrepareOptionsMenu()
-			}
-
-			public void onDrawerOpened(View drawerView) {
-				getActionBar().setTitle(mDrawerTitle);
-				invalidateOptionsMenu(); // creates call to
-											// onPrepareOptionsMenu()
-			}
-		};
-		mDrawerLayout.setDrawerListener(mDrawerToggle);
-		//
 		res = getResources();
 		map = ((MapFragment) getFragmentManager().findFragmentById(R.id.maps))
 				.getMap();
-		raceBtn = (Button)findViewById(R.id.race_btn);
-		trackDataTxtView = (TextView)findViewById(R.id.track_data_txtview);
-		
+		raceBtn = (Button) findViewById(R.id.race_btn);
+		trackDataTxtView = (TextView) findViewById(R.id.track_data_txtview);
 
 	}
 
@@ -130,16 +104,21 @@ public class RaceTrackSelectorActivity extends Activity implements
 		setupSearchView(searchItem);
 		return true;
 	}
-@Override
-public boolean onOptionsItemSelected(MenuItem item) {
-	switch (item.getItemId()) {
-    // Respond to the action bar's Up/Home button
-    case android.R.id.home:
-        NavUtils.navigateUpFromSameTask(this);
-        return true;
-    }
-	return super.onOptionsItemSelected(item);
-}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		// Respond to the action bar's Up/Home button
+		case android.R.id.home:
+			System.out.println("BACKPRESS");
+			// NavUtils.navigateUpFromSameTask(this);
+			onBackPressed();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
 	@SuppressLint({ "NewApi", "NewApi" })
 	private void setupSearchView(MenuItem searchItem) {
 		if (isAlwaysExpanded()) {
@@ -178,8 +157,8 @@ public boolean onOptionsItemSelected(MenuItem item) {
 
 	/****** Function to set data in ArrayList *************/
 	public void setListData() {
-		connectServer = new ConnectServer(this,
-				URLServer+"/racetracklist.php");
+		connectServer = new ConnectServer(this, URLServer
+				+ "/racetracklist.php");
 		connectServer.execute();
 
 	}
@@ -189,24 +168,34 @@ public boolean onOptionsItemSelected(MenuItem item) {
 				.get(mPosition);
 		trackDataTxtView.setText("" + tempValues.getRaceTrackName() + " \nRid:"
 				+ tempValues.getrId() + " \nLatLon:"
-				+ tempValues.getDoubleLat() + "\t"
-				+ tempValues.getDoubleLon() + " \nRdir:"
-				+ tempValues.getRdir());
-//		Toast.makeText(
-//				CustomListView,
-//				"" + tempValues.getRaceTrackName() + " \nRid:"
-//						+ tempValues.getrId() + " \nLatLon:"
-//						+ tempValues.getDoubleLat() + "\t"
-//						+ tempValues.getDoubleLon() + " \nRdir:"
-//						+ tempValues.getRdir(), Toast.LENGTH_LONG).show();
+				+ tempValues.getDoubleLat() + "\t" + tempValues.getDoubleLon()
+				+ " \nRdir:" + tempValues.getRdir());
+		// Toast.makeText(
+		// CustomListView,
+		// "" + tempValues.getRaceTrackName() + " \nRid:"
+		// + tempValues.getrId() + " \nLatLon:"
+		// + tempValues.getDoubleLat() + "\t"
+		// + tempValues.getDoubleLon() + " \nRdir:"
+		// + tempValues.getRdir(), Toast.LENGTH_LONG).show();
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
 				tempValues.getDoubleLat(), tempValues.getDoubleLon()), 15.0f));
-		
-		connectServer = new ConnectServer(this,
-				URLServer+"/getTrackPath.php");
-		connectServer.addValue("Rdir", URLServer+"/racetrack/"+tempValues.getrId()+".xml");
+
+		connectServer = new ConnectServer(this, URLServer + "/getTrackPath.php");
+		connectServer.addValue("Rdir",
+				URLServer + "/racetrack/" + tempValues.getrId() + ".xml");
 		connectServer.execute();
 		
+		// Highlight the selected item, update the title, and close the drawer
+		mDrawerList.setItemChecked(mPosition, true);
+		// mDrawerList.setSelection(mPosition);
+		setTitle(tempValues.getRaceTrackName());
+		mDrawerLayout.closeDrawer(mDrawerList);
+	}
+
+	@Override
+	public void setTitle(CharSequence title) {
+		mTitle = title;
+		getActionBar().setTitle(mTitle);
 	}
 
 	@Override
@@ -228,9 +217,9 @@ public boolean onOptionsItemSelected(MenuItem item) {
 	}
 
 	public void setJsonResult(String result) {
-//		System.out.println(result);
+		// System.out.println(result);
 		try {
-			//get race track data from database server to set ListAdapter.
+			// get race track data from database server to set ListAdapter.
 			JSONArray jsonArr = new JSONArray(result);
 
 			for (int i = 0; i < jsonArr.length(); i++) {
@@ -247,33 +236,37 @@ public boolean onOptionsItemSelected(MenuItem item) {
 				/******** Take Model Object in ArrayList **********/
 				CustomListViewValuesArr.add(sched);
 				/**************** Create Custom Adapter *********/
-				adapter = new CustomAdapter(CustomListView, CustomListViewValuesArr,
-						res);
+				adapter = new CustomAdapter(CustomListView,
+						CustomListViewValuesArr, res);
+
+				// set up the drawer's list view with items and click listener
 				mDrawerList.setAdapter(adapter);
 			}
-			
+
 		} catch (JSONException e) {
-			//Draw track on map from xml string.
+			// Draw track on map from xml string.
 			map.clear();
-			List<LatLngTimeData> trackData = TrackDataBase.loadXmlString(result);
+			List<LatLngTimeData> trackData = TrackDataBase
+					.loadXmlString(result);
 			PolylineOptions options = new PolylineOptions();
 			for (int i = 0; i < trackData.size(); i++) {
-				options.add(new LatLng(trackData.get(i).getCoordinate().getLat(), trackData.get(i).getCoordinate().getLng()));
+				options.add(new LatLng(trackData.get(i).getCoordinate()
+						.getLat(), trackData.get(i).getCoordinate().getLng()));
 			}
 			options.color(Color.YELLOW);
 			options.width(5);
 			map.addPolyline(options);
 			map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
-					trackData.get(0).getCoordinate().getLat(), trackData.get(0).getCoordinate().getLng()), 15.0f));
+					trackData.get(0).getCoordinate().getLat(), trackData.get(0)
+							.getCoordinate().getLng()), 15.0f));
 		}
-		
 
 	}
 
 	public void cannotConnectToServer() {
 		Toast.makeText(this, "Cannot connect to server", Toast.LENGTH_LONG)
-		.show();
-		
+				.show();
+
 	}
 
 }
