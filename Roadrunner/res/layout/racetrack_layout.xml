@@ -20,7 +20,6 @@
             android:layout_alignParentTop="true"
             class="com.google.android.gms.maps.MapFragment" />
 
-
         <TextView
             android:id="@+id/track_data_txtview"
             android:layout_width="wrap_content"
@@ -28,10 +27,15 @@
 
         <Button
             android:id="@+id/race_btn"
+            style="@style/main_menu_btnNormal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/maps"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentLeft="true"
+            android:background="@drawable/blue_menu_btn"
             android:text="Race" />
+
     </RelativeLayout>
 
     <ListView
