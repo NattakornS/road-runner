@@ -27,12 +27,18 @@ import com.senior.roadrunner.R;
 import com.senior.roadrunner.RaceTrackSelectorActivity;
 
 public class ConnectServer extends AsyncTask<String, Integer, String> {
+	
+	public static int TRACK_LIST = 0;
+	public static int TRACK_PATH = 1;
+	public static int TRACK_MEMBER = 2;
+	
 	private HttpPost httppost;
 	private HttpClient httpclient;
 	private List<NameValuePair> nameValuePairs;
 	private DialogConnect dialogConnect;
 	private Context context;
-
+	private int requestTag;
+	
 	public ConnectServer(Context context, String URL) {
 		this.context = context;
 
@@ -56,6 +62,10 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 	// Post
 	public void addValue(String key, String value) {
 		nameValuePairs.add(new BasicNameValuePair(key, value));
+	}
+
+	public void setRequestTag(int requestTag) {
+		this.requestTag = requestTag;
 	}
 
 	// à¸?à¹?à¸­à¸?à¸—à¸µà¹?à¸?à¸°à¸—à¸³ doInBackground
@@ -120,8 +130,20 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 			if (context instanceof MapsActivity) {
 				((MapsActivity) context).setList(result);
 			}
-			if(context instanceof RaceTrackSelectorActivity){
-				((RaceTrackSelectorActivity) context).setJsonResult(result);
+			if (context instanceof RaceTrackSelectorActivity) {
+				switch (requestTag) {
+				case 0:
+					((RaceTrackSelectorActivity) context).setTrackList(result);
+					break;
+				case 1:
+					((RaceTrackSelectorActivity) context).setTrackPath(result);
+					break;
+				case 2:
+					((RaceTrackSelectorActivity) context).setTeackMember(result);
+					break;
+//					default : ((RaceTrackSelectorActivity) context).setTeackMember(result);
+				}
+
 			}
 
 			// à¸–à¹?à¸²à¹€à¸?à¸·à¹?à¸­à¸¡à¸•à¹?à¸­à¸?à¸±à¸? server
@@ -130,10 +152,10 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 			if (context instanceof MapsActivity) {
 				((MapsActivity) context).cannotConnectToServer();
 			}
-			if(context instanceof RaceTrackSelectorActivity){
+			if (context instanceof RaceTrackSelectorActivity) {
 				((RaceTrackSelectorActivity) context).cannotConnectToServer();
 			}
-			
+
 		}
 
 		dialogConnect.dismiss();
