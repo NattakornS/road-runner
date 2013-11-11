@@ -31,11 +31,10 @@ public class RaceThread extends Thread {
 	private LatLng end;
 	private GoogleMap map;
 	private Activity activity;
+	private ListTracker listTracker;
 
-	public RaceThread(List<LatLngTimeData> data, GoogleMap map,
-			Activity activity) {
-		this.data = data;
-		
+	public RaceThread(ListTracker listTracker, GoogleMap map, Activity activity) {
+		this.listTracker = listTracker;
 
 		sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 		this.map = map;
@@ -45,10 +44,10 @@ public class RaceThread extends Thread {
 	@Override
 	public void run() {
 
-		if (data == null) {
+		if (listTracker == null) {
 			return;
 		}
-
+		data = listTracker.getTrackData();
 		for (i = 0; i < data.size(); i++) {
 			try {
 				Date recentDate = sdf.parse(data.get(i).getWhen());
@@ -84,7 +83,7 @@ public class RaceThread extends Thread {
 						marker = map.addMarker(new MarkerOptions()
 								.position(point)
 								.icon(BitmapDescriptorFactory.defaultMarker())
-								.title("History")
+								.title(listTracker.getfId())
 								.snippet("Speed : " + speed + "m/s"));
 						marker.showInfoWindow();
 						Spherical latLngInterpolator = new Spherical();

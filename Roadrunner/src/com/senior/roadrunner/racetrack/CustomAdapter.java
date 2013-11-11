@@ -73,17 +73,17 @@ public class CustomAdapter extends BaseAdapter   implements OnClickListener {
         View vi=convertView;
         ViewHolder holder;
         
-        if(convertView==null){ 
+        if(convertView==null){
         	
         	/********** Inflate tabitem.xml file for each row ( Defined below ) ************/
             vi = inflater.inflate(R.layout.tabitem, null); 
-            
+//            vi.setBackgroundResource(R.drawable.rounded_corners);
             /******** View Holder Object to contain tabitem.xml file elements ************/
             holder=new ViewHolder();
             holder.text=(TextView)vi.findViewById(R.id.text);
 //            holder.text1=(TextView)vi.findViewById(R.id.text1);
 //            holder.image=(ImageView)vi.findViewById(R.id.image);
-            
+             
            /************  Set holder with LayoutInflater ************/
             vi.setTag(holder);
         }
