@@ -37,5 +37,13 @@
 	<style name="main_menu_btnNormal" parent="main_menu">
 	    <item name="android:layout_marginTop">12dip</item>
 	</style>
+	
+	<style name="ListView" parent="@android:style/Widget.ListView">
+    <item name="android:background">@color/blue_grey</item>
+    <item name="android:cacheColorHint">@android:color/transparent</item>
+    <item name="android:divider">@android:color/transparent</item>
+    <item name="android:dividerHeight">0dp</item>
+    <item name="android:listSelector">@drawable/list_item_selector</item>
+</style>
 
 </resources>

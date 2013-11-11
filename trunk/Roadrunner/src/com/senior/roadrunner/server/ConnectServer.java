@@ -28,9 +28,11 @@ import com.senior.roadrunner.RaceTrackSelectorActivity;
 
 public class ConnectServer extends AsyncTask<String, Integer, String> {
 	
+	public static int DATA_UPDATE = 4;
 	public static int TRACK_LIST = 0;
 	public static int TRACK_PATH = 1;
 	public static int TRACK_MEMBER = 2;
+	public static int TRACK_MEMBER_PATH = 3;
 	
 	private HttpPost httppost;
 	private HttpClient httpclient;
@@ -38,6 +40,7 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 	private DialogConnect dialogConnect;
 	private Context context;
 	private int requestTag;
+	private int index;
 	
 	public ConnectServer(Context context, String URL) {
 		this.context = context;
@@ -67,6 +70,7 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 	public void setRequestTag(int requestTag) {
 		this.requestTag = requestTag;
 	}
+	
 
 	// à¸?à¹?à¸­à¸?à¸—à¸µà¹?à¸?à¸°à¸—à¸³ doInBackground
 	// à¸?à¸°à¸—à¸³à¸?à¸²à¸?à¸—à¸µà¹? Function à¸?à¸µà¹?à¸?à¹?à¸­à¸?
@@ -128,7 +132,11 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 			// à¹€à¸£à¸´à¹?à¸¡à¸?à¸²à¸£à¹?à¸?à¸¥à¸? JSON
 			// à¹€à¸?à¹?à¸?à¸?à¹?à¸­à¸¡à¸¹à¸¥
 			if (context instanceof MapsActivity) {
-				((MapsActivity) context).setList(result);
+				
+				switch(requestTag){
+				case 4:((MapsActivity) context).setList(result);break;
+				case 3:((MapsActivity) context).setMemberTrack(result,index);break;
+				}
 			}
 			if (context instanceof RaceTrackSelectorActivity) {
 				switch (requestTag) {
@@ -159,5 +167,10 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 		}
 
 		dialogConnect.dismiss();
+	}
+
+	public void setIndex(int index) {
+		this.index = index;
+		
 	}
 }

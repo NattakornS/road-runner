@@ -38,6 +38,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.senior.roadrunner.data.Coordinate;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
+import com.senior.roadrunner.racetrack.ListTracker;
 import com.senior.roadrunner.racetrack.RaceThread;
 import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.server.DownloadTask;
@@ -66,6 +67,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private Button btn_load_track;
 	// private HistoryTrack historyTrack;
 	private static final String SDCARD_TRACKER_XML = "/sdcard/tracker.xml";
+	private static final String URLServer = "http://192.168.1.121/";
 
 	private Vector<Polygon> polygonsTrack = new Vector<Polygon>();
 	private Polygon polygonStart;
@@ -78,6 +80,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private boolean recordCheck = false;
 	private ConnectServer connectServer;
 	private Polygon polygonFinish;
+	private ArrayList<ListTracker> trackMemberList;
 
 	
 
@@ -89,9 +92,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map_layout);
 		initwidget();
-
 		loadFile();
-
+		
 		track = new PolylineOptions();
 		latLngTimeData = new ArrayList<LatLngTimeData>();
 		map = ((MapFragment) getFragmentManager().findFragmentById(R.id.maps))
@@ -129,10 +131,23 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		setStartPointTracking(true);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void loadFile() {
-		DownloadTask downloadTask = new DownloadTask(this);
-		downloadTask
-				.execute("http://192.168.1.105/uploads/mahidol/tracker.xml");
+		Intent intent = getIntent();
+		trackMemberList=(ArrayList<ListTracker>)intent.getSerializableExtra("TrackMemberList");
+		for (int i = 0; i < trackMemberList.size(); i++) {
+			System.out.println("TrackerDir : "+trackMemberList.get(i).getTrackerDir());
+			ConnectServer connectServerTrackMemberData = new ConnectServer(this, URLServer + "/getTrackPath.php");
+			connectServerTrackMemberData.addValue("Rdir",
+					URLServer + trackMemberList.get(i).getTrackerDir());
+			connectServerTrackMemberData.setIndex(i);
+			connectServerTrackMemberData.setRequestTag(ConnectServer.TRACK_MEMBER_PATH);
+			connectServerTrackMemberData.execute();
+		}
+		
+//		DownloadTask downloadTask = new DownloadTask(this);
+//		downloadTask
+//				.execute("http://192.168.1.121/uploads/mahidol/tracker.xml");
 
 	}
 
@@ -303,7 +318,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		connectServer.addValue("Rid", rId);
 		connectServer.addValue("Trackerdir", "tracker/"+rId+"/"+fId+".xml");
 		connectServer.addValue("Rank", "5");
-		
+		connectServer.setRequestTag(ConnectServer.DATA_UPDATE);
 		connectServer.execute();
 
 	}
@@ -314,10 +329,15 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	}
 
 	private void raceThread() {
-		List<LatLngTimeData> data = TrackDataBase
-				.loadXmlFile(SDCARD_TRACKER_XML);
-		RaceThread raceThread = new RaceThread(data, map, this);
-		raceThread.start();
+//		List<LatLngTimeData> data = TrackDataBase
+//				.loadXmlFile(SDCARD_TRACKER_XML);
+		for (int i = 0; i < trackMemberList.size(); i++) {
+//			List<LatLngTimeData> data = trackMemberList.get(i).getTrackData();
+			RaceThread raceThread = new RaceThread(trackMemberList.get(i), map, this);
+			raceThread.start();
+		}
+		
+		
 	}
 
 	private void enableGPSListener() {
@@ -484,5 +504,12 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	public void setList(String result) {
 		System.out.println("Result : " + result);
+	}
+
+
+	public synchronized void setMemberTrack(String result,int index) {
+//		System.out.println("Index : "+ index);
+		List<LatLngTimeData> trackData = TrackDataBase.loadXmlString(result);
+		trackMemberList.get(index).setTrackData(trackData);
 	}
 }

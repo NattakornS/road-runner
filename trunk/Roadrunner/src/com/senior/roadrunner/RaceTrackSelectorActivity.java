@@ -11,18 +11,18 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
-import android.content.res.Configuration;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.app.NavUtils;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
@@ -45,9 +45,9 @@ import com.senior.roadrunner.server.ConnectServer;
 
 @SuppressLint("NewApi")
 public class RaceTrackSelectorActivity extends Activity implements
-		SearchView.OnQueryTextListener, SearchView.OnCloseListener {
+		SearchView.OnQueryTextListener, SearchView.OnCloseListener ,OnClickListener{
 
-	private static final String URLServer = "http://192.168.43.220/";// 192.168.1.173//http://192.168.1.117/
+	private static final String URLServer = "http://192.168.1.121/";// 192.168.1.173//http://192.168.1.117/
 	ListView list;
 	CustomAdapter adapter;
 	public Activity CustomListView = null;
@@ -97,6 +97,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 		raceBtn = (Button) findViewById(R.id.race_btn);
 		animAlpha = AnimationUtils.loadAnimation(this, R.anim.anim_alpha);
 		raceBtn.setVisibility(View.INVISIBLE);
+		raceBtn.setOnClickListener(this);
 //		raceBtn.setAlpha(0.0f);
 		trackDataTxtView = (TextView) findViewById(R.id.track_data_txtview);
 
@@ -321,6 +322,19 @@ public class RaceTrackSelectorActivity extends Activity implements
 		Toast.makeText(this, "Cannot connect to server", Toast.LENGTH_LONG)
 				.show();
 
+	}
+
+	@Override
+	public void onClick(View v) {
+		if(v.equals(raceBtn)){
+			if(TrackMemberList==null){
+				return;
+			}
+			Intent intent = new Intent(this,MapsActivity.class);
+			intent.putExtra("TrackMemberList",TrackMemberList);
+			startActivity(intent);
+		}
+		
 	}
 
 }
