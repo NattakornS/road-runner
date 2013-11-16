@@ -88,7 +88,7 @@ public class MainActivity extends Activity {
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
 
 		if (savedInstanceState == null) {
-			selectItem(0);
+			selectItem(1);
 		}
 
 		//
@@ -161,7 +161,7 @@ public class MainActivity extends Activity {
 	private void selectItem(int position) {
 		// update the main content by replacing fragments
 		Fragment fragment = new PlanetFragment();
-		Fragment pf = new PickupFragment();
+//		Fragment pf = new PickupFragment();
 		// RaceTrackFragment raceTrackFragment = RaceTrackFragment
 		// .createInstacnce();
 
@@ -172,8 +172,8 @@ public class MainActivity extends Activity {
 		FragmentManager fragmentManager = getFragmentManager();
 
 		if (position == 0) {
-			fragmentManager.beginTransaction().replace(R.id.content_frame, pf)
-					.commit();
+//			fragmentManager.beginTransaction().replace(R.id.content_frame, pf)
+//					.commit();
 		} else if (position == 1) {
 			// fragmentManager.beginTransaction()
 			// .replace(R.id.content_frame, raceTrackFragment).commit();

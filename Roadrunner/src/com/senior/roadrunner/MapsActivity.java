@@ -1,5 +1,7 @@
 package com.senior.roadrunner;
 
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,9 +22,12 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -43,6 +48,7 @@ import com.senior.roadrunner.racetrack.RaceThread;
 import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.server.DownloadTask;
 import com.senior.roadrunner.server.UploadTask;
+import com.senior.roadrunner.tools.GPSSpeed;
 import com.senior.roadrunner.tools.PathArea;
 import com.senior.roadrunner.tools.Point;
 import com.senior.roadrunner.tools.Polygon;
@@ -54,9 +60,9 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 {
 	private static final String rId = "3";
 	private static final String fId = "1234456";
-	private static final String savePath = Environment.getExternalStorageDirectory() + "/"
-			+ "roadrunner/" + fId + ".xml";
-	
+	private static final String savePath = Environment
+			.getExternalStorageDirectory() + "/" + "roadrunner/" + fId + ".xml";
+
 	private static final LatLng LAT_LNG = new LatLng(12, 102);
 	GoogleMap map;
 	LocationManager myLocationManager;
@@ -67,7 +73,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private Button btn_load_track;
 	// private HistoryTrack historyTrack;
 	private static final String SDCARD_TRACKER_XML = "/sdcard/tracker.xml";
-	private static final String URLServer = "http://192.168.1.111/";
+	private static final String URLServer = "http://roadrunner-mahidol.dx.am/";//"http://192.168.1.111/";
 
 	private Vector<Polygon> polygonsTrack = new Vector<Polygon>();
 	private Polygon polygonStart;
@@ -82,22 +88,30 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private Polygon polygonFinish;
 	private ArrayList<ListTracker> trackMemberList;
 	private String trackPathData;
+	private TextView txt_current_distace;
+	private TextView txt_current_speed;
+	private TextView txt_current_time;
 
-	
-
+	private Handler myHandler;
+	private Runnable updateTimerMethod;
 	// private ArrayList<LatLngTimeData> latLngTimeData;
 	// private static final String SDCARD_TRACKER_XML = "/sdcard/tracker.xml";
+	private long startTime = 0L;
+	protected long timeInMillies = 0L;
+	protected long timeSwap = 0L;
+	protected long finalTime = 0L;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map_layout);
 		Intent intent = getIntent();
-		trackMemberList=(ArrayList<ListTracker>)intent.getSerializableExtra("TrackMemberList");
+		trackMemberList = (ArrayList<ListTracker>) intent
+				.getSerializableExtra("TrackMemberList");
 		trackPathData = intent.getStringExtra("TrackPathData");
 		initwidget();
 		loadFile();
-		
+
 		track = new PolylineOptions();
 		latLngTimeData = new ArrayList<LatLngTimeData>();
 		map = ((MapFragment) getFragmentManager().findFragmentById(R.id.maps))
@@ -137,29 +151,31 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	@SuppressWarnings("unchecked")
 	private void loadFile() {
-		
+
 		for (int i = 0; i < trackMemberList.size(); i++) {
-			System.out.println("TrackerDir : "+trackMemberList.get(i).getTrackerDir());
-			ConnectServer connectServerTrackMemberData = new ConnectServer(this, URLServer + "/getTrackPath.php");
-			connectServerTrackMemberData.addValue("Rdir",
-					URLServer + trackMemberList.get(i).getTrackerDir());
+			System.out.println("TrackerDir : "
+					+ trackMemberList.get(i).getTrackerDir());
+			ConnectServer connectServerTrackMemberData = new ConnectServer(
+					this, URLServer + "/getTrackPath.php");
+			connectServerTrackMemberData.addValue("Rdir", URLServer
+					+ trackMemberList.get(i).getTrackerDir());
 			connectServerTrackMemberData.setIndex(i);
-			connectServerTrackMemberData.setRequestTag(ConnectServer.TRACK_MEMBER_PATH);
+			connectServerTrackMemberData
+					.setRequestTag(ConnectServer.TRACK_MEMBER_PATH);
 			connectServerTrackMemberData.execute();
 		}
-		
-//		DownloadTask downloadTask = new DownloadTask(this);
-//		downloadTask
-//				.execute("http://192.168.1.121/uploads/mahidol/tracker.xml");
+
+		// DownloadTask downloadTask = new DownloadTask(this);
+		// downloadTask
+		// .execute("http://192.168.1.121/uploads/mahidol/tracker.xml");
 
 	}
 
 	public void createRunningPath() {
 		PolylineOptions options = new PolylineOptions();
 		Vector<Point> points = new Vector<Point>();
-		List<LatLngTimeData> data = TrackDataBase
-				.loadXmlString(trackPathData);
-		
+		List<LatLngTimeData> data = TrackDataBase.loadXmlString(trackPathData);
+
 		for (int i = 0; i < data.size(); i++) {
 			double lat = data.get(i).getCoordinate().getLat();
 			double lng = data.get(i).getCoordinate().getLng();
@@ -171,13 +187,13 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		p.setWidth(5);
 		p.setGeodesic(true);
 		p.setVisible(true);
-		
+
 		// Start polygon
 		polygonStart = PathArea.circleBuffer(points.get(0));
 		PolygonOptions polygonStartOptions = new PolygonOptions();
 		for (int i = 0; i < polygonStart.getSides().size(); i++) {
-//			System.out.println(polygonStart.getSides().get(i).getStart().x
-//					+ "    " + polygonStart.getSides().get(i).getStart().y);
+			// System.out.println(polygonStart.getSides().get(i).getStart().x
+			// + "    " + polygonStart.getSides().get(i).getStart().y);
 			polygonStartOptions
 					.add(new LatLng(
 							polygonStart.getSides().get(i).getStart().x,
@@ -185,8 +201,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		}
 		polygonStartOptions.fillColor(Color.BLACK);
 		map.addPolygon(polygonStartOptions);
-		
-		//Path polygon
+
+		// Path polygon
 		polygonsTrack = PathArea.createPathArea(points);
 		for (int i = 0; i < polygonsTrack.size(); i++) {
 			// System.out.println("getside : "+polygons.get(i).getSides());
@@ -206,8 +222,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			// polygonOptions.fillColor(Color.BLUE);
 			map.addPolygon(polygonOptions.strokeWidth(2));
 		}
-		
-		//Finish polygon
+
+		// Finish polygon
 		polygonFinish = PathArea.circleBuffer(points.lastElement());
 		PolygonOptions polygonFinishOptions = new PolygonOptions();
 		for (int i = 0; i < polygonFinish.getSides().size(); i++) {
@@ -218,7 +234,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		}
 		polygonFinishOptions.fillColor(Color.BLACK);
 		map.addPolygon(polygonFinishOptions);
-		
+
 	}
 
 	private void checkisInPath(Point point) {
@@ -245,7 +261,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 				}
 			}
 		}
-		if(polygonFinish!=null && pathCheck){
+		if (polygonFinish != null && pathCheck) {
 			if (polygonFinish.contains(point)) {
 				Toast.makeText(this, "Finish", Toast.LENGTH_SHORT).show();
 				btn_stop_track.setEnabled(true);
@@ -256,13 +272,17 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	}
 
 	private void initwidget() {
+		myHandler = new Handler();
 		btn_track = (Button) findViewById(R.id.btn_track);
 		btn_track.setOnClickListener(this);
 		btn_stop_track = (Button) findViewById(R.id.btn_stop_track);
 		btn_stop_track.setOnClickListener(this);
 		btn_load_track = (Button) findViewById(R.id.btn_load_track);
 		btn_load_track.setOnClickListener(this);
-
+		txt_current_distace = (TextView) findViewById(R.id.txt_curent_distance);
+		txt_current_speed = (TextView) findViewById(R.id.txt_curent_speed);
+		txt_current_time = (TextView) findViewById(R.id.txt_curent_time);
+		txt_current_speed.setText("0");
 	}
 
 	public boolean isGpsEnable() {
@@ -284,6 +304,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			recordCheck = true;
 			btn_track.setEnabled(false);
 			raceThread();
+			timer();
 			break;
 		case R.id.btn_stop_track:
 			updateDataBase();
@@ -294,7 +315,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			}
 			saveTrackData();
 			uploadFile();
-			
+			myHandler.removeCallbacks(updateTimerMethod);
 			break;
 
 		case R.id.btn_load_track:
@@ -304,6 +325,28 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			break;
 		}
 
+	}
+
+	private void timer() {
+		updateTimerMethod = new Runnable() {
+
+			public void run() {
+				timeInMillies = SystemClock.uptimeMillis() - startTime;
+				finalTime = timeSwap + timeInMillies;
+
+				int seconds = (int) (finalTime / 1000);
+				int minutes = seconds / 60;
+				seconds = seconds % 60;
+				// int milliseconds = (int) (finalTime % 1000);
+				txt_current_time.setText("" + minutes + ":"
+						+ String.format("%02d", seconds));
+				myHandler.postDelayed(this, 0);
+			}
+
+		};
+		startTime = SystemClock.uptimeMillis();
+		myHandler.postDelayed(updateTimerMethod, 0);
+		
 	}
 
 	private void saveTrackData() {
@@ -321,7 +364,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 		connectServer.addValue("Fid", fId);
 		connectServer.addValue("Rid", rId);
-		connectServer.addValue("Trackerdir", "tracker/"+rId+"/"+fId+".xml");
+		connectServer.addValue("Trackerdir", "tracker/" + rId + "/" + fId
+				+ ".xml");
 		connectServer.addValue("Rank", "5");
 		connectServer.setRequestTag(ConnectServer.DATA_UPDATE);
 		connectServer.execute();
@@ -334,15 +378,16 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	}
 
 	private void raceThread() {
-//		List<LatLngTimeData> data = TrackDataBase
-//				.loadXmlFile(SDCARD_TRACKER_XML);
+		// List<LatLngTimeData> data = TrackDataBase
+		// .loadXmlFile(SDCARD_TRACKER_XML);
 		for (int i = 0; i < trackMemberList.size(); i++) {
-//			List<LatLngTimeData> data = trackMemberList.get(i).getTrackData();
-			RaceThread raceThread = new RaceThread(trackMemberList.get(i), map, this);
+			// List<LatLngTimeData> data =
+			// trackMemberList.get(i).getTrackData();
+			RaceThread raceThread = new RaceThread(trackMemberList.get(i), map,
+					this);
 			raceThread.start();
 		}
-		
-		
+
 	}
 
 	private void enableGPSListener() {
@@ -426,8 +471,11 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	private void recordTrack(Location loc) {
 		if (loc.hasSpeed()) {
-			Toast.makeText(this, "Speed : " + loc.getSpeed() + " m/s",
+			Toast.makeText(this, "Speed : " + loc.getSpeed() + " km/hr",
 					Toast.LENGTH_SHORT).show();
+			DecimalFormat df = new DecimalFormat("0.0");
+			String gpsSpeed = df.format(loc.getSpeed() * 1000 / 3600);
+			txt_current_speed.setText(gpsSpeed);
 		}
 
 		LatLng coord = new LatLng(loc.getLatitude(), loc.getLongitude());
@@ -448,6 +496,16 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		Coordinate coordinate = new Coordinate(coord.latitude, coord.longitude);
 		latLngTimeData.add(new LatLngTimeData(coordinate, timeStamp));
 
+		// try {
+		// Date firstDate = sdf.parse(latLngTimeData.get(0).getWhen());
+		// Date recentDate =
+		// sdf.parse(latLngTimeData.get(latLngTimeData.size()-1).getWhen());
+		// long timer = recentDate.getTime()-firstDate.getTime();
+		// txt_current_time.setText(String.valueOf(timer));
+		// } catch (ParseException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
 	}
 
 	public void setTrackingPath(boolean b) {
@@ -511,9 +569,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		System.out.println("Result : " + result);
 	}
 
-
-	public synchronized void setMemberTrack(String result,int index) {
-//		System.out.println("Index : "+ index);
+	public synchronized void setMemberTrack(String result, int index) {
+		// System.out.println("Index : "+ index);
 		List<LatLngTimeData> trackData = TrackDataBase.loadXmlString(result);
 		trackMemberList.get(index).setTrackData(trackData);
 	}
