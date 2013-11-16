@@ -1,8 +1,10 @@
 package com.senior.roadrunner.data;
 
+import java.io.Serializable;
 
 
-public class LatLngTimeData {
+
+public class LatLngTimeData{
 	private Coordinate coordinate;
 	private String when;
 
