@@ -1,5 +1,7 @@
 package com.senior.roadrunner.tools;
 
+import java.text.DecimalFormat;
+
 import com.google.android.gms.maps.model.LatLng;
 
 public class GPSSpeed {
@@ -9,6 +11,7 @@ public class GPSSpeed {
  * 
  * */
 	public static long SpeedFrom2PointTime(LatLng start ,LatLng end,long startTime,long endTime){
+		//speed in km / hr 
 		long speed = 0;
 		double distance = Distance.calclateArc(start.latitude, start.longitude, end.latitude, end.longitude, Distance.KILOMETERS);
 		System.out.println("Distance km : "+ distance);

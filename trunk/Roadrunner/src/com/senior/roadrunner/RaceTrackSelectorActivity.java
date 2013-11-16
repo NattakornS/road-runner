@@ -47,7 +47,7 @@ import com.senior.roadrunner.server.ConnectServer;
 public class RaceTrackSelectorActivity extends Activity implements
 		SearchView.OnQueryTextListener, SearchView.OnCloseListener ,OnClickListener{
 
-	private static final String URLServer = "http://192.168.1.111/";// 192.168.1.173//http://192.168.1.117/
+	private static final String URLServer = "http://roadrunner-mahidol.dx.am/";//"http://192.168.1.111/";// 192.168.1.173//http://192.168.1.117/
 	ListView list;
 	CustomAdapter adapter;
 	public Activity CustomListView = null;
