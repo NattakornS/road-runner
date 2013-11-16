@@ -67,7 +67,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private Button btn_load_track;
 	// private HistoryTrack historyTrack;
 	private static final String SDCARD_TRACKER_XML = "/sdcard/tracker.xml";
-	private static final String URLServer = "http://192.168.1.121/";
+	private static final String URLServer = "http://192.168.1.111/";
 
 	private Vector<Polygon> polygonsTrack = new Vector<Polygon>();
 	private Polygon polygonStart;
@@ -81,6 +81,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private ConnectServer connectServer;
 	private Polygon polygonFinish;
 	private ArrayList<ListTracker> trackMemberList;
+	private String trackPathData;
 
 	
 
@@ -91,6 +92,9 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map_layout);
+		Intent intent = getIntent();
+		trackMemberList=(ArrayList<ListTracker>)intent.getSerializableExtra("TrackMemberList");
+		trackPathData = intent.getStringExtra("TrackPathData");
 		initwidget();
 		loadFile();
 		
@@ -133,8 +137,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	@SuppressWarnings("unchecked")
 	private void loadFile() {
-		Intent intent = getIntent();
-		trackMemberList=(ArrayList<ListTracker>)intent.getSerializableExtra("TrackMemberList");
+		
 		for (int i = 0; i < trackMemberList.size(); i++) {
 			System.out.println("TrackerDir : "+trackMemberList.get(i).getTrackerDir());
 			ConnectServer connectServerTrackMemberData = new ConnectServer(this, URLServer + "/getTrackPath.php");
@@ -155,7 +158,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		PolylineOptions options = new PolylineOptions();
 		Vector<Point> points = new Vector<Point>();
 		List<LatLngTimeData> data = TrackDataBase
-				.loadXmlFile(SDCARD_TRACKER_XML);
+				.loadXmlString(trackPathData);
+		
 		for (int i = 0; i < data.size(); i++) {
 			double lat = data.get(i).getCoordinate().getLat();
 			double lng = data.get(i).getCoordinate().getLng();
@@ -249,7 +253,6 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 				btn_stop_track.setEnabled(false);
 			}
 		}
-
 	}
 
 	private void initwidget() {
@@ -279,6 +282,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			setTrackingPath(true);
 			setStartPointTracking(false);
 			recordCheck = true;
+			btn_track.setEnabled(false);
+			raceThread();
 			break;
 		case R.id.btn_stop_track:
 			updateDataBase();

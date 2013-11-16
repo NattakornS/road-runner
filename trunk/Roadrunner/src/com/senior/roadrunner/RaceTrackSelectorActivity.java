@@ -47,7 +47,7 @@ import com.senior.roadrunner.server.ConnectServer;
 public class RaceTrackSelectorActivity extends Activity implements
 		SearchView.OnQueryTextListener, SearchView.OnCloseListener ,OnClickListener{
 
-	private static final String URLServer = "http://192.168.1.121/";// 192.168.1.173//http://192.168.1.117/
+	private static final String URLServer = "http://192.168.1.111/";// 192.168.1.173//http://192.168.1.117/
 	ListView list;
 	CustomAdapter adapter;
 	public Activity CustomListView = null;
@@ -67,6 +67,8 @@ public class RaceTrackSelectorActivity extends Activity implements
 	protected CharSequence mDrawerTitle;
 
 	private Animation animAlpha;
+	public ArrayList<LatLngTimeData> trackPathData = null;
+	private String xmlTrackData;
 	
 	@SuppressLint("NewApi")
 	@Override
@@ -271,18 +273,19 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	public void setTrackPath(String result) {
 		// Draw track on map from xml string.
+		xmlTrackData = result;
 		map.clear();
-		List<LatLngTimeData> trackData = TrackDataBase.loadXmlString(result);
+		trackPathData = (ArrayList<LatLngTimeData>) TrackDataBase.loadXmlString(result);
 		PolylineOptions options = new PolylineOptions();
-		for (int i = 0; i < trackData.size(); i++) {
-			options.add(new LatLng(trackData.get(i).getCoordinate().getLat(),
-					trackData.get(i).getCoordinate().getLng()));
+		for (int i = 0; i < trackPathData.size(); i++) {
+			options.add(new LatLng(trackPathData.get(i).getCoordinate().getLat(),
+					trackPathData.get(i).getCoordinate().getLng()));
 		}
 		options.color(Color.YELLOW);
 		options.width(5);
 		map.addPolyline(options);
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
-				trackData.get(0).getCoordinate().getLat(), trackData.get(0)
+				trackPathData.get(0).getCoordinate().getLat(), trackPathData.get(0)
 						.getCoordinate().getLng()), 15.0f));
 	}
 
@@ -327,11 +330,12 @@ public class RaceTrackSelectorActivity extends Activity implements
 	@Override
 	public void onClick(View v) {
 		if(v.equals(raceBtn)){
-			if(TrackMemberList==null){
+			if(TrackMemberList==null||trackPathData == null){
 				return;
 			}
 			Intent intent = new Intent(this,MapsActivity.class);
 			intent.putExtra("TrackMemberList",TrackMemberList);
+			intent.putExtra("TrackPathData", xmlTrackData);
 			startActivity(intent);
 		}
 		

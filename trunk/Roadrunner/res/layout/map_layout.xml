@@ -3,46 +3,225 @@
     xmlns:tools="http://schemas.android.com/tool"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:columnCount="1"
     android:orientation="vertical"
-    tools:context=".MainActivity" >
+    android:rowCount="3"
+    tools:context=".MapsActivity" >
 
-    <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true" >
+    <LinearLayout
+        android:id="@+id/gageLayout"
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:background="@color/white_gage"
+        android:gravity="fill"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true" >
 
-        <fragment
-            android:id="@+id/maps"
+        <LinearLayout
+            android:id="@+id/col1"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            class="com.google.android.gms.maps.MapFragment" />
+            android:layout_height="fill_parent"
+            android:layout_weight="2.4"
+            android:orientation="vertical" >
 
-    </FrameLayout>
+            <LinearLayout
+                android:id="@+id/col1_row1"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical" >
 
-    <Button
-        android:id="@+id/btn_track"
-        android:layout_width="wrap_content"
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/distance" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="DISTANCE"
+                    android:textSize="15dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/col1_row2"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical" >
+
+                <TextView
+                    android:id="@+id/txt_curent_distance"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="10"
+                    android:textSize="40dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical" >
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="KM"
+                    android:textSize="15dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/col2"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="2.0"
+            android:dividerPadding="10dp"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical" >
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/timer" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="TIME"
+                    android:textSize="15dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center" >
+
+                <TextView
+                     android:id="@+id/txt_curent_time"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="01&apos;24"
+                    android:textSize="40dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical" >
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="MIN"
+                    android:textSize="15dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/col3"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="2.4"
+            android:dividerPadding="10dp"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:id="@+id/col3_row1"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical" >
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/speed" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="SPEED"
+                    android:textSize="15dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/col3_row2"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical" >
+
+                <TextView
+                     android:id="@+id/txt_curent_speed"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="15"
+                    android:textSize="40dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical" >
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="KM/HR"
+                    android:textSize="15dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <GridLayout
+        android:id="@+id/gridbutton"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:text="track" />
+        android:columnCount="3"
+        android:rowCount="1" >
 
-    <Button
-        android:id="@+id/btn_stop_track"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/btn_track"
-        android:text="stop" />
+        <Button
+            android:id="@+id/btn_track"
+            android:layout_column="0"
+            android:layout_gravity="fill"
+            android:background="@drawable/blue_menu_btn"
+            android:text="track" />
 
-    <Button
-        android:id="@+id/btn_load_track"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/btn_stop_track"
-        android:text="load" />
+        <Button
+            android:id="@+id/btn_load_track"
+            android:layout_column="1"
+            android:layout_gravity="fill"
+            android:background="@drawable/blue_menu_btn"
+            android:text="load" />
 
+        <Button
+            android:id="@+id/btn_stop_track"
+            android:layout_width="198dp"
+            android:layout_column="2"
+            android:layout_gravity="fill"
+            android:background="@drawable/blue_menu_btn"
+            android:text="stop" />
+    </GridLayout>
 
+    <fragment
+        android:id="@+id/maps"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/gageLayout"
+        android:layout_above="@+id/gridbutton"
+        class="com.google.android.gms.maps.MapFragment" />
 
 </RelativeLayout>
