@@ -18,16 +18,23 @@ import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.DrawerLayout.DrawerListener;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
+import android.view.View.OnHoverListener;
+import android.view.View.OnSystemUiVisibilityChangeListener;
+import android.view.ViewTreeObserver.OnDrawListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.SlidingDrawer.OnDrawerOpenListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,9 +52,9 @@ import com.senior.roadrunner.server.ConnectServer;
 
 @SuppressLint("NewApi")
 public class RaceTrackSelectorActivity extends Activity implements
-		SearchView.OnQueryTextListener, SearchView.OnCloseListener ,OnClickListener{
+		SearchView.OnQueryTextListener, SearchView.OnCloseListener ,OnClickListener,DrawerListener{
 
-	private static final String URLServer = "http://roadrunner-mahidol.dx.am/";//"http://192.168.1.111/";// 192.168.1.173//http://192.168.1.117/
+	private static final String URLServer = "http://roadrunner-5313180.dx.am/";//"http://192.168.1.111/";// 192.168.1.173//http://192.168.1.117/
 	ListView list;
 	CustomAdapter adapter;
 	public Activity CustomListView = null;
@@ -79,16 +86,14 @@ public class RaceTrackSelectorActivity extends Activity implements
 		CustomListView = this;
 		invalidateOptionsMenu();
 		/******** Take some data in Arraylist ( CustomListViewValuesArr ) ***********/
-		setListData();
 
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_trackselector);
 		mDrawerList = (ListView) findViewById(R.id.right_drawer);
-
+		mDrawerLayout.setDrawerListener(this);
 		// set a custom shadow that overlays the main content when the drawer
 		// opens
 		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow,
 				GravityCompat.START);
-
 		// enable ActionBar app icon to behave as action to toggle nav drawer
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
@@ -340,5 +345,36 @@ public class RaceTrackSelectorActivity extends Activity implements
 		}
 		
 	}
+
+
+
+
+	@Override
+	public void onDrawerClosed(View arg0) {
+//		System.out.println("Drawer close"+ arg0);
+		
+	}
+
+	@Override
+	public void onDrawerOpened(View arg0) {
+		if(CustomListViewValuesArr.size()>0){
+			return;
+		}
+		setListData();
+	}
+
+	@Override
+	public void onDrawerSlide(View arg0, float arg1) {
+//		System.out.println("Drawer slide"+ arg0);
+		
+	}
+
+	@Override
+	public void onDrawerStateChanged(int arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
 
 }

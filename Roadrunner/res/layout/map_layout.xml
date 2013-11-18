@@ -177,7 +177,7 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="KM/HR"
+                    android:text="KPH"
                     android:textSize="15dp" />
             </LinearLayout>
         </LinearLayout>

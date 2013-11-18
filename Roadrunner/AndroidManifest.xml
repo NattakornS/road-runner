@@ -6,7 +6,7 @@
 
     <uses-sdk
         android:minSdkVersion="14"
-        android:targetSdkVersion="17" />
+        android:targetSdkVersion="18" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
@@ -40,11 +40,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.senior.roadrunner.MapsActivity" />
-        <activity 
-            android:name="com.senior.roadrunner.RaceTrackSelectorActivity" 
+        <activity
+            android:name="com.senior.roadrunner.MapsActivity"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen" />
+        <activity
+            android:name="com.senior.roadrunner.RaceTrackSelectorActivity"
             android:label="Race track"
-            android:parentActivityName="com.senior.roadrunner.MainActivity">
+            android:parentActivityName="com.senior.roadrunner.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.senior.roadrunner.MainActivity" />

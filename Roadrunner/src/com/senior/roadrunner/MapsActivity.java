@@ -48,6 +48,7 @@ import com.senior.roadrunner.racetrack.RaceThread;
 import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.server.DownloadTask;
 import com.senior.roadrunner.server.UploadTask;
+import com.senior.roadrunner.tools.Distance;
 import com.senior.roadrunner.tools.GPSSpeed;
 import com.senior.roadrunner.tools.PathArea;
 import com.senior.roadrunner.tools.Point;
@@ -73,7 +74,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private Button btn_load_track;
 	// private HistoryTrack historyTrack;
 	private static final String SDCARD_TRACKER_XML = "/sdcard/tracker.xml";
-	private static final String URLServer = "http://roadrunner-mahidol.dx.am/";//"http://192.168.1.111/";
+	private static final String URLServer = "http://roadrunner-5313180.dx.am/";// "http://192.168.1.111/";
 
 	private Vector<Polygon> polygonsTrack = new Vector<Polygon>();
 	private Polygon polygonStart;
@@ -100,6 +101,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	protected long timeInMillies = 0L;
 	protected long timeSwap = 0L;
 	protected long finalTime = 0L;
+	private double totalDistance = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -283,6 +285,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		txt_current_speed = (TextView) findViewById(R.id.txt_curent_speed);
 		txt_current_time = (TextView) findViewById(R.id.txt_curent_time);
 		txt_current_speed.setText("0");
+		txt_current_distace.setText("0");
+		txt_current_time.setText("00:00");
 	}
 
 	public boolean isGpsEnable() {
@@ -346,7 +350,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		};
 		startTime = SystemClock.uptimeMillis();
 		myHandler.postDelayed(updateTimerMethod, 0);
-		
+
 	}
 
 	private void saveTrackData() {
@@ -446,8 +450,17 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	}
 
+	// ONlocation change
+	// - draw map
+	// - record location
+	// - update distance
 	@Override
 	public void onLocationChanged(Location loc) {
+		// check if gps not accuracy.
+		if (!loc.hasAccuracy()) {
+			return;
+		}
+		System.out.println(loc.hasAccuracy());
 		double latitude = loc.getLatitude();
 		double longitude = loc.getLongitude();
 		System.out.println("INCOMMING : " + latitude + "    " + longitude);
@@ -470,10 +483,11 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	}
 
 	private void recordTrack(Location loc) {
+		DecimalFormat df = new DecimalFormat("0.00");
 		if (loc.hasSpeed()) {
-			Toast.makeText(this, "Speed : " + loc.getSpeed() + " km/hr",
+			Toast.makeText(this, "Speed : " + loc.getSpeed() + " KPH",
 					Toast.LENGTH_SHORT).show();
-			DecimalFormat df = new DecimalFormat("0.0");
+
 			String gpsSpeed = df.format(loc.getSpeed() * 1000 / 3600);
 			txt_current_speed.setText(gpsSpeed);
 		}
@@ -496,16 +510,17 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		Coordinate coordinate = new Coordinate(coord.latitude, coord.longitude);
 		latLngTimeData.add(new LatLngTimeData(coordinate, timeStamp));
 
-		// try {
-		// Date firstDate = sdf.parse(latLngTimeData.get(0).getWhen());
-		// Date recentDate =
-		// sdf.parse(latLngTimeData.get(latLngTimeData.size()-1).getWhen());
-		// long timer = recentDate.getTime()-firstDate.getTime();
-		// txt_current_time.setText(String.valueOf(timer));
-		// } catch (ParseException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
+		// dstace update
+		if (latLngTimeData.size() >= 2) {
+			Coordinate startCoord = latLngTimeData.get(
+					latLngTimeData.size() - 2).getCoordinate();
+			Coordinate recentCoord = latLngTimeData.get(
+					latLngTimeData.size() - 1).getCoordinate();
+			double distance = Distance.calculateDistance(startCoord,
+					recentCoord, Distance.KILOMETERS);
+			totalDistance  += distance;
+			txt_current_distace.setText(df.format(totalDistance));
+		}
 	}
 
 	public void setTrackingPath(boolean b) {
