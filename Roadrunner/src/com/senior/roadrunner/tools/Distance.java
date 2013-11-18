@@ -1,6 +1,8 @@
 package com.senior.roadrunner.tools;
 
 
+import com.senior.roadrunner.data.Coordinate;
+
 import android.location.Address;
 import android.location.Location;;
 
@@ -79,11 +81,12 @@ public class Distance
 	 * @param units Desired units
 	 * @return Distance between the two points in the desired units
 	 */
-	public static double calculateDistance(Location pointA, Location pointB, int units)
+	public static double calculateDistance(Coordinate pointA, Coordinate pointB, int units)
 	{
-		return calclateArc(pointA.getLatitude(),
-                pointA.getLongitude(),
-                pointB.getLatitude(),
-                pointB.getLongitude(),units); 
+		return calclateArc(pointA.getLat(),
+                pointA.getLng(),
+                pointB.getLat(),
+                pointB.getLng(),units); 
 	}
+	
 }
