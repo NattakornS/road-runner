@@ -1,6 +1,20 @@
 package com.senior.roadrunner.racetrack;
 
-public class ListModel {
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import com.senior.roadrunner.data.LatLngTimeData;
+
+public class TrackList implements Parcelable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String rId = "";
 	private String raceTrackName = "";
 	private String Image = "";
@@ -8,6 +22,8 @@ public class ListModel {
 	private double lon;
 	private double lat;
 	private String rDir;
+	private String trackData;
+	private ArrayList<TrackMemberList> trackMemberList;
 
 	/*********** Set Methods ******************/
 	public void setRaceTrackName(String raceTrackName) {
@@ -65,5 +81,33 @@ public class ListModel {
 	}
 	public String getRdir() {
 		return rDir;
+	}
+
+	public ArrayList<TrackMemberList> getTrackMemberList() {
+		return trackMemberList;
+	}
+
+	public void setTrackMemberList(ArrayList<TrackMemberList> trackMemberList) {
+		this.trackMemberList = trackMemberList;
+	}
+
+	public String getTrackData() {
+		return trackData;
+	}
+
+	public void setTrackData(String trackData) {
+		this.trackData = trackData;
+	}
+
+	@Override
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel arg0, int arg1) {
+		// TODO Auto-generated method stub
+		
 	}
 }

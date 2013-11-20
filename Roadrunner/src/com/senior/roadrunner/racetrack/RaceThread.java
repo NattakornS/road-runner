@@ -31,9 +31,9 @@ public class RaceThread extends Thread {
 	private LatLng end;
 	private GoogleMap map;
 	private Activity activity;
-	private ListTracker listTracker;
+	private TrackMemberList listTracker;
 
-	public RaceThread(ListTracker listTracker, GoogleMap map, Activity activity) {
+	public RaceThread(TrackMemberList listTracker, GoogleMap map, Activity activity) {
 		this.listTracker = listTracker;
 
 		sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");

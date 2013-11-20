@@ -5,7 +5,11 @@ import java.util.List;
 
 import com.senior.roadrunner.data.LatLngTimeData;
 
-public class ListTracker implements Serializable {
+public class TrackMemberList implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String rId = "";
 	private String fId = "";
 	private int rank;

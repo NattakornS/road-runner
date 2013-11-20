@@ -1,5 +1,6 @@
 package com.senior.roadrunner;
 
+import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,8 +44,9 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.senior.roadrunner.data.Coordinate;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
-import com.senior.roadrunner.racetrack.ListTracker;
+import com.senior.roadrunner.racetrack.TrackMemberList;
 import com.senior.roadrunner.racetrack.RaceThread;
+import com.senior.roadrunner.racetrack.TrackList;
 import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.server.DownloadTask;
 import com.senior.roadrunner.server.UploadTask;
@@ -87,7 +89,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private boolean recordCheck = false;
 	private ConnectServer connectServer;
 	private Polygon polygonFinish;
-	private ArrayList<ListTracker> trackMemberList;
+	private ArrayList<TrackMemberList> trackMemberList;
 	private String trackPathData;
 	private TextView txt_current_distace;
 	private TextView txt_current_speed;
@@ -102,13 +104,14 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	protected long timeSwap = 0L;
 	protected long finalTime = 0L;
 	private double totalDistance = 0;
+	private TrackList trackList = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map_layout);
 		Intent intent = getIntent();
-		trackMemberList = (ArrayList<ListTracker>) intent
+		trackMemberList = (ArrayList<TrackMemberList>) intent
 				.getSerializableExtra("TrackMemberList");
 		trackPathData = intent.getStringExtra("TrackPathData");
 		initwidget();
@@ -518,7 +521,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 					latLngTimeData.size() - 1).getCoordinate();
 			double distance = Distance.calculateDistance(startCoord,
 					recentCoord, Distance.KILOMETERS);
-			totalDistance  += distance;
+			totalDistance += distance;
 			txt_current_distace.setText(df.format(totalDistance));
 		}
 	}

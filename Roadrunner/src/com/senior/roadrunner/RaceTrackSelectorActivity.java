@@ -46,20 +46,23 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.racetrack.CustomAdapter;
-import com.senior.roadrunner.racetrack.ListModel;
-import com.senior.roadrunner.racetrack.ListTracker;
+import com.senior.roadrunner.racetrack.TrackList;
+import com.senior.roadrunner.racetrack.TrackMemberList;
+import com.senior.roadrunner.racetrack.TrackList;
 import com.senior.roadrunner.server.ConnectServer;
 
 @SuppressLint("NewApi")
 public class RaceTrackSelectorActivity extends Activity implements
-		SearchView.OnQueryTextListener, SearchView.OnCloseListener ,OnClickListener,DrawerListener{
+		SearchView.OnQueryTextListener, SearchView.OnCloseListener,
+		OnClickListener, DrawerListener {
 
-	private static final String URLServer = "http://roadrunner-5313180.dx.am/";//"http://192.168.1.111/";// 192.168.1.173//http://192.168.1.117/
+	private static final String URLServer = "http://roadrunner-5313180.dx.am/";// "http://192.168.1.111/";//
+																				// 192.168.1.173//http://192.168.1.117/
 	ListView list;
 	CustomAdapter adapter;
 	public Activity CustomListView = null;
-	public ArrayList<ListModel> CustomListViewValuesArr = new ArrayList<ListModel>();
-	public ArrayList<ListTracker> TrackMemberList;
+	public ArrayList<TrackList> trackList = new ArrayList<TrackList>();
+	public ArrayList<TrackMemberList> trackMemberList;
 	private ConnectServer connectServer;
 	private SearchView mSearchView;
 	private GoogleMap map;
@@ -75,8 +78,8 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	private Animation animAlpha;
 	public ArrayList<LatLngTimeData> trackPathData = null;
-	private String xmlTrackData;
-	
+	private int listPosition;
+
 	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -105,7 +108,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 		animAlpha = AnimationUtils.loadAnimation(this, R.anim.anim_alpha);
 		raceBtn.setVisibility(View.INVISIBLE);
 		raceBtn.setOnClickListener(this);
-//		raceBtn.setAlpha(0.0f);
+		// raceBtn.setAlpha(0.0f);
 		trackDataTxtView = (TextView) findViewById(R.id.track_data_txtview);
 
 	}
@@ -182,33 +185,36 @@ public class RaceTrackSelectorActivity extends Activity implements
 	}
 
 	public void onItemClick(int mPosition) {
-		ListModel tempValues = (ListModel) CustomListViewValuesArr
-				.get(mPosition);
+		this.listPosition = mPosition;
+		TrackList tempValues = (TrackList) trackList.get(mPosition);
 		trackDataTxtView.setText("" + tempValues.getRaceTrackName() + " \nRid:"
 				+ tempValues.getrId() + " \nLatLon:"
 				+ tempValues.getDoubleLat() + "\t" + tempValues.getDoubleLon()
 				+ " \nRdir:" + tempValues.getRdir());
-		// Toast.makeText(
-		// CustomListView,
-		// "" + tempValues.getRaceTrackName() + " \nRid:"
-		// + tempValues.getrId() + " \nLatLon:"
-		// + tempValues.getDoubleLat() + "\t"
-		// + tempValues.getDoubleLon() + " \nRdir:"
-		// + tempValues.getRdir(), Toast.LENGTH_LONG).show();
+
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
 				tempValues.getDoubleLat(), tempValues.getDoubleLon()), 15.0f));
-
-		connectServer = new ConnectServer(this, URLServer + "/getTrackPath.php");
-		connectServer.addValue("Rdir",
-				URLServer + "/racetrack/" + tempValues.getrId() + ".xml");
-		connectServer.setRequestTag(ConnectServer.TRACK_PATH);
-		connectServer.execute();
 
 		// Highlight the selected item, update the title, and close the drawer
 		mDrawerList.setItemChecked(mPosition, true);
 		// mDrawerList.setSelection(mPosition);
 		setTitle(tempValues.getRaceTrackName());
 		mDrawerLayout.closeDrawer(mDrawerList);
+
+		// get trackpath from server.
+		if (trackList.get(listPosition).getTrackData() != null
+				|| trackList.get(listPosition).getTrackMemberList() != null) {
+			setTrackPath(trackList.get(listPosition).getTrackData());
+			trackMemberList = trackList.get(listPosition).getTrackMemberList();
+			printTrackData();
+			drawTrackPath();
+			return;
+		}
+		connectServer = new ConnectServer(this, URLServer + "/getTrackPath.php");
+		connectServer.addValue("Rdir",
+				URLServer + "/racetrack/" + tempValues.getrId() + ".xml");
+		connectServer.setRequestTag(ConnectServer.TRACK_PATH);
+		connectServer.execute();
 
 		// getMember of mPosition Race Track.
 		connectServer = new ConnectServer(this, URLServer
@@ -250,7 +256,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 			JSONArray jsonArr = new JSONArray(result);
 
 			for (int i = 0; i < jsonArr.length(); i++) {
-				final ListModel sched = new ListModel();
+				final TrackList sched = new TrackList();
 				JSONObject jsonObject = new JSONObject(jsonArr.getString(i));
 
 				/******* Firstly take data in model object ******/
@@ -261,10 +267,9 @@ public class RaceTrackSelectorActivity extends Activity implements
 				sched.setDoubleLon(Double.parseDouble(location[1]));
 				sched.setRdir(jsonObject.getString("Rdir"));
 				/******** Take Model Object in ArrayList **********/
-				CustomListViewValuesArr.add(sched);
+				trackList.add(sched);
 				/**************** Create Custom Adapter *********/
-				adapter = new CustomAdapter(CustomListView,
-						CustomListViewValuesArr, res);
+				adapter = new CustomAdapter(CustomListView, trackList, res);
 
 				// set up the drawer's list view with items and click listener
 				mDrawerList.setAdapter(adapter);
@@ -277,31 +282,40 @@ public class RaceTrackSelectorActivity extends Activity implements
 	}
 
 	public void setTrackPath(String result) {
+
 		// Draw track on map from xml string.
-		xmlTrackData = result;
+		String xmlTrackData = result;
+		trackPathData = (ArrayList<LatLngTimeData>) TrackDataBase
+				.loadXmlString(result);
+		drawTrackPath();
+		trackList.get(listPosition).setTrackData(xmlTrackData);
+	}
+
+	// Drawing on map function.
+	public void drawTrackPath() {
 		map.clear();
-		trackPathData = (ArrayList<LatLngTimeData>) TrackDataBase.loadXmlString(result);
 		PolylineOptions options = new PolylineOptions();
 		for (int i = 0; i < trackPathData.size(); i++) {
-			options.add(new LatLng(trackPathData.get(i).getCoordinate().getLat(),
-					trackPathData.get(i).getCoordinate().getLng()));
+			options.add(new LatLng(trackPathData.get(i).getCoordinate()
+					.getLat(), trackPathData.get(i).getCoordinate().getLng()));
 		}
-		options.color(Color.YELLOW);
-		options.width(5);
+		options.color(Color.RED);
+		options.width(8);
 		map.addPolyline(options);
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
-				trackPathData.get(0).getCoordinate().getLat(), trackPathData.get(0)
-						.getCoordinate().getLng()), 15.0f));
+				trackPathData.get(0).getCoordinate().getLat(), trackPathData
+						.get(0).getCoordinate().getLng()), 15.0f));
 	}
 
 	public void setTeackMember(String result) {
-		TrackMemberList = new ArrayList<ListTracker>();
+
+		trackMemberList = new ArrayList<TrackMemberList>();
 		try {
 			// get race track data from database server to set ListAdapter.
 			JSONArray jsonArr = new JSONArray(result);
 
 			for (int i = 0; i < jsonArr.length(); i++) {
-				final ListTracker sched = new ListTracker();
+				final TrackMemberList sched = new TrackMemberList();
 				JSONObject jsonObject = new JSONObject(jsonArr.getString(i));
 
 				/******* Firstly take data in model object ******/
@@ -310,20 +324,26 @@ public class RaceTrackSelectorActivity extends Activity implements
 				sched.setRank(Integer.parseInt(jsonObject.getString("Rank")));
 				sched.setTrackerDir(jsonObject.getString("Trackerdir"));
 				/******** Take Model Object in ArrayList **********/
-				TrackMemberList.add(sched);
+				trackMemberList.add(sched);
 			}
 
 		} catch (JSONException e) {
 
-
 		}
+		printTrackData();
+	}
+
+	private void printTrackData() {
 		String trackMemberString = "";
-		for (int i = 0; i < TrackMemberList.size(); i++) {
-			trackMemberString = trackMemberString + TrackMemberList.get(i).getfId() + "\n";
+		for (int i = 0; i < trackMemberList.size(); i++) {
+			trackMemberString = trackMemberString
+					+ trackMemberList.get(i).getfId() + "\n";
 
 		}
 		Toast.makeText(CustomListView, trackMemberString, Toast.LENGTH_LONG)
 				.show();
+
+		trackList.get(listPosition).setTrackMemberList(trackMemberList);
 	}
 
 	public void cannotConnectToServer() {
@@ -334,30 +354,27 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	@Override
 	public void onClick(View v) {
-		if(v.equals(raceBtn)){
-			if(TrackMemberList==null||trackPathData == null){
+		if (v.equals(raceBtn)) {
+			if (trackMemberList == null || trackPathData == null) {
 				return;
 			}
-			Intent intent = new Intent(this,MapsActivity.class);
-			intent.putExtra("TrackMemberList",TrackMemberList);
-			intent.putExtra("TrackPathData", xmlTrackData);
+			Intent intent = new Intent(this, MapsActivity.class);
+			intent.putExtra("TrackMemberList", trackList.get(listPosition).getTrackMemberList());
+			intent.putExtra("TrackPathData", trackList.get(listPosition).getTrackData());
 			startActivity(intent);
 		}
-		
+
 	}
-
-
-
 
 	@Override
 	public void onDrawerClosed(View arg0) {
-//		System.out.println("Drawer close"+ arg0);
-		
+		// System.out.println("Drawer close"+ arg0);
+
 	}
 
 	@Override
 	public void onDrawerOpened(View arg0) {
-		if(CustomListViewValuesArr.size()>0){
+		if (trackList.size() > 0) {
 			return;
 		}
 		setListData();
@@ -365,16 +382,14 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	@Override
 	public void onDrawerSlide(View arg0, float arg1) {
-//		System.out.println("Drawer slide"+ arg0);
-		
+		// System.out.println("Drawer slide"+ arg0);
+
 	}
 
 	@Override
 	public void onDrawerStateChanged(int arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
-
-
 
 }

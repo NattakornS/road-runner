@@ -25,7 +25,7 @@ public class CustomAdapter extends BaseAdapter   implements OnClickListener {
     private ArrayList data;
     private static LayoutInflater inflater=null;
     public Resources res;
-    ListModel tempValues=null;
+    TrackList tempValues=null;
     int i=0;
     
     /*************  CustomAdapter Constructor *****************/
@@ -99,7 +99,7 @@ public class CustomAdapter extends BaseAdapter   implements OnClickListener {
         {
         	/***** Get each Model object from Arraylist ********/
 	        tempValues=null;
-	        tempValues = (ListModel) data.get(position);
+	        tempValues = (TrackList) data.get(position);
 	        
 	        /************  Set Model values in Holder elements ***********/
 	         holder.text.setText(tempValues.getRaceTrackName());
