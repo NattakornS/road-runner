@@ -26,7 +26,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.senior.roadrunner.racetrack.RaceTrackFragment;
 
 @SuppressLint("NewApi")
 public class MainActivity extends Activity {
@@ -40,7 +39,8 @@ public class MainActivity extends Activity {
 	private String[] mPlanetTitles;
 	private long lastPressedTime;
 	private static final int PERIOD = 2000;
-
+	
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -87,8 +87,12 @@ public class MainActivity extends Activity {
 		};
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
 
+		
+
+		
+		
 		if (savedInstanceState == null) {
-			selectItem(1);
+			selectItem(0);
 		}
 
 		//
@@ -164,19 +168,23 @@ public class MainActivity extends Activity {
 //		Fragment pf = new PickupFragment();
 		// RaceTrackFragment raceTrackFragment = RaceTrackFragment
 		// .createInstacnce();
+		SettingFragment settingFragment = SettingFragment.createInstacnce();
 
 		Bundle args = new Bundle();
 		args.putInt(PlanetFragment.ARG_PLANET_NUMBER, position);
 		fragment.setArguments(args);
 
 		FragmentManager fragmentManager = getFragmentManager();
-
+		
 		if (position == 0) {
 //			fragmentManager.beginTransaction().replace(R.id.content_frame, pf)
 //					.commit();
+			 fragmentManager.beginTransaction()
+			 .replace(R.id.content_frame, settingFragment).commit();
 		} else if (position == 1) {
 			// fragmentManager.beginTransaction()
 			// .replace(R.id.content_frame, raceTrackFragment).commit();
+			
 			Intent i = new Intent(this, RaceTrackSelectorActivity.class);
 			startActivity(i);
 		} else if (position == 2) {
