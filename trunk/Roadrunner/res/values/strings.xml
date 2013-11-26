@@ -18,4 +18,6 @@
     <string name="app_not_available">Sorry, there\'s no web browser available</string>
     <string name="race">Race</string>
 
+    <string name="hello_world">Hello world!</string>
+    <string name="app_id">523495727673676</string>
 </resources>

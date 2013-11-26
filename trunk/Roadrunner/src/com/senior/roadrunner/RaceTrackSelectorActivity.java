@@ -337,7 +337,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 		String trackMemberString = "";
 		for (int i = 0; i < trackMemberList.size(); i++) {
 			trackMemberString = trackMemberString
-					+ trackMemberList.get(i).getfId() + "\n";
+					+ trackMemberList.get(i).getfId()+"\t"+trackMemberList.get(i).getRank() + "\n";
 
 		}
 		Toast.makeText(CustomListView, trackMemberString, Toast.LENGTH_LONG)
