@@ -7,7 +7,6 @@ import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.os.Handler;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -24,7 +23,6 @@ public class HistoryTrack implements Runnable {
 	private GoogleMap map;
 	private Marker marker;
 	private SimpleDateFormat sdf;
-	private Handler handler;
 	private LatLng point;
 	private Activity mapsPage;
 
@@ -32,7 +30,6 @@ public class HistoryTrack implements Runnable {
 		this.map = map;
 		this.mapsPage = mapsPage;
 		sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-		handler = new Handler();
 	}
 
 	public List<LatLngTimeData> getLatLngTimeData() {

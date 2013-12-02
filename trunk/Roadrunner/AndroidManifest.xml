@@ -41,12 +41,17 @@
             </intent-filter>
         </activity>
         <activity
+            android:name="com.senior.roadrunner.finish.FinishActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name="com.senior.roadrunner.MapsActivity"
+            android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen" />
         <activity
             android:name="com.senior.roadrunner.RaceTrackSelectorActivity"
             android:label="Race track"
-            android:parentActivityName="com.senior.roadrunner.MainActivity" >
+            android:parentActivityName="com.senior.roadrunner.MainActivity"
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.senior.roadrunner.MainActivity" />
@@ -62,6 +67,9 @@
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyDzQh4G430RJkrH9W8ocXs_6T9FuJT3Ud4" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
     </application>
 
 </manifest>
