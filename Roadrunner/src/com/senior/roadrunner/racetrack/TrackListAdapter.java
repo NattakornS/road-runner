@@ -18,7 +18,7 @@ import com.senior.roadrunner.R;
 import com.senior.roadrunner.RaceTrackSelectorActivity;
 
 /********* Adapter class extends with BaseAdapter and implements with OnClickListener ************/
-public class CustomAdapter extends BaseAdapter   implements OnClickListener {
+public class TrackListAdapter extends BaseAdapter   implements OnClickListener {
     
 	/*********** Declare Used Variables *********/
     private Activity activity;
@@ -29,7 +29,7 @@ public class CustomAdapter extends BaseAdapter   implements OnClickListener {
     int i=0;
     
     /*************  CustomAdapter Constructor *****************/
-    public CustomAdapter(Activity a, ArrayList d,Resources resLocal) {
+    public TrackListAdapter(Activity a, ArrayList d,Resources resLocal) {
     	
     	/********** Take passed values **********/
         activity = a;

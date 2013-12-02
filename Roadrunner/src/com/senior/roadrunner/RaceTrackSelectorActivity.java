@@ -22,19 +22,13 @@ import android.support.v4.widget.DrawerLayout.DrawerListener;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
-import android.view.View.OnHoverListener;
-import android.view.View.OnSystemUiVisibilityChangeListener;
-import android.view.ViewTreeObserver.OnDrawListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SearchView;
-import android.widget.SlidingDrawer.OnDrawerOpenListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,10 +39,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
-import com.senior.roadrunner.racetrack.CustomAdapter;
+import com.senior.roadrunner.racetrack.TrackListAdapter;
 import com.senior.roadrunner.racetrack.TrackList;
 import com.senior.roadrunner.racetrack.TrackMemberList;
-import com.senior.roadrunner.racetrack.TrackList;
 import com.senior.roadrunner.server.ConnectServer;
 
 @SuppressLint("NewApi")
@@ -59,7 +52,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 	private static final String URLServer = "http://roadrunner-5313180.dx.am/";// "http://192.168.1.111/";//
 																				// 192.168.1.173//http://192.168.1.117/
 	ListView list;
-	CustomAdapter adapter;
+	TrackListAdapter adapter;
 	public Activity CustomListView = null;
 	public ArrayList<TrackList> trackList = new ArrayList<TrackList>();
 	public ArrayList<TrackMemberList> trackMemberList;
@@ -269,7 +262,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 				/******** Take Model Object in ArrayList **********/
 				trackList.add(sched);
 				/**************** Create Custom Adapter *********/
-				adapter = new CustomAdapter(CustomListView, trackList, res);
+				adapter = new TrackListAdapter(CustomListView, trackList, res);
 
 				// set up the drawer's list view with items and click listener
 				mDrawerList.setAdapter(adapter);

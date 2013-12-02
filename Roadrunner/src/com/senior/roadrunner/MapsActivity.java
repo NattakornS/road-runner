@@ -1,8 +1,6 @@
 package com.senior.roadrunner;
 
-import java.io.Serializable;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,14 +42,12 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.senior.roadrunner.data.Coordinate;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
-import com.senior.roadrunner.racetrack.TrackMemberList;
+import com.senior.roadrunner.finish.FinishActivity;
 import com.senior.roadrunner.racetrack.RaceThread;
-import com.senior.roadrunner.racetrack.TrackList;
+import com.senior.roadrunner.racetrack.TrackMemberList;
 import com.senior.roadrunner.server.ConnectServer;
-import com.senior.roadrunner.server.DownloadTask;
 import com.senior.roadrunner.server.UploadTask;
 import com.senior.roadrunner.tools.Distance;
-import com.senior.roadrunner.tools.GPSSpeed;
 import com.senior.roadrunner.tools.PathArea;
 import com.senior.roadrunner.tools.Point;
 import com.senior.roadrunner.tools.Polygon;
@@ -66,7 +62,6 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private static final String savePath = Environment
 			.getExternalStorageDirectory() + "/" + "roadrunner/" + fId + ".xml";
 
-	private static final LatLng LAT_LNG = new LatLng(12, 102);
 	GoogleMap map;
 	LocationManager myLocationManager;
 	// MyLocationListener myLocationListener;
@@ -75,7 +70,6 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private ArrayList<LatLngTimeData> latLngTimeData;
 	private Button btn_load_track;
 	// private HistoryTrack historyTrack;
-	private static final String SDCARD_TRACKER_XML = "/sdcard/tracker.xml";
 	private static final String URLServer = "http://roadrunner-5313180.dx.am/";// "http://192.168.1.111/";
 
 	private Vector<Polygon> polygonsTrack = new Vector<Polygon>();
@@ -104,8 +98,9 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	protected long timeSwap = 0L;
 	protected long finalTime = 0L;
 	private double totalDistance = 0;
-	private TrackList trackList = null;
+	private static ArrayList<TrackMemberList> trackMemberListTemp;
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -113,6 +108,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		Intent intent = getIntent();
 		trackMemberList = (ArrayList<TrackMemberList>) intent
 				.getSerializableExtra("TrackMemberList");
+		trackMemberListTemp = new ArrayList<TrackMemberList>();
+		trackMemberListTemp.addAll(trackMemberList);
 		trackPathData = intent.getStringExtra("TrackPathData");
 		initwidget();
 		loadFile();
@@ -154,7 +151,6 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		setStartPointTracking(true);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void loadFile() {
 
 		for (int i = 0; i < trackMemberList.size(); i++) {
@@ -314,14 +310,17 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			timer();
 			break;
 		case R.id.btn_stop_track:
-			updateDataBase();
+//			updateDataBase();
 			recordCheck = false;
 			myLocationManager.removeUpdates(this);
-			if (latLngTimeData.isEmpty()) {
-				break;
-			}
-			saveTrackData();
-			uploadFile();
+//			if (latLngTimeData.isEmpty()) {
+//				break;
+//			}
+			Intent intent = new Intent(this,FinishActivity.class);
+//			intent.putExtra("TrackMemberList", trackMemberListTemp);
+			startActivity(intent);
+//			saveTrackData();
+//			uploadFile();
 			myHandler.removeCallbacks(updateTimerMethod);
 			break;
 
@@ -357,8 +356,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	}
 
 	private void saveTrackData() {
-		// latLngTimeData = myLocationListener.getLatLngTimeData();
-		System.out.println(savePath);
+		// save file to sdcard
 		TrackDataBase.saveXmlFile(latLngTimeData, savePath);
 		Toast.makeText(getApplicationContext(), "Save data", Toast.LENGTH_SHORT)
 				.show();
@@ -591,5 +589,10 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		// System.out.println("Index : "+ index);
 		List<LatLngTimeData> trackData = TrackDataBase.loadXmlString(result);
 		trackMemberList.get(index).setTrackData(trackData);
+	}
+
+	public static ArrayList<TrackMemberList> getTrackMemberList() {
+		return trackMemberListTemp; 
+		
 	}
 }
