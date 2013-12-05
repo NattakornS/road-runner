@@ -1,5 +1,8 @@
 package com.senior.roadrunner.racetrack;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -7,6 +10,8 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -32,13 +37,17 @@ public class RaceThread extends Thread {
 	private GoogleMap map;
 	private Activity activity;
 	private TrackMemberList listTracker;
+	private Bitmap profileIcon;
 
 	public RaceThread(TrackMemberList listTracker, GoogleMap map, Activity activity) {
 		this.listTracker = listTracker;
-
 		sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 		this.map = map;
 		this.activity = activity;
+		
+
+
+		   
 	}
 
 	@Override
@@ -46,6 +55,18 @@ public class RaceThread extends Thread {
 
 		if (listTracker == null) {
 			return;
+		}
+		String name = "https://graph.facebook.com/"+listTracker.getfId()+"/picture?75=&height=75";
+		URL url_value;
+		try {
+			url_value = new URL(name);
+			profileIcon = BitmapFactory.decodeStream(url_value.openConnection().getInputStream());
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		data = listTracker.getTrackData();
 		for (i = 0; i < data.size(); i++) {
@@ -82,16 +103,16 @@ public class RaceThread extends Thread {
 
 						marker = map.addMarker(new MarkerOptions()
 								.position(point)
-								.icon(BitmapDescriptorFactory.defaultMarker())
-								.title(listTracker.getfId())
+								.icon(BitmapDescriptorFactory.fromBitmap(profileIcon))
+								.title(listTracker.getfName())
 								.snippet("Speed : " + speed + "m/s"));
 						marker.showInfoWindow();
 						Spherical latLngInterpolator = new Spherical();
 						latLngInterpolator.interpolate(5.0f, point, end);
 						MarkerAnimation.animateMarkerToICS(marker, end,
 								latLngInterpolator);
-						map.animateCamera(CameraUpdateFactory.newLatLngZoom(
-								end, 17.0f));
+//						map.animateCamera(CameraUpdateFactory.newLatLngZoom(
+//								end, 17.0f));
 
 					}
 				});

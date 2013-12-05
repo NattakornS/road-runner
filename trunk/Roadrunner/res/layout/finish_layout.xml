@@ -9,17 +9,15 @@
             android:id="@+id/finishPager"
             android:layout_width="match_parent"
             android:layout_height="300dp" />
-        
 
         <ListView
             android:id="@+id/finishListView"
-            android:layout_below="@+id/finishPager"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:divider="@color/blue_gradientS"
-            android:background="@color/blue_gradientE" >
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/finishPager"
+            android:background="@color/blue_gradientE"
+            android:divider="@color/blue_gradientS" >
         </ListView>
-
-        
 
 </RelativeLayout>
