@@ -1,5 +1,10 @@
 package com.senior.roadrunner;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,12 +14,15 @@ import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -32,25 +40,37 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.Request;
+import com.facebook.Response;
+import com.facebook.Session;
+import com.facebook.Session.StatusCallback;
+import com.facebook.model.GraphUser;
+import com.facebook.SessionState;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.SnapshotReadyCallback;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
-import com.senior.roadrunner.racetrack.TrackListAdapter;
 import com.senior.roadrunner.racetrack.TrackList;
+import com.senior.roadrunner.racetrack.TrackListAdapter;
 import com.senior.roadrunner.racetrack.TrackMemberList;
 import com.senior.roadrunner.server.ConnectServer;
+import com.senior.roadrunner.setting.RoadRunnerFacebookSetting;
 
 @SuppressLint("NewApi")
 public class RaceTrackSelectorActivity extends Activity implements
 		SearchView.OnQueryTextListener, SearchView.OnCloseListener,
-		OnClickListener, DrawerListener {
+		OnClickListener, DrawerListener, StatusCallback {
 
+	public static String mapcapPath = Environment
+			.getExternalStorageDirectory() + "/" + "roadrunner/"
+			+ RoadRunnerFacebookSetting.getFacebookId() +".png";
 	private static final String URLServer = "http://roadrunner-5313180.dx.am/";// "http://192.168.1.111/";//
-																				// 192.168.1.173//http://192.168.1.117/
+	private static final String FACEBOOK_INFORMATION_URL = "http://graph.facebook.com/";
+	// 192.168.1.173//http://192.168.1.117/
 	ListView list;
 	TrackListAdapter adapter;
 	public Activity CustomListView = null;
@@ -72,6 +92,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 	private Animation animAlpha;
 	public ArrayList<LatLngTimeData> trackPathData = null;
 	private int listPosition;
+	private Session sessions;
 
 	@SuppressLint("NewApi")
 	@Override
@@ -103,7 +124,57 @@ public class RaceTrackSelectorActivity extends Activity implements
 		raceBtn.setOnClickListener(this);
 		// raceBtn.setAlpha(0.0f);
 		trackDataTxtView = (TextView) findViewById(R.id.track_data_txtview);
+		// facebookGetData();s
 
+	}
+
+	private void facebookGetData() {
+		// session = new Session(this);
+		sessions = Session.getActiveSession();
+		StatusCallback callback = new StatusCallback() {
+			public void call(Session session, SessionState state,
+					Exception exception) {
+				// System.out.println("ERROR"+state +exception);
+				// if (exception != null) {
+				//
+				// new AlertDialog.Builder(getApplicationContext())
+				// .setTitle("Login Fail")
+				// .setMessage(exception.getMessage())
+				// .setPositiveButton("OK", null)
+				// .show();
+				// RaceTrackSelectorActivity.this.sessions = createSession();
+				// return;
+				// }
+				Request.newMeRequest(session, new Request.GraphUserCallback() {
+
+					// callback after Graph API response with user object
+					@Override
+					public void onCompleted(GraphUser user, Response response) {
+						// System.out.println("USER :"+ user);
+						if (user != null) {
+							// lblEmail.setText(user.getName());
+							System.out.println(user.getName() + user.getId());
+						}
+					}
+				}).executeAsync();
+
+			}
+		};
+		// pendingRequest = true;
+		sessions.openForRead(new Session.OpenRequest(this)
+				.setCallback(callback));
+		// System.out.println(Session.getActiveSession().getApplicationId());
+
+	}
+
+	private Session createSession() {
+		Session activeSession = Session.getActiveSession();
+		if (activeSession == null || activeSession.getState().isClosed()) {
+			activeSession = new Session.Builder(this).setApplicationId(
+					"523495727673676").build();
+			Session.setActiveSession(activeSession);
+		}
+		return activeSession;
 	}
 
 	@SuppressLint("NewApi")
@@ -313,16 +384,19 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 				/******* Firstly take data in model object ******/
 				sched.setfId(jsonObject.getString("Fid"));
+				sched.setfName(jsonObject.getString("fName"));
 				sched.setrId(jsonObject.getString("Rid"));
 				sched.setRank(Integer.parseInt(jsonObject.getString("Rank")));
 				sched.setTrackerDir(jsonObject.getString("Trackerdir"));
 				/******** Take Model Object in ArrayList **********/
 				trackMemberList.add(sched);
+
 			}
 
 		} catch (JSONException e) {
 
 		}
+
 		printTrackData();
 	}
 
@@ -330,7 +404,8 @@ public class RaceTrackSelectorActivity extends Activity implements
 		String trackMemberString = "";
 		for (int i = 0; i < trackMemberList.size(); i++) {
 			trackMemberString = trackMemberString
-					+ trackMemberList.get(i).getfId()+"\t"+trackMemberList.get(i).getRank() + "\n";
+					+ trackMemberList.get(i).getfId() + "\t"
+					+ trackMemberList.get(i).getRank() + "\n";
 
 		}
 		Toast.makeText(CustomListView, trackMemberString, Toast.LENGTH_LONG)
@@ -351,9 +426,19 @@ public class RaceTrackSelectorActivity extends Activity implements
 			if (trackMemberList == null || trackPathData == null) {
 				return;
 			}
+
+			try {
+				CaptureMapScreen();
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+			}
+
 			Intent intent = new Intent(this, MapsActivity.class);
-			intent.putExtra("TrackMemberList", trackList.get(listPosition).getTrackMemberList());
-			intent.putExtra("TrackPathData", trackList.get(listPosition).getTrackData());
+			intent.putExtra("TrackMemberList", trackList.get(listPosition)
+					.getTrackMemberList());
+			intent.putExtra("TrackPathData", trackList.get(listPosition)
+					.getTrackData());
 			startActivity(intent);
 		}
 
@@ -385,4 +470,40 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	}
 
+	@Override
+	public void call(Session session, SessionState state, Exception exception) {
+
+	}
+
+	public void CaptureMapScreen() {
+		SnapshotReadyCallback callback = new SnapshotReadyCallback() {
+			Bitmap bitmap;
+
+			@Override
+			public void onSnapshotReady(Bitmap snapshot) {
+				// TODO Auto-generated method stub
+				bitmap = snapshot;
+				try {
+
+					FileOutputStream out = new FileOutputStream(mapcapPath);
+
+					// above "/mnt ..... png" => is a storage path (where image
+					// will be stored) + name of image you can customize as per
+					// your Requirement
+
+					bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
+					RoadRunnerFacebookSetting.setMapScreen(bitmap);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+
+		map.snapshot(callback);
+
+		// myMap is object of GoogleMap +> GoogleMap myMap;
+		// which is initialized in onCreate() =>
+		// myMap = ((SupportMapFragment)
+		// getSupportFragmentManager().findFragmentById(R.id.map_pass_home_call)).getMap();
+	}
 }

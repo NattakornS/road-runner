@@ -2,6 +2,9 @@ package com.senior.roadrunner.finish;
 
 import java.util.ArrayList;
 
+import com.senior.roadrunner.R;
+import com.senior.roadrunner.racetrack.TrackMemberList;
+
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
@@ -14,6 +17,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
+import android.widget.TextView;
 
 public class TabsAdapter extends FragmentPagerAdapter implements TabListener, OnPageChangeListener{
 	private final Context mContext;
@@ -21,6 +25,7 @@ public class TabsAdapter extends FragmentPagerAdapter implements TabListener, On
 	private final ViewPager mViewPager;
 	private final ArrayList<TabInfo> mTabs = new ArrayList<TabInfo>();
 	private final String TAG = "";
+	private TrackMemberList trackMemberList;
 	
 	static final class TabInfo{
 		private final Class<?> clss;
@@ -33,13 +38,15 @@ public class TabsAdapter extends FragmentPagerAdapter implements TabListener, On
 	}
 	
 
-	public TabsAdapter(FragmentActivity activity, ViewPager pager) {
+	public TabsAdapter(FragmentActivity activity, ViewPager pager, TrackMemberList trackMemberList) {
 		super(activity.getSupportFragmentManager());
+		this.trackMemberList = trackMemberList;
 		mContext = activity;
 		mActionBar = activity.getActionBar();
 		mViewPager = pager;
 		mViewPager.setAdapter(this);
 		mViewPager.setOnPageChangeListener(this);
+
 	}
 	
 	public void addTab(Tab tab, Class<?> clss, Bundle args){
@@ -85,6 +92,7 @@ public class TabsAdapter extends FragmentPagerAdapter implements TabListener, On
 		for (int i = 0; i<mTabs.size(); i++){
 			if (mTabs.get(i) == tag){
 				mViewPager.setCurrentItem(i);
+				
 			}
 		}
 	}
@@ -99,7 +107,16 @@ public class TabsAdapter extends FragmentPagerAdapter implements TabListener, On
 	@Override
 	public Fragment getItem(int position) {
 		TabInfo info = mTabs.get(position);
-		return Fragment.instantiate(mContext, info.clss.getName(), info.args);
+//		return Fragment.instantiate(mContext, info.clss.getName(), info.args);
+		if(info.clss.getName().equals(FinishMyListViewFragment.class.getName())){
+			System.out.println("listfragment");
+			return FinishMyListViewFragment.newInstance(trackMemberList);
+			
+		}if(info.clss.getName().equals(FinishMapFragment.class.getName())){
+			return FinishMapFragment.newInstance();
+		}
+	
+		return FinishMyListViewFragment.newInstance(trackMemberList);
 	}
 
 

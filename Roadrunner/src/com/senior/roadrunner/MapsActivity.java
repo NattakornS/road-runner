@@ -1,5 +1,8 @@
 package com.senior.roadrunner;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -14,6 +17,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
@@ -47,6 +52,7 @@ import com.senior.roadrunner.racetrack.RaceThread;
 import com.senior.roadrunner.racetrack.TrackMemberList;
 import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.server.UploadTask;
+import com.senior.roadrunner.setting.RoadRunnerFacebookSetting;
 import com.senior.roadrunner.tools.Distance;
 import com.senior.roadrunner.tools.PathArea;
 import com.senior.roadrunner.tools.Point;
@@ -57,9 +63,9 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		LocationListener
 // OnLocationChangedListener
 {
-	private static final String rId = "3";
-	private static final String fId = "1234456";
-	private static final String savePath = Environment
+	public static String rId = "";
+	public static final String fId = RoadRunnerFacebookSetting.getFacebookId();
+	public static final String savePath = Environment
 			.getExternalStorageDirectory() + "/" + "roadrunner/" + fId + ".xml";
 
 	GoogleMap map;
@@ -70,7 +76,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private ArrayList<LatLngTimeData> latLngTimeData;
 	private Button btn_load_track;
 	// private HistoryTrack historyTrack;
-	private static final String URLServer = "http://roadrunner-5313180.dx.am/";// "http://192.168.1.111/";
+	public static final String URLServer = "http://roadrunner-5313180.dx.am/";// "http://192.168.1.111/";
 
 	private Vector<Polygon> polygonsTrack = new Vector<Polygon>();
 	private Polygon polygonStart;
@@ -83,7 +89,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private boolean recordCheck = false;
 	private ConnectServer connectServer;
 	private Polygon polygonFinish;
-	private ArrayList<TrackMemberList> trackMemberList;
+	private static ArrayList<TrackMemberList> trackMemberList;
 	private String trackPathData;
 	private TextView txt_current_distace;
 	private TextView txt_current_speed;
@@ -110,6 +116,34 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 				.getSerializableExtra("TrackMemberList");
 		trackMemberListTemp = new ArrayList<TrackMemberList>();
 		trackMemberListTemp.addAll(trackMemberList);
+		//set current Rid
+		rId=trackMemberList.get(0).getrId();
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				
+				for (int i = 0; i < trackMemberList.size(); i++) {
+					
+					String name = "https://graph.facebook.com/"+trackMemberList.get(i).getfId()+"/picture?75=&height=75";
+					URL url_value;
+					try {
+						url_value = new URL(name);
+						Bitmap profileIcon = BitmapFactory.decodeStream(url_value.openConnection().getInputStream());
+						trackMemberList.get(i).setProfileImg(profileIcon );
+					} catch (MalformedURLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+				}
+				
+				
+			}
+		}).start();
 		trackPathData = intent.getStringExtra("TrackPathData");
 		initwidget();
 		loadFile();
@@ -319,8 +353,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			Intent intent = new Intent(this,FinishActivity.class);
 //			intent.putExtra("TrackMemberList", trackMemberListTemp);
 			startActivity(intent);
-//			saveTrackData();
-//			uploadFile();
+			saveTrackData();
+
 			myHandler.removeCallbacks(updateTimerMethod);
 			break;
 
@@ -377,10 +411,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	}
 
-	private void uploadFile() {
-		UploadTask uploadTask = new UploadTask(this);
-		uploadTask.execute(savePath);
-	}
+
 
 	private void raceThread() {
 		// List<LatLngTimeData> data = TrackDataBase
@@ -592,7 +623,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	}
 
 	public static ArrayList<TrackMemberList> getTrackMemberList() {
-		return trackMemberListTemp; 
+		return trackMemberList; 
 		
 	}
 }

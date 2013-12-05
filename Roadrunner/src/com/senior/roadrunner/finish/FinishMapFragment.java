@@ -13,4 +13,10 @@ public class FinishMapFragment extends Fragment {
 		View rootView = inflater.inflate(R.layout.activity_pickup, container, false);
 		return rootView;
 	}
+
+	public static Fragment newInstance() {
+		FinishMapFragment finishMapFragment = new FinishMapFragment();
+
+        return finishMapFragment;
+	}
 }

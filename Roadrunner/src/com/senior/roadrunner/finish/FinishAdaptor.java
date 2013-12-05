@@ -1,9 +1,14 @@
 package com.senior.roadrunner.finish;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +28,7 @@ public class FinishAdaptor extends BaseAdapter implements OnClickListener{
 	private ArrayList<TrackMemberList> data;
 	private LayoutInflater inflater;
 	private TrackMemberList tempValues;
+	private Bitmap profileIcon;
 
 	public FinishAdaptor(FinishActivity finishActivity, ArrayList<TrackMemberList> trackMemberList) {
         activity = finishActivity;
@@ -89,12 +95,23 @@ public class FinishAdaptor extends BaseAdapter implements OnClickListener{
         	/***** Get each Model object from Arraylist ********/
 	        tempValues=null;
 	        tempValues = data.get(position);
-	        
+//	        String name = "https://graph.facebook.com/"+tempValues.getfId()+"/picture?75=&height=75";
+//			URL url_value;
+//			try {
+//				url_value = new URL(name);
+//				profileIcon = BitmapFactory.decodeStream(url_value.openConnection().getInputStream());
+//			} catch (MalformedURLException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 	        /************  Set Model values in Holder elements ***********/
-	         holder.nameTxt.setText(tempValues.getfId());
+	         holder.nameTxt.setText(tempValues.getfName());
 	         holder.placeTxt.setText(tempValues.getRank()+"");
 //	         holder.durationTxt.setText(tempValues.getRank());3
-//	         holder.image.setImageResource(res.getIdentifier("com.androidexample.customlistview:drawable/"+tempValues.getImage(),null,null));
+	         holder.image.setImageBitmap(tempValues.getProfileImg());
 	         
 	         /******** Set Item Click Listner for LayoutInflater for each row ***********/
 	         vi.setOnClickListener(new OnItemClickListener(position));

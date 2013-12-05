@@ -49,6 +49,7 @@ import com.facebook.widget.FacebookDialog;
 import com.facebook.widget.ProfilePictureView;
 import com.facebook.widget.UserSettingsFragment;
 import com.senior.roadrunner.finish.FinishActivity;
+import com.senior.roadrunner.setting.RoadRunnerFacebookSetting;
 
 
 @SuppressLint("NewApi")
@@ -421,6 +422,7 @@ public class MainActivity extends FragmentActivity {
 			// .replace(R.id.content_frame, raceTrackFragment).commit();
 			
 			Intent i = new Intent(this, RaceTrackSelectorActivity.class);
+//			i.putExtra(name, value)
 			startActivity(i);
 		} else if (position == 2) {
 			onClickPostStatusUpdate();
@@ -461,29 +463,31 @@ public class MainActivity extends FragmentActivity {
       				     if (user != null) {
 //      				    	 lblEmail.setText(user.getName());
       				    	 System.out.println(user.getName());
+      				    	 RoadRunnerFacebookSetting.setFacebookId(user.getId());
+      				    	 RoadRunnerFacebookSetting.setFacebookName(user.getName());
       				     }
       				   }
       				 }).executeAsync();
-            		 Request.newMyFriendsRequest(session, new GraphUserListCallback() {
-
-            	            @Override
-            	            public void onCompleted(List<GraphUser> users, Response response) {
-            	                // TODO Auto-generated method stub
-            	                if(response.getError()==null)
-            	                {
-            	                    for (int i = 0; i < users.size(); i++) {
-//            	                    	System.out.println("users "+users.get(i).getName());
-            	                        Log.e("users", "users "+users.get(i).getName());
-            	                    }
-            	                }
-            	                else
-            	                {
-//            	                    Toast.makeText(MainActivity.this, response.getError().getErrorMessage(), Toast.LENGTH_SHORT).show();
-            	                }
-            	            }
-            	        }).executeAsync();
+//            		 Request.newMyFriendsRequest(session, new GraphUserListCallback() {
+//
+//            	            @Override
+//            	            public void onCompleted(List<GraphUser> users, Response response) {
+//            	                // TODO Auto-generated method stub
+//            	                if(response.getError()==null)
+//            	                {
+//            	                    for (int i = 0; i < users.size(); i++) {
+////            	                    	System.out.println("users "+users.get(i).getName());
+//            	                        Log.e("users", "users "+users.get(i).getName());
+//            	                    }
+//            	                }
+//            	                else
+//            	                {
+////            	                    Toast.makeText(MainActivity.this, response.getError().getErrorMessage(), Toast.LENGTH_SHORT).show();
+//            	                }
+//            	            }
+//            	        }).executeAsync();
             	}
-                Log.d("LoginUsingLoginFragmentActivity", String.format("New session state: %s", state.toString()));
+//                Log.d("LoginUsingLoginFragmentActivity", String.format("New session state: %s", state.toString()));
             }
         });
 	}
