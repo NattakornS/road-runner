@@ -320,12 +320,13 @@ public class PathArea {
 	}
 
 	private static Vector<Point> intersectionClean(Vector<Point> pointLR) {
-		Vector<Point> intersectionPoints = new Vector<Point>();
+//		Vector<Point> intersectionPoints = new Vector<Point>();
 
 		if (pointLR == null) {
 			return null;
 		}
-		intersectionPoints.add(pointLR.get(0));
+
+//		intersectionPoints.add(pointLR.get(0));
 		for (int i = 3; i < pointLR.size(); i++) {
 			Point intersectPoint = null;
 			Line lineL1 = new Line(pointLR.get(i - 3), pointLR.get(i - 2));
