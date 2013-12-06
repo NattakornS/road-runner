@@ -107,10 +107,14 @@ public class FinishAdaptor extends BaseAdapter implements OnClickListener{
 //				// TODO Auto-generated catch block
 //				e.printStackTrace();
 //			}
+	        int seconds = (int) (tempValues.getDuration() / 1000);
+			int minutes = seconds / 60;
+			seconds = seconds % 60;
 	        /************  Set Model values in Holder elements ***********/
 	         holder.nameTxt.setText(tempValues.getfName());
 	         holder.placeTxt.setText(tempValues.getRank()+"");
-//	         holder.durationTxt.setText(tempValues.getRank());3
+	         holder.durationTxt.setText("" + minutes + ":"
+						+ String.format("%02d", seconds));
 	         holder.image.setImageBitmap(tempValues.getProfileImg());
 	         
 	         /******** Set Item Click Listner for LayoutInflater for each row ***********/

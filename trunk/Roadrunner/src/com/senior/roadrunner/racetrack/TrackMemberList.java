@@ -15,7 +15,7 @@ public class TrackMemberList implements Serializable {
 	private String rId = "";
 	private String fId = "";
 	private String fName ="";
-	private int duration;
+	private long duration;
 	private int calories;
 	private int rank;
 	private String trackerDir = "";
@@ -71,11 +71,11 @@ public class TrackMemberList implements Serializable {
 		this.fName = fName;
 	}
 
-	public int getDuration() {
+	public long getDuration() {
 		return duration;
 	}
 
-	public void setDuration(int duration) {
+	public void setDuration(long duration) {
 		this.duration = duration;
 	}
 

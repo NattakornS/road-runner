@@ -388,6 +388,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 				sched.setrId(jsonObject.getString("Rid"));
 				sched.setRank(Integer.parseInt(jsonObject.getString("Rank")));
 				sched.setTrackerDir(jsonObject.getString("Trackerdir"));
+				sched.setDuration(Integer.parseInt(jsonObject.getString("Time")));
 				/******** Take Model Object in ArrayList **********/
 				trackMemberList.add(sched);
 

@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.facebook.AppEventsLogger;
 import com.facebook.FacebookAuthorizationException;
@@ -41,6 +42,7 @@ import com.senior.roadrunner.MapsActivity;
 import com.senior.roadrunner.R;
 import com.senior.roadrunner.RaceTrackSelectorActivity;
 import com.senior.roadrunner.racetrack.TrackMemberList;
+import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.server.UploadTask;
 import com.senior.roadrunner.setting.RoadRunnerFacebookSetting;
 
@@ -108,6 +110,8 @@ public class FinishActivity extends FragmentActivity {
 			Log.d("HelloFacebook", "Success!");
 		}
 	};
+
+	private TrackMemberList myTrack;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -236,11 +240,17 @@ public class FinishActivity extends FragmentActivity {
 
 	private ShareDialogBuilder createShareDialogBuilder() {
 
-		 return new FacebookDialog.ShareDialogBuilder(this)
+		
+		 List<String> friends = new ArrayList<String>();
+		 for (int i = 0; i < trackMemberList.size(); i++) {
+			friends.add(trackMemberList.get(i).getfName());
+		}
+		return new FacebookDialog.ShareDialogBuilder(this)
 		 .setName("Roadrunner")
 		 .setDescription("The 'Road Runner' Running and race application")
-		 .setLink(MapsActivity.URLServer+"tracker/" + MapsActivity.rId + "/"+RoadRunnerFacebookSetting.getFacebookId() +".png");
-//		 .setLink("https://www.facebook.com/roadrunner5313180");
+		 .setPicture(MapsActivity.URLServer+"tracker/" + MapsActivity.rId + "/"+RoadRunnerFacebookSetting.getFacebookId() +".png")
+		 .setFriends(friends )
+		 .setLink("https://www.facebook.com/roadrunner5313180");
 	}
 
 	private void postStatusUpdate() {
@@ -375,7 +385,12 @@ public class FinishActivity extends FragmentActivity {
 			tt.setRank(2);
 			trackMemberList.add(tt);
 		}
-		mTabsAdapter = new TabsAdapter(this, pager, trackMemberList.get(0));
+		for (int i = 0; i < trackMemberList.size()	; i++) {
+			if(trackMemberList.get(i).getfName().equals(RoadRunnerFacebookSetting.getFacebookName())){
+				myTrack = trackMemberList.get(i);
+			}
+		}
+		mTabsAdapter = new TabsAdapter(this, pager, myTrack);
 		// mTabsAdapter.addTab(bar.newTab().setText("List Fragment 1"),
 		// List_View.class, null);
 		mTabsAdapter.addTab(bar.newTab().setText("Result"),
@@ -448,9 +463,25 @@ public class FinishActivity extends FragmentActivity {
 //				    .build();
 //				uiHelper.trackPendingDialogCall(shareDialog.present());
 		uploadFile();
+		updateDataBase();
 		onClickPostStatusUpdate(); //Post to facebook
 //		onClickPostPhoto();
 		// initFragment();
+	}
+
+	private void updateDataBase() {
+		// Update DataBase Server when finish racing
+
+			ConnectServer connectServer = new ConnectServer(this, MapsActivity.URLServer
+					+ "/connect_server.php");
+			connectServer.addValue("Fid", myTrack.getfId());
+			connectServer.addValue("Rid", myTrack.getrId());
+			connectServer.addValue("Trackerdir", myTrack.getTrackerDir());
+			connectServer.addValue("Rank", myTrack.getRank()+"");
+			connectServer.addValue("Time", myTrack.getDuration()+"");
+			connectServer.addValue("fName", myTrack.getfName());
+			connectServer.execute();
+		
 	}
 
 	public void onItemClick(int mPosition) {
@@ -459,8 +490,14 @@ public class FinishActivity extends FragmentActivity {
 	}
 	private void uploadFile() {
 		UploadTask uploadTask = new UploadTask(this);
-		uploadTask.execute(MapsActivity.savePath);
-		UploadTask uploadPicTask = new UploadTask(this);
-		uploadPicTask.execute(RaceTrackSelectorActivity.mapcapPath);
+		String exString[] = {MapsActivity.savePath,RaceTrackSelectorActivity.mapcapPath};
+		uploadTask.execute(exString);
+	}
+
+	public void setDataBaseServerResponse(String result) {
+		// DataBase response result
+		Log.d("Response DataBase : ", result);
+		Toast.makeText(this, "Database : "+result, 500);
+		
 	}
 }
