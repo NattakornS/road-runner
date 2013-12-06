@@ -6,6 +6,8 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -51,7 +53,6 @@ import com.senior.roadrunner.finish.FinishActivity;
 import com.senior.roadrunner.racetrack.RaceThread;
 import com.senior.roadrunner.racetrack.TrackMemberList;
 import com.senior.roadrunner.server.ConnectServer;
-import com.senior.roadrunner.server.UploadTask;
 import com.senior.roadrunner.setting.RoadRunnerFacebookSetting;
 import com.senior.roadrunner.tools.Distance;
 import com.senior.roadrunner.tools.PathArea;
@@ -116,32 +117,45 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 				.getSerializableExtra("TrackMemberList");
 		trackMemberListTemp = new ArrayList<TrackMemberList>();
 		trackMemberListTemp.addAll(trackMemberList);
-		//set current Rid
-		rId=trackMemberList.get(0).getrId();
+		// set current Rid
+		rId = trackMemberList.get(0).getrId();
 		new Thread(new Runnable() {
-			
+
 			@Override
 			public void run() {
-				
-				for (int i = 0; i < trackMemberList.size(); i++) {
-					
-					String name = "https://graph.facebook.com/"+trackMemberList.get(i).getfId()+"/picture?75=&height=75";
+				try {
 					URL url_value;
-					try {
+					Bitmap profileIcon;
+					String gurl = "https://graph.facebook.com/"
+							+ RoadRunnerFacebookSetting.getFacebookId()
+							+ "/picture?75=&height=75";
+					url_value = new URL(gurl);
+					profileIcon = BitmapFactory
+							.decodeStream(url_value.openConnection()
+									.getInputStream());
+					RoadRunnerFacebookSetting.setProfileImg(profileIcon);
+					for (int i = 0; i < trackMemberList.size(); i++) {
+
+						String name = "https://graph.facebook.com/"
+								+ trackMemberList.get(i).getfId()
+								+ "/picture?75=&height=75";
+						
+
 						url_value = new URL(name);
-						Bitmap profileIcon = BitmapFactory.decodeStream(url_value.openConnection().getInputStream());
-						trackMemberList.get(i).setProfileImg(profileIcon );
-					} catch (MalformedURLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						profileIcon = BitmapFactory
+								.decodeStream(url_value.openConnection()
+										.getInputStream());
+						trackMemberList.get(i).setProfileImg(profileIcon);
+
 					}
-					
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-				
-				
+
 			}
 		}).start();
 		trackPathData = intent.getStringExtra("TrackPathData");
@@ -344,16 +358,19 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			timer();
 			break;
 		case R.id.btn_stop_track:
-//			updateDataBase();
+			// updateDataBase();
 			recordCheck = false;
 			myLocationManager.removeUpdates(this);
-//			if (latLngTimeData.isEmpty()) {
-//				break;
-//			}
-			Intent intent = new Intent(this,FinishActivity.class);
-//			intent.putExtra("TrackMemberList", trackMemberListTemp);
-			startActivity(intent);
+			// if (latLngTimeData.isEmpty()) {
+			// break;
+			// }
+			// Save Track to file and set to trackMemberlist and sort by
+			// duration time.
 			saveTrackData();
+
+			Intent intent = new Intent(this, FinishActivity.class);
+			// intent.putExtra("TrackMemberList", trackMemberListTemp);
+			startActivity(intent);
 
 			myHandler.removeCallbacks(updateTimerMethod);
 			break;
@@ -394,24 +411,54 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		TrackDataBase.saveXmlFile(latLngTimeData, savePath);
 		Toast.makeText(getApplicationContext(), "Save data", Toast.LENGTH_SHORT)
 				.show();
-
+		TrackMemberList myTrack = new TrackMemberList();
+		myTrack.setCalories(0);
+		myTrack.setDuration(finalTime);
+		myTrack.setfId(fId);
+		myTrack.setfName(RoadRunnerFacebookSetting.getFacebookName());
+		myTrack.setProfileImg(RoadRunnerFacebookSetting.getProfileIcon());
+//		myTrack.setRank(rank);
+		myTrack.setrId(rId);
+		myTrack.setTrackData(latLngTimeData);
+		myTrack.setTrackerDir("racetrack/"+rId+"/"+RoadRunnerFacebookSetting.getFacebookId()+".xml");
+		trackMemberList.add(myTrack);
+		
+		for (int i = 0; i < trackMemberList.size(); i++) {
+			System.out.println(trackMemberList.get(i).getDuration());
+		}
+		Collections.sort(trackMemberList, new Comparator<TrackMemberList>() {
+			@Override
+			public int compare(TrackMemberList c1, TrackMemberList c2) {
+				return new Double(c1.getDuration()).compareTo(new Double(c2
+						.getDuration()));
+			}
+		});
+		for (int i = 0; i < trackMemberList.size(); i++) {
+			System.out.println(trackMemberList.get(i).getDuration());
+			trackMemberList.get(i).setRank(i+1);
+		}
 	}
 
 	private void updateDataBase() {
 		connectServer = new ConnectServer(this,
 				"http://192.168.1.105/connect_server.php");
-
+		// $strFid = $_POST["Fid"];
+		// $strRid = $_POST["Rid"];
+		// $strTrackerdir = $_POST["Trackerdir"];
+		// $strRank = $_POST["Rank"];
+		// $strTime = $_POST["Time"];
+		// $strfName = $_POST["fName"];
 		connectServer.addValue("Fid", fId);
 		connectServer.addValue("Rid", rId);
 		connectServer.addValue("Trackerdir", "tracker/" + rId + "/" + fId
 				+ ".xml");
 		connectServer.addValue("Rank", "5");
+		connectServer.addValue("Time", "");
+		connectServer.addValue("fName", "");
 		connectServer.setRequestTag(ConnectServer.DATA_UPDATE);
 		connectServer.execute();
 
 	}
-
-
 
 	private void raceThread() {
 		// List<LatLngTimeData> data = TrackDataBase
@@ -623,7 +670,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	}
 
 	public static ArrayList<TrackMemberList> getTrackMemberList() {
-		return trackMemberList; 
-		
+		return trackMemberList;
+
 	}
 }

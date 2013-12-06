@@ -25,6 +25,7 @@ import android.util.Log;
 import com.senior.roadrunner.MapsActivity;
 import com.senior.roadrunner.R;
 import com.senior.roadrunner.RaceTrackSelectorActivity;
+import com.senior.roadrunner.finish.FinishActivity;
 
 public class ConnectServer extends AsyncTask<String, Integer, String> {
 	
@@ -137,8 +138,7 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 				case 4:((MapsActivity) context).setList(result);break;
 				case 3:((MapsActivity) context).setMemberTrack(result,index);break;
 				}
-			}
-			if (context instanceof RaceTrackSelectorActivity) {
+			}else if (context instanceof RaceTrackSelectorActivity) {
 				switch (requestTag) {
 				case 0:
 					((RaceTrackSelectorActivity) context).setTrackList(result);
@@ -151,7 +151,8 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 					break;
 //					default : ((RaceTrackSelectorActivity) context).setTeackMember(result);
 				}
-
+			}else if (context instanceof FinishActivity) {
+				((FinishActivity)context).setDataBaseServerResponse(result);
 			}
 
 			// à¸–à¹?à¸²à¹€à¸?à¸·à¹?à¸­à¸¡à¸•à¹?à¸­à¸?à¸±à¸? server

@@ -18,6 +18,9 @@ public class FinishMyListViewFragment extends Fragment {
 		FinishMyListViewFragment finishMyListViewFragment = new FinishMyListViewFragment();
 		Bundle bundle = new Bundle();
 		bundle.putString("rank", trackMemberList.getRank()+"");
+//		bundle.putString("avgkph", trackMemberList.getRank()+"");
+		bundle.putLong("duration", trackMemberList.getDuration());
+//		bundle.putString("calories", trackMemberList.getRank()+"");
 		finishMyListViewFragment.setArguments(bundle);
 		return finishMyListViewFragment;
 	}
@@ -49,11 +52,16 @@ public class FinishMyListViewFragment extends Fragment {
 				.findViewById(R.id.finish_my_name_txt);
 		finishCaloriesTxtView = (TextView) rootView
 				.findViewById(R.id.finish_my_calories_txt);
+		long mils = getArguments().getLong("duration");
+        int seconds = (int) (mils / 1000);
+		int minutes = seconds / 60;
+		seconds = seconds % 60;
 		finishPlaceTxtView.setText(getArguments().getString("rank"));
 		finishAvgkphTxtView.setText("8");
 		finishCaloriesTxtView.setText("300");
 		finishNameTxtView.setText(RoadRunnerFacebookSetting.getFacebookName());
-		finishDurationTxtView.setText("10.00");
+		finishDurationTxtView.setText("" + minutes + ":"
+				+ String.format("%02d", seconds));
 
 		return rootView;
 	}
