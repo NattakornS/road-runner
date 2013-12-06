@@ -172,8 +172,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 		// map = supportMapFragment.getMap();
 		// map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-		map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
-				13.793888, 100.324146), 15.0f));
+
 
 		// map.setMyLocationEnabled(true);
 		// CircleOptions options = new CircleOptions();
@@ -283,6 +282,9 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		}
 		polygonFinishOptions.fillColor(Color.BLACK);
 		map.addPolygon(polygonFinishOptions);
+		map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
+				points.get(0).x, points.get(0).y), 15.0f));
+
 
 	}
 
@@ -420,7 +422,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 //		myTrack.setRank(rank);
 		myTrack.setrId(rId);
 		myTrack.setTrackData(latLngTimeData);
-		myTrack.setTrackerDir("racetrack/"+rId+"/"+RoadRunnerFacebookSetting.getFacebookId()+".xml");
+		myTrack.setTrackerDir("tracker/"+rId+"/"+RoadRunnerFacebookSetting.getFacebookId()+".xml");
 		trackMemberList.add(myTrack);
 		
 		for (int i = 0; i < trackMemberList.size(); i++) {
