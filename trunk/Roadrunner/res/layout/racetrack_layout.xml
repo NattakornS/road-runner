@@ -34,12 +34,12 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentRight="true"
             android:background="@drawable/blue_menu_btn"
-            android:text="Race" />
+            android:text="Go" />
     </RelativeLayout>
 
     <ListView
         android:id="@+id/right_drawer"
-        android:layout_width="240dp"
+        android:layout_width="200dp"
         android:layout_height="match_parent"
         android:layout_gravity="right"
         android:background="#111"

@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import com.senior.roadrunner.R;
 import com.senior.roadrunner.racetrack.TrackMemberList;
-import com.senior.roadrunner.setting.RoadRunnerFacebookSetting;
+import com.senior.roadrunner.setting.RoadRunnerSetting;
 
 public class FinishMyListViewFragment extends Fragment {
 
@@ -59,7 +59,7 @@ public class FinishMyListViewFragment extends Fragment {
 		finishPlaceTxtView.setText(getArguments().getString("rank"));
 		finishAvgkphTxtView.setText("8");
 		finishCaloriesTxtView.setText("300");
-		finishNameTxtView.setText(RoadRunnerFacebookSetting.getFacebookName());
+		finishNameTxtView.setText(RoadRunnerSetting.getFacebookName());
 		finishDurationTxtView.setText("" + minutes + ":"
 				+ String.format("%02d", seconds));
 

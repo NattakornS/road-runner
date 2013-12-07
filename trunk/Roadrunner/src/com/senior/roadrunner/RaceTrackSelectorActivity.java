@@ -50,7 +50,11 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.SnapshotReadyCallback;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
@@ -58,7 +62,7 @@ import com.senior.roadrunner.racetrack.TrackList;
 import com.senior.roadrunner.racetrack.TrackListAdapter;
 import com.senior.roadrunner.racetrack.TrackMemberList;
 import com.senior.roadrunner.server.ConnectServer;
-import com.senior.roadrunner.setting.RoadRunnerFacebookSetting;
+import com.senior.roadrunner.setting.RoadRunnerSetting;
 
 @SuppressLint("NewApi")
 public class RaceTrackSelectorActivity extends Activity implements
@@ -67,7 +71,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	public static String mapcapPath = Environment
 			.getExternalStorageDirectory() + "/" + "roadrunner/"
-			+ RoadRunnerFacebookSetting.getFacebookId() +".png";
+			+ RoadRunnerSetting.getFacebookId() +".png";
 	private static final String URLServer = "http://roadrunner-5313180.dx.am/";// "http://192.168.1.111/";//
 	private static final String FACEBOOK_INFORMATION_URL = "http://graph.facebook.com/";
 	// 192.168.1.173//http://192.168.1.117/
@@ -357,15 +361,34 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	// Drawing on map function.
 	public void drawTrackPath() {
+		
 		map.clear();
 		PolylineOptions options = new PolylineOptions();
+		MarkerOptions startMarker;
+		MarkerOptions endMarker;
+		
 		for (int i = 0; i < trackPathData.size(); i++) {
-			options.add(new LatLng(trackPathData.get(i).getCoordinate()
-					.getLat(), trackPathData.get(i).getCoordinate().getLng()));
+			LatLng point = new LatLng(trackPathData.get(i).getCoordinate()
+					.getLat(), trackPathData.get(i).getCoordinate().getLng());
+			if(i==0){
+				startMarker=new MarkerOptions()
+				.position(point)
+				.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+				.title("Start");
+				map.addMarker(startMarker);
+			}if(i==trackPathData.size()-1){
+				endMarker=new MarkerOptions()
+				.position(point)
+				.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+				.title("End");
+				map.addMarker(endMarker);
+			}
+			options.add(point);
 		}
 		options.color(Color.RED);
 		options.width(8);
 		map.addPolyline(options);
+		
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
 				trackPathData.get(0).getCoordinate().getLat(), trackPathData
 						.get(0).getCoordinate().getLng()), 15.0f));
@@ -405,11 +428,10 @@ public class RaceTrackSelectorActivity extends Activity implements
 		String trackMemberString = "";
 		for (int i = 0; i < trackMemberList.size(); i++) {
 			trackMemberString = trackMemberString
-					+ trackMemberList.get(i).getfId() + "\t"
-					+ trackMemberList.get(i).getRank() + "\n";
+					+ trackMemberList.get(i).getRank()+" "+trackMemberList.get(i).getfName() + "\n";
 
 		}
-		Toast.makeText(CustomListView, trackMemberString, Toast.LENGTH_LONG)
+		Toast.makeText(CustomListView, trackMemberString, 3000)
 				.show();
 
 		trackList.get(listPosition).setTrackMemberList(trackMemberList);
@@ -493,7 +515,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 					// your Requirement
 
 					bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
-					RoadRunnerFacebookSetting.setMapScreen(bitmap);
+					RoadRunnerSetting.setMapScreen(bitmap);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

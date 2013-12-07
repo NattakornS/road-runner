@@ -49,7 +49,7 @@ import com.facebook.widget.FacebookDialog;
 import com.facebook.widget.ProfilePictureView;
 import com.facebook.widget.UserSettingsFragment;
 import com.senior.roadrunner.finish.FinishActivity;
-import com.senior.roadrunner.setting.RoadRunnerFacebookSetting;
+import com.senior.roadrunner.setting.RoadRunnerSetting;
 
 
 @SuppressLint("NewApi")
@@ -463,8 +463,8 @@ public class MainActivity extends FragmentActivity {
       				     if (user != null) {
 //      				    	 lblEmail.setText(user.getName());
       				    	 System.out.println(user.getName());
-      				    	 RoadRunnerFacebookSetting.setFacebookId(user.getId());
-      				    	 RoadRunnerFacebookSetting.setFacebookName(user.getName());
+      				    	 RoadRunnerSetting.setFacebookId(user.getId());
+      				    	 RoadRunnerSetting.setFacebookName(user.getName());
       				     }
       				   }
       				 }).executeAsync();

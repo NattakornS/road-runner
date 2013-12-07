@@ -44,7 +44,7 @@ import com.senior.roadrunner.RaceTrackSelectorActivity;
 import com.senior.roadrunner.racetrack.TrackMemberList;
 import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.server.UploadTask;
-import com.senior.roadrunner.setting.RoadRunnerFacebookSetting;
+import com.senior.roadrunner.setting.RoadRunnerSetting;
 
 public class FinishActivity extends FragmentActivity {
 	private int imageArra[] = { R.drawable.action_search,
@@ -120,10 +120,10 @@ public class FinishActivity extends FragmentActivity {
 		// set Uihelper to shared content
 		uiHelper = new UiLifecycleHelper(this, callback);
 		uiHelper.onCreate(savedInstanceState);
-		// Intent intent = getIntent();
-		// trackMemberList = (ArrayList<TrackMemberList>) intent
-		// .getSerializableExtra("TrackMemberList");
-		trackMemberList = MapsActivity.getTrackMemberList();
+		 Intent intent = getIntent();
+		 trackMemberList = (ArrayList<TrackMemberList>) intent
+		 .getSerializableExtra("TrackMemberList");
+//		trackMemberList = MapsActivity.getTrackMemberList();
 		if (trackMemberList != null) {
 			FinishAdaptor aa = new FinishAdaptor(this, trackMemberList);
 			final ListView ll = (ListView) findViewById(R.id.finishListView);
@@ -248,7 +248,7 @@ public class FinishActivity extends FragmentActivity {
 		return new FacebookDialog.ShareDialogBuilder(this)
 		 .setName("Roadrunner")
 		 .setDescription("The 'Road Runner' Running and race application")
-		 .setPicture(MapsActivity.URLServer+"tracker/" + MapsActivity.rId + "/"+RoadRunnerFacebookSetting.getFacebookId() +".png")
+		 .setPicture(MapsActivity.URLServer+"tracker/" + MapsActivity.rId + "/"+RoadRunnerSetting.getFacebookId() +".png")
 		 .setFriends(friends )
 		 .setLink("https://www.facebook.com/roadrunner5313180");
 	}
@@ -294,7 +294,7 @@ public class FinishActivity extends FragmentActivity {
 //	        	rdnr.setProperty("image", "https://example.com/cooking-app/meal/Shrimp-Curry.html");
 //	        	rdnr.setProperty("description", "...recipe text...");
 
-	        	Bitmap bitmap1 = RoadRunnerFacebookSetting.getMapScreen();
+	        	Bitmap bitmap1 = RoadRunnerSetting.getMapScreen();
 	        	List<Bitmap> images = new ArrayList<Bitmap>();
 	        	images.add(bitmap1);
 
@@ -386,7 +386,7 @@ public class FinishActivity extends FragmentActivity {
 			trackMemberList.add(tt);
 		}
 		for (int i = 0; i < trackMemberList.size()	; i++) {
-			if(trackMemberList.get(i).getfName().equals(RoadRunnerFacebookSetting.getFacebookName())){
+			if(trackMemberList.get(i).getfName().equals(RoadRunnerSetting.getFacebookName())){
 				myTrack = trackMemberList.get(i);
 			}
 		}

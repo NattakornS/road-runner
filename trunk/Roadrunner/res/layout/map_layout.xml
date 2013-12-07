@@ -8,27 +8,37 @@
     android:rowCount="3"
     tools:context=".MapsActivity" >
 
+    <fragment
+        android:id="@+id/maps"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        class="com.google.android.gms.maps.MapFragment" />
+
     <LinearLayout
         android:id="@+id/gageLayout"
         android:layout_width="match_parent"
-        android:layout_height="110dp"
-        android:background="@color/white_gage"
-        android:gravity="fill"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true" >
+        android:layout_margin="10dp"
+        android:background="@drawable/blue_menu_btn"
+        android:gravity="fill"
+         >
 
         <LinearLayout
             android:id="@+id/col1"
             android:layout_width="match_parent"
             android:layout_height="fill_parent"
             android:layout_weight="2.4"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:dividerPadding="10dp" >
 
             <LinearLayout
                 android:id="@+id/col1_row1"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical" >
+                android:layout_margin="5dp"
+                android:gravity="center" >
 
                 <ImageView
                     android:layout_width="32dp"
@@ -36,11 +46,11 @@
                     android:src="@drawable/distance" />
 
                 <TextView
-                    android:layout_width="fill_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="DISTANCE"
-                    android:textSize="15dp" />
+                    android:textSize="10sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -55,7 +65,8 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="10"
-                    android:textSize="40dp" />
+                    android:textColor="@color/white_gage"
+                    android:textSize="40sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -68,7 +79,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="KM"
-                    android:textSize="15dp" />
+                    android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
 
@@ -83,7 +94,8 @@
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical" >
+                android:layout_margin="5dp"
+                android:gravity="center" >
 
                 <ImageView
                     android:layout_width="32dp"
@@ -91,11 +103,11 @@
                     android:src="@drawable/timer" />
 
                 <TextView
-                    android:layout_width="fill_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="TIME"
-                    android:textSize="15dp" />
+                    android:textSize="10sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -104,12 +116,13 @@
                 android:gravity="center" >
 
                 <TextView
-                     android:id="@+id/txt_curent_time"
+                    android:id="@+id/txt_curent_time"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="01&apos;24"
-                    android:textSize="40dp" />
+                    android:textColor="@color/white_gage"
+                    android:textSize="40sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -122,7 +135,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="MIN"
-                    android:textSize="15dp" />
+                    android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
 
@@ -138,7 +151,8 @@
                 android:id="@+id/col3_row1"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical" >
+                android:layout_margin="5dp"
+                android:gravity="center" >
 
                 <ImageView
                     android:layout_width="32dp"
@@ -146,11 +160,11 @@
                     android:src="@drawable/speed" />
 
                 <TextView
-                    android:layout_width="fill_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="SPEED"
-                    android:textSize="15dp" />
+                    android:textSize="10sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -160,12 +174,13 @@
                 android:gravity="center_vertical" >
 
                 <TextView
-                     android:id="@+id/txt_curent_speed"
+                    android:id="@+id/txt_curent_speed"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="15"
-                    android:textSize="40dp" />
+                    android:textColor="@color/white_gage"
+                    android:textSize="40sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -183,45 +198,33 @@
         </LinearLayout>
     </LinearLayout>
 
-    <GridLayout
+    <LinearLayout
         android:id="@+id/gridbutton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
+        android:layout_margin="20dp"
         android:columnCount="3"
         android:rowCount="1" >
 
         <Button
             android:id="@+id/btn_track"
-            android:layout_column="0"
-            android:layout_gravity="fill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
             android:background="@drawable/blue_menu_btn"
-            android:text="track" />
-
-        <Button
-            android:id="@+id/btn_load_track"
-            android:layout_column="1"
-            android:layout_gravity="fill"
-            android:background="@drawable/blue_menu_btn"
-            android:text="load" />
+            android:text="START"
+            android:textColor="@color/white_gage" />
 
         <Button
             android:id="@+id/btn_stop_track"
-            android:layout_width="198dp"
-            android:layout_column="2"
-            android:layout_gravity="fill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
             android:background="@drawable/blue_menu_btn"
-            android:text="stop" />
-    </GridLayout>
-
-    <fragment
-        android:id="@+id/maps"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/gageLayout"
-        android:layout_above="@+id/gridbutton"
-        class="com.google.android.gms.maps.MapFragment" />
+            android:text="STOP"
+            android:textColor="@color/white_gage" />
+    </LinearLayout>
 
 </RelativeLayout>

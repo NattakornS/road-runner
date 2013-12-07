@@ -9,18 +9,21 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp" >
+        android:layout_margin="10dp"
+        android:background="@drawable/com_facebook_list_section_header_background" >
 
         <ImageView
             android:id="@+id/finish_pic_list_img"
             android:layout_width="109dp"
             android:layout_height="81dp"
-            android:src="@drawable/com_facebook_profile_picture_blank_square" />
+            android:src="@drawable/com_facebook_profile_picture_blank_square"
+            android:layout_margin="10dp" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:layout_margin="10dp" >
 
             <TextView
                 android:id="@+id/finish_name_list_txt"

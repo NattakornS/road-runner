@@ -1,9 +1,6 @@
 package com.senior.roadrunner.data;
 
-
-
-
-public class LatLngTimeData {
+public class LatLngTimeData{
 	private Coordinate coordinate;
 	private String when;
 
