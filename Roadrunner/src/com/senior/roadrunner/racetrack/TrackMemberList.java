@@ -1,11 +1,9 @@
 package com.senior.roadrunner.racetrack;
 
 import java.io.Serializable;
-import java.util.List;
 
 import android.graphics.Bitmap;
-
-import com.senior.roadrunner.data.LatLngTimeData;
+import android.os.Parcelable;
 
 public class TrackMemberList implements Serializable {
 	/**
@@ -19,8 +17,8 @@ public class TrackMemberList implements Serializable {
 	private int calories;
 	private int rank;
 	private String trackerDir = "";
-	private List<LatLngTimeData> trackData;
-	private Bitmap profileImg;
+//	private List<LatLngTimeData> trackData;s
+//	private Bitmap profileImg;
 
 	public String getrId() {
 		return rId;
@@ -54,14 +52,14 @@ public class TrackMemberList implements Serializable {
 		this.trackerDir = trackerDir;
 	}
 
-	public void setTrackData(List<LatLngTimeData> trackData) {
-		this.trackData = trackData;
-
-	}
-
-	public List<LatLngTimeData> getTrackData() {
-		return trackData;
-	}
+//	public void setTrackData(List<LatLngTimeData> trackData) {
+//		this.trackData = trackData;
+//
+//	}
+//
+//	public List<LatLngTimeData> getTrackData() {
+//		return trackData;
+//	}
 
 	public String getfName() {
 		return fName;
@@ -87,11 +85,11 @@ public class TrackMemberList implements Serializable {
 		this.calories = calories;
 	}
 
-	public Bitmap getProfileImg() {
-		return profileImg;
-	}
+//	public Bitmap getProfileImg() {
+//		return profileImg;
+//	}
 
-	public void setProfileImg(Bitmap profileImg) {
-		this.profileImg = profileImg;
-	}
+//	public void setProfileImg(Bitmap profileImg) {
+//		this.profileImg = profileImg;
+//	}
 }

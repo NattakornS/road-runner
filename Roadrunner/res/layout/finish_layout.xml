@@ -16,8 +16,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/finishPager"
-            android:background="@color/blue_gradientE"
-            android:divider="@color/blue_gradientS" >
+            android:background="@drawable/blue_menu_btn"
+            android:divider="@color/white_gage" >
         </ListView>
 
 </RelativeLayout>

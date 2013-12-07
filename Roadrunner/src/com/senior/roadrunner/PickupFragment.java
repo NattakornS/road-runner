@@ -45,7 +45,7 @@ public class PickupFragment extends Fragment implements OnClickListener {
 	private View btn_stop_track;
 	private Button btn_track;
 	private List<LatLngTimeData> latLngTimeData;
-	private Button btn_load_track;
+//	private Button btn_load_track;
 	private HistoryTrack historyTrack;
 	private static final String SDCARD_TRACKER_XML = "/sdcard/tracker.xml";
 	
@@ -123,8 +123,8 @@ public class PickupFragment extends Fragment implements OnClickListener {
 		btn_track.setOnClickListener(this);
 		btn_stop_track = (Button) getActivity().findViewById(R.id.btn_stop_track);
 		btn_stop_track.setOnClickListener(this);
-		btn_load_track = (Button) getActivity().findViewById(R.id.btn_load_track);
-		btn_load_track.setOnClickListener(this);
+//		btn_load_track = (Button) getActivity().findViewById(R.id.btn_load_track);
+//		btn_load_track.setOnClickListener(this);
 
 	}
 
@@ -213,16 +213,16 @@ public class PickupFragment extends Fragment implements OnClickListener {
 					Toast.LENGTH_SHORT).show();
 			break;
 
-		case R.id.btn_load_track:
-			// myLocationListener.setLatLngTimeData(latLngTimeData);
-			Toast.makeText(getActivity().getApplicationContext(), "Load data",
-					Toast.LENGTH_SHORT).show();
-			// historyTrack.setLatLngTimeData(trackDataBase.loadXmlFile());
-			// this.runOnUiThread(historyTrack);
-			// Thread t = new Thread(historyTrack);
-			// t.start();
-			runThread();
-			break;
+//		case R.id.btn_load_track:
+//			// myLocationListener.setLatLngTimeData(latLngTimeData);
+//			Toast.makeText(getActivity().getApplicationContext(), "Load data",
+//					Toast.LENGTH_SHORT).show();
+//			// historyTrack.setLatLngTimeData(trackDataBase.loadXmlFile());
+//			// this.runOnUiThread(historyTrack);
+//			// Thread t = new Thread(historyTrack);
+//			// t.start();
+//			runThread();
+//			break;
 		}
 
 	}
