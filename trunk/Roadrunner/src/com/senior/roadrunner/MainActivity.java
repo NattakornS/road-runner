@@ -110,6 +110,7 @@ public class MainActivity extends FragmentActivity {
             Log.d("HelloFacebook", "Success!");
         }
     };
+	private FragmentManager fragmentManager;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -408,7 +409,7 @@ public class MainActivity extends FragmentActivity {
 		fragment.setArguments(args);
 
 //		FragmentManager fragmentManager = getFragmentManager();
-		
+		fragmentManager = getSupportFragmentManager();
 		if (position == 0) {
 //			fragmentManager.beginTransaction().replace(R.id.content_frame, pf)
 //					.commit();
@@ -416,7 +417,9 @@ public class MainActivity extends FragmentActivity {
 //			 .replace(R.id.content_frame, settingFragment).commit();
 //			Intent i = new Intent(this, LoginActivity.class);
 //			startActivity(i);
-			settingFragment();
+//			settingFragment();
+			fragmentManager.beginTransaction()
+			 .replace(R.id.content_frame, FacebookFragment.createInstacnce()).commit();
 		} else if (position == 1) {
 			// fragmentManager.beginTransaction()
 			// .replace(R.id.content_frame, raceTrackFragment).commit();
@@ -427,10 +430,12 @@ public class MainActivity extends FragmentActivity {
 		} else if (position == 2) {
 			onClickPostStatusUpdate();
 		}else if (position == 3) {
-			Intent i = new Intent(this, FinishActivity.class);
-			startActivity(i);
-		}
-		else if (position == 4) {
+//			Intent i = new Intent(this, FinishActivity.class);
+//			startActivity(i);
+			fragmentManager.beginTransaction()
+			 .replace(R.id.content_frame, SettingFragment.createInstacnce()).commit();
+			
+		}else if (position == 4) {
 			exitApp();
 		} else {
 //			fragmentManager.beginTransaction()
@@ -443,54 +448,52 @@ public class MainActivity extends FragmentActivity {
 		mDrawerLayout.closeDrawer(mDrawerList);
 	}
 
-	private void settingFragment() {
-		// Facebook Setting Frahment
-
-		 FragmentManager fragmentManager = getSupportFragmentManager();
-        userSettingsFragment = (UserSettingsFragment) fragmentManager.findFragmentById(R.id.login_fragment);
-        userSettingsFragment.setSessionStatusCallback(new Session.StatusCallback() {
-            @Override
-            public void call(Session session, SessionState state, Exception exception) {
-            	System.out.println(session.isOpened());
-            	if(session.isOpened()){
-
-            		 Request.newMeRequest(session, new Request.GraphUserCallback() {
-
-      				   // callback after Graph API response with user object
-      				   @Override
-      				   public void onCompleted(GraphUser user, Response response) {
-//      					   System.out.println("USER :"+ user);
-      				     if (user != null) {
-//      				    	 lblEmail.setText(user.getName());
-      				    	 System.out.println(user.getName());
-      				    	 RoadRunnerSetting.setFacebookId(user.getId());
-      				    	 RoadRunnerSetting.setFacebookName(user.getName());
-      				     }
-      				   }
-      				 }).executeAsync();
-//            		 Request.newMyFriendsRequest(session, new GraphUserListCallback() {
+//	private void settingFragment() {
+//		// Facebook Setting Frahment
+//        userSettingsFragment = (UserSettingsFragment) fragmentManager.findFragmentById(R.id.login_fragment);
+//        userSettingsFragment.setSessionStatusCallback(new Session.StatusCallback() {
+//            @Override
+//            public void call(Session session, SessionState state, Exception exception) {
+//            	System.out.println(session.isOpened());
+//            	if(session.isOpened()){
 //
-//            	            @Override
-//            	            public void onCompleted(List<GraphUser> users, Response response) {
-//            	                // TODO Auto-generated method stub
-//            	                if(response.getError()==null)
-//            	                {
-//            	                    for (int i = 0; i < users.size(); i++) {
-////            	                    	System.out.println("users "+users.get(i).getName());
-//            	                        Log.e("users", "users "+users.get(i).getName());
-//            	                    }
-//            	                }
-//            	                else
-//            	                {
-////            	                    Toast.makeText(MainActivity.this, response.getError().getErrorMessage(), Toast.LENGTH_SHORT).show();
-//            	                }
-//            	            }
-//            	        }).executeAsync();
-            	}
-//                Log.d("LoginUsingLoginFragmentActivity", String.format("New session state: %s", state.toString()));
-            }
-        });
-	}
+//            		 Request.newMeRequest(session, new Request.GraphUserCallback() {
+//
+//      				   // callback after Graph API response with user object
+//      				   @Override
+//      				   public void onCompleted(GraphUser user, Response response) {
+////      					   System.out.println("USER :"+ user);
+//      				     if (user != null) {
+////      				    	 lblEmail.setText(user.getName());
+//      				    	 System.out.println(user.getName());
+//      				    	 RoadRunnerSetting.setFacebookId(user.getId());
+//      				    	 RoadRunnerSetting.setFacebookName(user.getName());
+//      				     }
+//      				   }
+//      				 }).executeAsync();
+////            		 Request.newMyFriendsRequest(session, new GraphUserListCallback() {
+////
+////            	            @Override
+////            	            public void onCompleted(List<GraphUser> users, Response response) {
+////            	                // TODO Auto-generated method stub
+////            	                if(response.getError()==null)
+////            	                {
+////            	                    for (int i = 0; i < users.size(); i++) {
+//////            	                    	System.out.println("users "+users.get(i).getName());
+////            	                        Log.e("users", "users "+users.get(i).getName());
+////            	                    }
+////            	                }
+////            	                else
+////            	                {
+//////            	                    Toast.makeText(MainActivity.this, response.getError().getErrorMessage(), Toast.LENGTH_SHORT).show();
+////            	                }
+////            	            }
+////            	        }).executeAsync();
+//            	}
+////                Log.d("LoginUsingLoginFragmentActivity", String.format("New session state: %s", state.toString()));
+//            }
+//        });
+//	}
 
 
 	private void exitApp() {

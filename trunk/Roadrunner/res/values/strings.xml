@@ -8,7 +8,7 @@
         <item>Facebook setting</item>
         <item>Race Track</item>
         <item>Post to facebook</item>
-        <item>Finish Activity</item>
+        <item>Setting</item>
         <item>Exit</item>
     </string-array>
 
@@ -45,4 +45,8 @@
         <item>Item 7</item>
         <item>Item 8</item>
     </string-array>
+    
+            
+             <string name="login">Login</string>
+    <string name="logout">Logout</string>
 </resources>

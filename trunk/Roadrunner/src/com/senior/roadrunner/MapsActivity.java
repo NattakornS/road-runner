@@ -234,13 +234,13 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			if(i==0){
 				MarkerOptions startMarker = new MarkerOptions()
 				.position(new LatLng(lat, lng))
-				.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+				.icon(BitmapDescriptorFactory.fromResource(R.drawable.play))
 				.title("Start");
 				map.addMarker(startMarker);
 			}if(i==data.size()-1){
 				MarkerOptions endMarker = new MarkerOptions()
 				.position(new LatLng(lat, lng))
-				.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+				.icon(BitmapDescriptorFactory.fromResource(R.drawable.flag))
 				.title("End");
 				map.addMarker(endMarker);
 			}

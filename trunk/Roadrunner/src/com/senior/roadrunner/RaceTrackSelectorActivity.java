@@ -373,13 +373,13 @@ public class RaceTrackSelectorActivity extends Activity implements
 			if(i==0){
 				startMarker=new MarkerOptions()
 				.position(point)
-				.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+				.icon(BitmapDescriptorFactory.fromResource(R.drawable.play))
 				.title("Start");
 				map.addMarker(startMarker);
 			}if(i==trackPathData.size()-1){
 				endMarker=new MarkerOptions()
 				.position(point)
-				.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+				.icon(BitmapDescriptorFactory.fromResource(R.drawable.flag))
 				.title("End");
 				map.addMarker(endMarker);
 			}
