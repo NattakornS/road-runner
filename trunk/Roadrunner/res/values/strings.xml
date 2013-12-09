@@ -49,4 +49,7 @@
             
              <string name="login">Login</string>
     <string name="logout">Logout</string>
+        <string name="get_started">To get started, login using Facebook</string>
+    <string name="skip_login">Skip Login</string>
+     <string name="settings">Settings</string>
 </resources>
