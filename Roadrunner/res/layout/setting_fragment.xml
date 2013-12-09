@@ -61,16 +61,22 @@
                         android:textAppearance="?android:attr/textAppearanceSmall" />
                 </LinearLayout>
 
-               
-                     <ImageView
+                <com.facebook.widget.ProfilePictureView 
+                    android:id="@+id/profile_pic"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_weight="0.3">
+                    
+                </com.facebook.widget.ProfilePictureView>
+<!--                 <ImageView
                     android:id="@+id/imageView1"
                     android:layout_width="45dp"
                     android:layout_height="45dp"
                     android:layout_weight="0.3"
-                    android:src="@drawable/com_facebook_profile_picture_blank_square" />
+                    android:src="@drawable/com_facebook_profile_picture_blank_square" /> -->
 
-
-<!--                 <com.facebook.widget.ProfilePictureView
+                <!--
+                     <com.facebook.widget.ProfilePictureView
                     android:id="@+id/profilePicture"
                     android:layout_width="45dp"
                     android:layout_height="45dp"
@@ -88,9 +94,10 @@
                     android:layout_weight="0.3"
                     android:scaleType="centerInside"
                     fb:login_text="Login" 
-                    fb:logout_text="Logout" />-->
+                    fb:logout_text="Logout" />
+                -->
 
-                     <Button
+                <Button
                     android:id="@+id/loginBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

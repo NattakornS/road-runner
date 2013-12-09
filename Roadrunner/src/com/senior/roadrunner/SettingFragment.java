@@ -26,7 +26,9 @@ import com.facebook.Session;
 import com.facebook.Session.StatusCallback;
 import com.facebook.SessionState;
 import com.facebook.Settings;
+import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphUser;
+import com.facebook.widget.ProfilePictureView;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 
 public class SettingFragment extends Fragment {
@@ -38,6 +40,7 @@ public class SettingFragment extends Fragment {
 	private TextView facebookName;
 	private Button buttonLoginLogout;
 	private StatusCallback statusCallback = new SessionStatusCallback();
+	private ProfilePictureView profilePictureView;
 
 	public static Fragment createInstacnce() {
 		if (fragment == null)
@@ -46,14 +49,33 @@ public class SettingFragment extends Fragment {
 			return fragment;
 		}
 	}
+    private UiLifecycleHelper uiHelper;
+    private Session.StatusCallback sessionCallback = new Session.StatusCallback() {
+        @Override
+        public void call(final Session session, final SessionState state, final Exception exception) {
+            onSessionStateChange(session, state, exception);
+        }
+    };
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+//        activity = (MainActivity) getActivity();
+        uiHelper = new UiLifecycleHelper(getActivity(), sessionCallback);
+        uiHelper.onCreate(savedInstanceState);
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        uiHelper.onResume();
+    }
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		view = inflater.inflate(R.layout.setting_fragment, container, false);
 		buttonLoginLogout = (Button) view.findViewById(R.id.loginBtn);
 		facebookName = (TextView) view.findViewById(R.id.facebookNameTxt);
-
+		profilePictureView = (ProfilePictureView) view.findViewById(R.id.profile_pic);
 		Settings.addLoggingBehavior(LoggingBehavior.INCLUDE_ACCESS_TOKENS);
 
 		Session session = Session.getActiveSession();
@@ -248,4 +270,38 @@ public class SettingFragment extends Fragment {
 			updateView();
 		}
 	}
+    private void onSessionStateChange(final Session session, SessionState state, Exception exception) {
+        if (session != null && session.isOpened()) {
+            if (state.equals(SessionState.OPENED_TOKEN_UPDATED)) {
+//                tokenUpdated();
+            } else {
+                makeMeRequest(session);
+            }
+        } else {
+            profilePictureView.setProfileId(null);
+            facebookName.setText("");
+        }
+    }
+	  private void makeMeRequest(final Session session) {
+	        Request request = Request.newMeRequest(session, new Request.GraphUserCallback() {
+	            @Override
+	            public void onCompleted(GraphUser user, Response response) {
+	                if (session == Session.getActiveSession()) {
+	                    if (user != null) {
+	                        profilePictureView.setProfileId(user.getId());
+	                        facebookName.setText(user.getName());
+	                        System.out.println("name : "+ user.getName());
+	                        RoadRunnerSetting.setFacebookId(user.getId());
+							RoadRunnerSetting.setFacebookName(user.getName());
+							RoadRunnerSetting.setCity(user.getLocation().getCity());
+	                    }
+	                }
+	                if (response.getError() != null) {
+//	                    handleError(response.getError());
+	                }
+	            }
+	        });
+	        request.executeAsync();
+
+	    }
 }

@@ -1,23 +1,19 @@
 package com.senior.roadrunner;
 
-import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,28 +25,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.AppEventsLogger;
-import com.facebook.FacebookAuthorizationException;
-import com.facebook.FacebookOperationCanceledException;
-import com.facebook.FacebookRequestError;
-import com.facebook.Request;
-import com.facebook.Request.GraphUserListCallback;
-import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
-import com.facebook.model.GraphObject;
-import com.facebook.model.GraphPlace;
-import com.facebook.model.GraphUser;
-import com.facebook.widget.FacebookDialog;
-import com.facebook.widget.ProfilePictureView;
-import com.facebook.widget.UserSettingsFragment;
-import com.senior.roadrunner.finish.FinishActivity;
-import com.senior.roadrunner.setting.RoadRunnerSetting;
-
 
 @SuppressLint("NewApi")
 public class MainActivity extends FragmentActivity {
@@ -64,34 +44,21 @@ public class MainActivity extends FragmentActivity {
 	private String[] mPlanetTitles;
 	private long lastPressedTime;
 	private static final int PERIOD = 2000;
+
+	private FragmentManager fragmentManager;
 	
-	private UserSettingsFragment userSettingsFragment;
-	private UiLifecycleHelper uiHelper;
-    private static final String PERMISSION = "publish_actions";
-    private static final Location SEATTLE_LOCATION = new Location("") {
-        {
-            setLatitude(47.6097);
-            setLongitude(-122.3331);
-        }
-    };
+    private static final String USER_SKIPPED_LOGIN_KEY = "user_skipped_login";
 
-    private final String PENDING_ACTION_BUNDLE_KEY = "com.facebook.samples.hellofacebook:PendingAction";
+    private static final int SPLASH = 0;
+    private static final int SETTING = 1;
+    private static final int USERSETTINGS = 2;
+    private static final int FRAGMENT_COUNT = USERSETTINGS +1;
 
-
-    private ProfilePictureView profilePictureView;
-    private TextView greeting;
-    private PendingAction pendingAction = PendingAction.NONE;
-    private ViewGroup controlsContainer;
-    private GraphUser user;
-    private GraphPlace place;
-    private List<GraphUser> tags;
-    private boolean canPresentShareDialog;
-
-    private enum PendingAction {
-        NONE,
-        POST_PHOTO,
-        POST_STATUS_UPDATE
-    }
+    private Fragment[] fragments = new Fragment[FRAGMENT_COUNT];
+    private MenuItem settings;
+    private boolean isResumed = false;
+    private boolean userSkippedLogin = false;
+    private UiLifecycleHelper uiHelper;
     private Session.StatusCallback callback = new Session.StatusCallback() {
         @Override
         public void call(Session session, SessionState state, Exception exception) {
@@ -99,27 +66,15 @@ public class MainActivity extends FragmentActivity {
         }
     };
 
-    private FacebookDialog.Callback dialogCallback = new FacebookDialog.Callback() {
-        @Override
-        public void onError(FacebookDialog.PendingCall pendingCall, Exception error, Bundle data) {
-            Log.d("HelloFacebook", String.format("Error: %s", error.toString()));
-        }
-
-        @Override
-        public void onComplete(FacebookDialog.PendingCall pendingCall, Bundle data) {
-            Log.d("HelloFacebook", "Success!");
-        }
-    };
-	private FragmentManager fragmentManager;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		//set Uihelper to shared content
-		uiHelper = new UiLifecycleHelper(this, callback);
+        if (savedInstanceState != null) {
+            userSkippedLogin = savedInstanceState.getBoolean(USER_SKIPPED_LOGIN_KEY);
+        }
+        uiHelper = new UiLifecycleHelper(this, callback);
         uiHelper.onCreate(savedInstanceState);
-		
 		// Navigation Drawer
 		mTitle = mDrawerTitle = getTitle();
 		mPlanetTitles = getResources()
@@ -162,11 +117,26 @@ public class MainActivity extends FragmentActivity {
 		};
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
 
-		
-
-		
-		
 		if (savedInstanceState == null) {
+	        FragmentManager fm = getSupportFragmentManager();
+	        SplashFragment splashFragment = (SplashFragment) fm.findFragmentById(R.id.splashFragment);
+	        fragments[SPLASH] = splashFragment;
+	        fragments[SETTING] = fm.findFragmentById(R.id.settingFragment);
+	        fragments[USERSETTINGS] = fm.findFragmentById(R.id.userSettingsFragment);
+
+	        FragmentTransaction transaction = fm.beginTransaction();
+	        for(int i = 0; i < fragments.length; i++) {
+	            transaction.hide(fragments[i]);
+	        }
+	        transaction.commit();
+
+	        splashFragment.setSkipLoginCallback(new SplashFragment.SkipLoginCallback() {
+	            @Override
+	            public void onSkipLoginPressed() {
+	                userSkippedLogin = true;
+	                showFragment(SETTING, false);
+	            }
+	        });
 			selectItem(0);
 		}
 
@@ -180,167 +150,94 @@ public class MainActivity extends FragmentActivity {
 		//
 		// }
 		// });
-		
-        canPresentShareDialog = FacebookDialog.canPresentShareDialog(this,
-                FacebookDialog.ShareDialogFeature.SHARE_DIALOG);
-		//On click post status
-		
+
 	}
-	
-	 @Override
-	    protected void onResume() {
-	        super.onResume();
-	        uiHelper.onResume();
+	@Override
+    public void onResume() {
+        super.onResume();
+        uiHelper.onResume();
+        isResumed = true;
 
-	        // Call the 'activateApp' method to log an app event for use in analytics and advertising reporting.  Do so in
-	        // the onResume methods of the primary Activities that an app may be launched into.
-	        AppEventsLogger.activateApp(this);
+        // Call the 'activateApp' method to log an app event for use in analytics and advertising reporting.  Do so in
+        // the onResume methods of the primary Activities that an app may be launched into.
+        AppEventsLogger.activateApp(this);
+    }
 
-	        updateUI();
-	    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        uiHelper.onPause();
+        isResumed = false;
+    }
 
-	    @Override
-	    protected void onSaveInstanceState(Bundle outState) {
-	        super.onSaveInstanceState(outState);
-	        uiHelper.onSaveInstanceState(outState);
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        uiHelper.onActivityResult(requestCode, resultCode, data);
+    }
 
-	        outState.putString(PENDING_ACTION_BUNDLE_KEY, pendingAction.name());
-	    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        uiHelper.onDestroy();
+    }
 
-	    @Override
-	    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	        super.onActivityResult(requestCode, resultCode, data);
-	        uiHelper.onActivityResult(requestCode, resultCode, data, dialogCallback);
-	    }
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        uiHelper.onSaveInstanceState(outState);
 
-	    @Override
-	    public void onPause() {
-	        super.onPause();
-	        uiHelper.onPause();
-	    }
+        outState.putBoolean(USER_SKIPPED_LOGIN_KEY, userSkippedLogin);
+    }
 
-	    @Override
-	    public void onDestroy() {
-	        super.onDestroy();
-	        uiHelper.onDestroy();
-	    }
-	    private void onSessionStateChange(Session session, SessionState state, Exception exception) {
-	        if (pendingAction != PendingAction.NONE &&
-	                (exception instanceof FacebookOperationCanceledException ||
-	                exception instanceof FacebookAuthorizationException)) {
-	                new AlertDialog.Builder(MainActivity.this)
-	                    .setTitle(R.string.cancelled)
-	                    .setMessage(R.string.permission_not_granted)
-	                    .setPositiveButton(R.string.ok, null)
-	                    .show();
-	            pendingAction = PendingAction.NONE;
-	        } else if (state == SessionState.OPENED_TOKEN_UPDATED) {
-	            handlePendingAction();
-	        }
-	        updateUI();
-	    }
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
+        Session session = Session.getActiveSession();
 
-	    private void updateUI() {
-	        Session session = Session.getActiveSession();
-	        boolean enableButtons = (session != null && session.isOpened());
-	    }
-	    @SuppressWarnings("incomplete-switch")
-	    private void handlePendingAction() {
-	        PendingAction previouslyPendingAction = pendingAction;
-	        // These actions may re-set pendingAction if they are still pending, but we assume they
-	        // will succeed.
-	        pendingAction = PendingAction.NONE;
-
-	        switch (previouslyPendingAction) {
-	            case POST_STATUS_UPDATE:
-	                postStatusUpdate();
-	                break;
-	        }
-	    }
-	    private interface GraphObjectWithId extends GraphObject {
-	        String getId();
-	    }
-	    private void showPublishResult(String message, GraphObject result, FacebookRequestError error) {
-	        String title = null;
-	        String alertMessage = null;
-	        if (error == null) {
-	            title = getString(R.string.success);
-	            String id = result.cast(GraphObjectWithId.class).getId();
-	            alertMessage = getString(R.string.successfully_posted_post, message, id);
-	        } else {
-	            title = getString(R.string.error);
-	            alertMessage = error.getErrorMessage();
-	        }
-
-	        new AlertDialog.Builder(this)
-	                .setTitle(title)
-	                .setMessage(alertMessage)
-	                .setPositiveButton(R.string.ok, null)
-	                .show();
-	    }
-
-	    private void onClickPostStatusUpdate() {
-	        performPublish(PendingAction.POST_STATUS_UPDATE, canPresentShareDialog);
-	    }
-	    
-	    private FacebookDialog.ShareDialogBuilder createShareDialogBuilder() {
-	        return new FacebookDialog.ShareDialogBuilder(this)
-	                .setName("Roadrunner")
-	                .setDescription("The 'Road Runner' Running and race application")
-	                .setLink("https://www.facebook.com/roadrunner5313180");
-	    }
-
-	    private void postStatusUpdate() {
-	        if (canPresentShareDialog) {
-	            FacebookDialog shareDialog = createShareDialogBuilder().build();
-	            uiHelper.trackPendingDialogCall(shareDialog.present());
-	        } else if (user != null && hasPublishPermission()) {
-	            final String message = getString(R.string.status_update, user.getFirstName(), (new Date().toString()));
-	            Request request = Request
-	                    .newStatusUpdateRequest(Session.getActiveSession(), message, place, tags, new Request.Callback() {
-	                        @Override
-	                        public void onCompleted(Response response) {
-	                            showPublishResult(message, response.getGraphObject(), response.getError());
-	                        }
-	                    });
-	            request.executeAsync();
-	        } else {
-	            pendingAction = PendingAction.POST_STATUS_UPDATE;
-	        }
-	    }
-	    private void showAlert(String title, String message) {
-	        new AlertDialog.Builder(this)
-	                .setTitle(title)
-	                .setMessage(message)
-	                .setPositiveButton(R.string.ok, null)
-	                .show();
-	    }
-
-	    private boolean hasPublishPermission() {
-	        Session session = Session.getActiveSession();
-	        return session != null && session.getPermissions().contains("publish_actions");
-	    }
-
-	    private void performPublish(PendingAction action, boolean allowNoSession) {
-	        Session session = Session.getActiveSession();
-	        if (session != null) {
-	            pendingAction = action;
-	            if (hasPublishPermission()) {
-	                // We can do the action right away.
-	                handlePendingAction();
-	                return;
-	            } else if (session.isOpened()) {
-	                // We need to get new permissions, then complete the action when we get called back.
-	                session.requestNewPublishPermissions(new Session.NewPermissionsRequest(this, PERMISSION));
-	                return;
-	            }
-	        }
-
-	        if (allowNoSession) {
-	            pendingAction = action;
-	            handlePendingAction();
-	        }
-	    }
+        if (session != null && session.isOpened()) {
+            // if the session is already open, try to show the selection fragment
+            showFragment(SETTING, false);
+            userSkippedLogin = false;
+        } else if (userSkippedLogin) {
+            showFragment(SETTING, false);
+        } else {
+            // otherwise present the splash screen and ask the user to login, unless the user explicitly skipped.
+            showFragment(SPLASH, false);
+        }
+    }
+    private void onSessionStateChange(Session session, SessionState state, Exception exception) {
+        if (isResumed) {
+            FragmentManager manager = getSupportFragmentManager();
+            int backStackSize = manager.getBackStackEntryCount();
+            for (int i = 0; i < backStackSize; i++) {
+                manager.popBackStack();
+            }
+            // check for the OPENED state instead of session.isOpened() since for the
+            // OPENED_TOKEN_UPDATED state, the selection fragment should already be showing.
+            if (state.equals(SessionState.OPENED)) {
+                showFragment(SETTING, false);
+            } else if (state.isClosed()) {
+                showFragment(SPLASH, false);
+            }
+        }
+    }
+    private void showFragment(int fragmentIndex, boolean addToBackStack) {
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction transaction = fm.beginTransaction();
+        for (int i = 0; i < fragments.length; i++) {
+            if (i == fragmentIndex) {
+                transaction.show(fragments[i]);
+            } else {
+                transaction.hide(fragments[i]);
+            }
+        }
+        if (addToBackStack) {
+            transaction.addToBackStack(null);
+        }
+        transaction.commit();
+    }
+    
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
@@ -353,9 +250,20 @@ public class MainActivity extends FragmentActivity {
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		// If the nav drawer is open, hide action items related to the content
 		// view
-		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-		menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
-		return super.onPrepareOptionsMenu(menu);
+//		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+//		menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
+//		return super.onPrepareOptionsMenu(menu);
+		 // only add the menu when the selection fragment is showing
+        if (fragments[SETTING].isVisible()) {
+            if (menu.size() == 0) {
+                settings = menu.add(R.string.settings);
+            }
+            return true;
+        } else {
+            menu.clear();
+            settings = null;
+        }
+        return false;
 	}
 
 	@SuppressLint("NewApi")
@@ -366,6 +274,10 @@ public class MainActivity extends FragmentActivity {
 		if (mDrawerToggle.onOptionsItemSelected(item)) {
 			return true;
 		}
+		 if (item.equals(settings)) {
+	            showSettingsFragment();
+	            return true;
+	        }
 		// Handle action buttons
 		switch (item.getItemId()) {
 		case R.id.action_websearch:
@@ -384,7 +296,9 @@ public class MainActivity extends FragmentActivity {
 			return super.onOptionsItemSelected(item);
 		}
 	}
-
+    public void showSettingsFragment() {
+        showFragment(USERSETTINGS, true);
+    }
 	/* The click listner for ListView in the navigation drawer */
 	private class DrawerItemClickListener implements
 			ListView.OnItemClickListener {
@@ -399,47 +313,53 @@ public class MainActivity extends FragmentActivity {
 	private void selectItem(int position) {
 		// update the main content by replacing fragments
 		Fragment fragment = new PlanetFragment();
-//		Fragment pf = new PickupFragment();
+		// Fragment pf = new PickupFragment();
 		// RaceTrackFragment raceTrackFragment = RaceTrackFragment
 		// .createInstacnce();
-//		SettingFragment settingFragment = SettingFragment.createInstacnce();
+		// SettingFragment settingFragment = SettingFragment.createInstacnce();
 
 		Bundle args = new Bundle();
 		args.putInt(PlanetFragment.ARG_PLANET_NUMBER, position);
 		fragment.setArguments(args);
 
-//		FragmentManager fragmentManager = getFragmentManager();
+		// FragmentManager fragmentManager = getFragmentManager();
 		fragmentManager = getSupportFragmentManager();
 		if (position == 0) {
-//			fragmentManager.beginTransaction().replace(R.id.content_frame, pf)
-//					.commit();
-//			 fragmentManager.beginTransaction()
-//			 .replace(R.id.content_frame, settingFragment).commit();
-//			Intent i = new Intent(this, LoginActivity.class);
-//			startActivity(i);
-//			settingFragment();
-			fragmentManager.beginTransaction()
-			 .replace(R.id.content_frame, FacebookFragment.createInstacnce()).commit();
+			// fragmentManager.beginTransaction().replace(R.id.content_frame,
+			// pf)
+			// .commit();
+			// fragmentManager.beginTransaction()
+			// .replace(R.id.content_frame, settingFragment).commit();
+			// Intent i = new Intent(this, LoginActivity.class);
+			// startActivity(i);
+			// settingFragment();
+//			fragmentManager
+//					.beginTransaction()
+//					.replace(R.id.content_frame,
+//							FacebookFragment.createInstacnce()).commit();
+			 showFragment(USERSETTINGS, false);
 		} else if (position == 1) {
 			// fragmentManager.beginTransaction()
 			// .replace(R.id.content_frame, raceTrackFragment).commit();
-			
+
 			Intent i = new Intent(this, RaceTrackSelectorActivity.class);
-//			i.putExtra(name, value)
+			// i.putExtra(name, value)
 			startActivity(i);
 		} else if (position == 2) {
-			onClickPostStatusUpdate();
-		}else if (position == 3) {
-//			Intent i = new Intent(this, FinishActivity.class);
-//			startActivity(i);
-			fragmentManager.beginTransaction()
-			 .replace(R.id.content_frame, SettingFragment.createInstacnce()).commit();
-			
-		}else if (position == 4) {
+		} else if (position == 3) {
+			// Intent i = new Intent(this, FinishActivity.class);
+			// startActivity(i);
+//			fragmentManager
+//					.beginTransaction()
+//					.replace(R.id.content_frame,
+//							SettingFragment.createInstacnce()).commit();
+			 showFragment(SETTING, false);
+
+		} else if (position == 4) {
 			exitApp();
 		} else {
-//			fragmentManager.beginTransaction()
-//					.replace(R.id.content_frame, fragment).commit();
+			// fragmentManager.beginTransaction()
+			// .replace(R.id.content_frame, fragment).commit();
 		}
 
 		// update selected item and title, then close the drawer
@@ -448,53 +368,57 @@ public class MainActivity extends FragmentActivity {
 		mDrawerLayout.closeDrawer(mDrawerList);
 	}
 
-//	private void settingFragment() {
-//		// Facebook Setting Frahment
-//        userSettingsFragment = (UserSettingsFragment) fragmentManager.findFragmentById(R.id.login_fragment);
-//        userSettingsFragment.setSessionStatusCallback(new Session.StatusCallback() {
-//            @Override
-//            public void call(Session session, SessionState state, Exception exception) {
-//            	System.out.println(session.isOpened());
-//            	if(session.isOpened()){
-//
-//            		 Request.newMeRequest(session, new Request.GraphUserCallback() {
-//
-//      				   // callback after Graph API response with user object
-//      				   @Override
-//      				   public void onCompleted(GraphUser user, Response response) {
-////      					   System.out.println("USER :"+ user);
-//      				     if (user != null) {
-////      				    	 lblEmail.setText(user.getName());
-//      				    	 System.out.println(user.getName());
-//      				    	 RoadRunnerSetting.setFacebookId(user.getId());
-//      				    	 RoadRunnerSetting.setFacebookName(user.getName());
-//      				     }
-//      				   }
-//      				 }).executeAsync();
-////            		 Request.newMyFriendsRequest(session, new GraphUserListCallback() {
-////
-////            	            @Override
-////            	            public void onCompleted(List<GraphUser> users, Response response) {
-////            	                // TODO Auto-generated method stub
-////            	                if(response.getError()==null)
-////            	                {
-////            	                    for (int i = 0; i < users.size(); i++) {
-//////            	                    	System.out.println("users "+users.get(i).getName());
-////            	                        Log.e("users", "users "+users.get(i).getName());
-////            	                    }
-////            	                }
-////            	                else
-////            	                {
-//////            	                    Toast.makeText(MainActivity.this, response.getError().getErrorMessage(), Toast.LENGTH_SHORT).show();
-////            	                }
-////            	            }
-////            	        }).executeAsync();
-//            	}
-////                Log.d("LoginUsingLoginFragmentActivity", String.format("New session state: %s", state.toString()));
-//            }
-//        });
-//	}
-
+	// private void settingFragment() {
+	// // Facebook Setting Frahment
+	// userSettingsFragment = (UserSettingsFragment)
+	// fragmentManager.findFragmentById(R.id.login_fragment);
+	// userSettingsFragment.setSessionStatusCallback(new
+	// Session.StatusCallback() {
+	// @Override
+	// public void call(Session session, SessionState state, Exception
+	// exception) {
+	// System.out.println(session.isOpened());
+	// if(session.isOpened()){
+	//
+	// Request.newMeRequest(session, new Request.GraphUserCallback() {
+	//
+	// // callback after Graph API response with user object
+	// @Override
+	// public void onCompleted(GraphUser user, Response response) {
+	// // System.out.println("USER :"+ user);
+	// if (user != null) {
+	// // lblEmail.setText(user.getName());
+	// System.out.println(user.getName());
+	// RoadRunnerSetting.setFacebookId(user.getId());
+	// RoadRunnerSetting.setFacebookName(user.getName());
+	// }
+	// }
+	// }).executeAsync();
+	// // Request.newMyFriendsRequest(session, new GraphUserListCallback() {
+	// //
+	// // @Override
+	// // public void onCompleted(List<GraphUser> users, Response response) {
+	// // // TODO Auto-generated method stub
+	// // if(response.getError()==null)
+	// // {
+	// // for (int i = 0; i < users.size(); i++) {
+	// //// System.out.println("users "+users.get(i).getName());
+	// // Log.e("users", "users "+users.get(i).getName());
+	// // }
+	// // }
+	// // else
+	// // {
+	// //// Toast.makeText(MainActivity.this,
+	// response.getError().getErrorMessage(), Toast.LENGTH_SHORT).show();
+	// // }
+	// // }
+	// // }).executeAsync();
+	// }
+	// // Log.d("LoginUsingLoginFragmentActivity",
+	// String.format("New session state: %s", state.toString()));
+	// }
+	// });
+	// }
 
 	private void exitApp() {
 		finish();
