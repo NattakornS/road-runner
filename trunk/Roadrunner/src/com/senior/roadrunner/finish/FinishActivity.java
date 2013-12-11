@@ -243,13 +243,13 @@ public class FinishActivity extends FragmentActivity {
 		
 		 List<String> friends = new ArrayList<String>();
 		 for (int i = 0; i < trackMemberList.size(); i++) {
-			friends.add(trackMemberList.get(i).getfName());
+			friends.add(trackMemberList.get(i).getfId());
 		}
 		return new FacebookDialog.ShareDialogBuilder(this)
 		 .setName("Roadrunner")
 		 .setDescription("The 'Road Runner' Running and race application")
 		 .setPicture(MapsActivity.URLServer+"tracker/" + MapsActivity.rId + "/"+RoadRunnerSetting.getFacebookId() +".png")
-		 .setFriends(friends )
+		 .setFriends(friends)
 		 .setLink("https://www.facebook.com/roadrunner5313180");
 	}
 
@@ -281,31 +281,48 @@ public class FinishActivity extends FragmentActivity {
 
 	    private void postPhoto() {
 	        if (hasPublishPermission()) {
-//	            Bitmap image = RoadRunnerFacebookSetting.getMapScreen();
-//	            Request request = Request.newUploadPhotoRequest(Session.getActiveSession(), image, new Request.Callback() {
-//	                @Override
-//	                public void onCompleted(Response response) {
-//	                    showPublishResult(getString(R.string.photo_post), response.getGraphObject(), response.getError());
-//	                }
-//	            });
-//	            request.executeAsync();
-	        	OpenGraphObject rdnr = OpenGraphObject.Factory.createForPost("road_runner:Course");
-	        	rdnr.setProperty("title", "Roadrunner");
-//	        	rdnr.setProperty("image", "https://example.com/cooking-app/meal/Shrimp-Curry.html");
-//	        	rdnr.setProperty("description", "...recipe text...");
+	            Bitmap image = RoadRunnerSetting.getMapScreen();
+	            Request request = Request.newUploadPhotoRequest(Session.getActiveSession(), image, new Request.Callback() {
+	               
 
-	        	Bitmap bitmap1 = RoadRunnerSetting.getMapScreen();
-	        	List<Bitmap> images = new ArrayList<Bitmap>();
-	        	images.add(bitmap1);
+					@Override
+	                public void onCompleted(Response response) {
+	                	
+	                    showPublishResult("Upload imag sucess ", response.getGraphObject(), response.getError());
+	                }
+	            });
+	            request.executeAsync();
+	            String stringPost = "";
+	            for (int i = 0; i < trackMemberList.size(); i++) {
+					stringPost=stringPost+i+" "+trackMemberList.get(i).getfName()+"\n";
+				}
+	            request=Request.newStatusUpdateRequest(Session.getActiveSession(), "Roadrunner : \n"+stringPost, null, null, new Request.Callback(){
 
-	        	OpenGraphAction action = GraphObject.Factory.create(OpenGraphAction.class);
-	        	action.setProperty("Run", rdnr);
-	        	action.setType("road_runner:Run");
-
-	        	FacebookDialog shareDialog = new FacebookDialog.OpenGraphActionDialogBuilder(this, action, "Run")
-//	        	.setImageAttachmentsForAction(images, true)
-	        	    .build();
-	        	uiHelper.trackPendingDialogCall(shareDialog.present());
+					@Override
+					public void onCompleted(Response response) {
+						// TODO Auto-generated method stub
+						
+					}
+	            	
+	            });
+	            request.executeAsync();
+//	        	OpenGraphObject rdnr = OpenGraphObject.Factory.createForPost("road_runner:Course");
+//	        	rdnr.setProperty("title", "Roadrunner");
+////	        	rdnr.setProperty("image", "https://example.com/cooking-app/meal/Shrimp-Curry.html");
+////	        	rdnr.setProperty("description", "...recipe text...");
+//
+//	        	Bitmap bitmap1 = RoadRunnerSetting.getMapScreen();
+//	        	List<Bitmap> images = new ArrayList<Bitmap>();
+//	        	images.add(bitmap1);
+//
+//	        	OpenGraphAction action = GraphObject.Factory.create(OpenGraphAction.class);
+//	        	action.setProperty("Run", rdnr);
+//	        	action.setType("road_runner:Run");
+//
+//	        	FacebookDialog shareDialog = new FacebookDialog.OpenGraphActionDialogBuilder(this, action, "Run")
+////	        	.setImageAttachmentsForAction(images, true)
+//	        	    .build();
+//	        	uiHelper.trackPendingDialogCall(shareDialog.present());
 	        } else {
 	            pendingAction = PendingAction.POST_PHOTO;
 	        }
@@ -388,6 +405,7 @@ public class FinishActivity extends FragmentActivity {
 		for (int i = 0; i < trackMemberList.size()	; i++) {
 			if(trackMemberList.get(i).getfName().equals(RoadRunnerSetting.getFacebookName())){
 				myTrack = trackMemberList.get(i);
+				break;
 			}
 		}
 		mTabsAdapter = new TabsAdapter(this, pager, myTrack);
@@ -464,8 +482,8 @@ public class FinishActivity extends FragmentActivity {
 //				uiHelper.trackPendingDialogCall(shareDialog.present());
 		uploadFile();
 		updateDataBase();
-		onClickPostStatusUpdate(); //Post to facebook
-//		onClickPostPhoto();
+//		onClickPostStatusUpdate(); //Post to facebook
+		onClickPostPhoto();
 		// initFragment();
 	}
 

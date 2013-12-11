@@ -31,7 +31,7 @@ public class FinishAdaptor extends BaseAdapter implements OnClickListener {
 	private TrackMemberList tempValues;
 	private Bitmap profileIcon;
 
-	public FinishAdaptor(FinishActivity finishActivity,
+	public FinishAdaptor(Activity finishActivity,
 			ArrayList<TrackMemberList> trackMemberList) {
 		activity = finishActivity;
 		data = trackMemberList;

@@ -3,10 +3,13 @@ package com.senior.roadrunner;
 import java.util.Locale;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.SearchManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -46,35 +49,37 @@ public class MainActivity extends FragmentActivity {
 	private static final int PERIOD = 2000;
 
 	private FragmentManager fragmentManager;
-	
-    private static final String USER_SKIPPED_LOGIN_KEY = "user_skipped_login";
 
-    private static final int SPLASH = 0;
-    private static final int SETTING = 1;
-    private static final int USERSETTINGS = 2;
-    private static final int FRAGMENT_COUNT = USERSETTINGS +1;
+	private static final String USER_SKIPPED_LOGIN_KEY = "user_skipped_login";
 
-    private Fragment[] fragments = new Fragment[FRAGMENT_COUNT];
-    private MenuItem settings;
-    private boolean isResumed = false;
-    private boolean userSkippedLogin = false;
-    private UiLifecycleHelper uiHelper;
-    private Session.StatusCallback callback = new Session.StatusCallback() {
-        @Override
-        public void call(Session session, SessionState state, Exception exception) {
-            onSessionStateChange(session, state, exception);
-        }
-    };
+	private static final int SPLASH = 0;
+	private static final int SETTING = 1;
+	private static final int USERSETTINGS = 2;
+	private static final int FRAGMENT_COUNT = USERSETTINGS + 1;
+
+	private Fragment[] fragments = new Fragment[FRAGMENT_COUNT];
+	private MenuItem settings;
+	private boolean isResumed = false;
+	private boolean userSkippedLogin = false;
+	private UiLifecycleHelper uiHelper;
+	private Session.StatusCallback callback = new Session.StatusCallback() {
+		@Override
+		public void call(Session session, SessionState state,
+				Exception exception) {
+			onSessionStateChange(session, state, exception);
+		}
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-        if (savedInstanceState != null) {
-            userSkippedLogin = savedInstanceState.getBoolean(USER_SKIPPED_LOGIN_KEY);
-        }
-        uiHelper = new UiLifecycleHelper(this, callback);
-        uiHelper.onCreate(savedInstanceState);
+		if (savedInstanceState != null) {
+			userSkippedLogin = savedInstanceState
+					.getBoolean(USER_SKIPPED_LOGIN_KEY);
+		}
+		uiHelper = new UiLifecycleHelper(this, callback);
+		uiHelper.onCreate(savedInstanceState);
 		// Navigation Drawer
 		mTitle = mDrawerTitle = getTitle();
 		mPlanetTitles = getResources()
@@ -118,25 +123,28 @@ public class MainActivity extends FragmentActivity {
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
 
 		if (savedInstanceState == null) {
-	        FragmentManager fm = getSupportFragmentManager();
-	        SplashFragment splashFragment = (SplashFragment) fm.findFragmentById(R.id.splashFragment);
-	        fragments[SPLASH] = splashFragment;
-	        fragments[SETTING] = fm.findFragmentById(R.id.settingFragment);
-	        fragments[USERSETTINGS] = fm.findFragmentById(R.id.userSettingsFragment);
+			FragmentManager fm = getSupportFragmentManager();
+			SplashFragment splashFragment = (SplashFragment) fm
+					.findFragmentById(R.id.splashFragment);
+			fragments[SPLASH] = splashFragment;
+			fragments[SETTING] = fm.findFragmentById(R.id.settingFragment);
+			fragments[USERSETTINGS] = fm
+					.findFragmentById(R.id.userSettingsFragment);
 
-	        FragmentTransaction transaction = fm.beginTransaction();
-	        for(int i = 0; i < fragments.length; i++) {
-	            transaction.hide(fragments[i]);
-	        }
-	        transaction.commit();
+			FragmentTransaction transaction = fm.beginTransaction();
+			for (int i = 0; i < fragments.length; i++) {
+				transaction.hide(fragments[i]);
+			}
+			transaction.commit();
 
-	        splashFragment.setSkipLoginCallback(new SplashFragment.SkipLoginCallback() {
-	            @Override
-	            public void onSkipLoginPressed() {
-	                userSkippedLogin = true;
-	                showFragment(SETTING, false);
-	            }
-	        });
+			splashFragment
+					.setSkipLoginCallback(new SplashFragment.SkipLoginCallback() {
+						@Override
+						public void onSkipLoginPressed() {
+							userSkippedLogin = true;
+							showFragment(SETTING, false);
+						}
+					});
 			selectItem(0);
 		}
 
@@ -152,92 +160,102 @@ public class MainActivity extends FragmentActivity {
 		// });
 
 	}
+
 	@Override
-    public void onResume() {
-        super.onResume();
-        uiHelper.onResume();
-        isResumed = true;
+	public void onResume() {
+		super.onResume();
+		uiHelper.onResume();
+		isResumed = true;
 
-        // Call the 'activateApp' method to log an app event for use in analytics and advertising reporting.  Do so in
-        // the onResume methods of the primary Activities that an app may be launched into.
-        AppEventsLogger.activateApp(this);
-    }
+		// Call the 'activateApp' method to log an app event for use in
+		// analytics and advertising reporting. Do so in
+		// the onResume methods of the primary Activities that an app may be
+		// launched into.
+		AppEventsLogger.activateApp(this);
+	}
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        uiHelper.onPause();
-        isResumed = false;
-    }
+	@Override
+	public void onPause() {
+		super.onPause();
+		uiHelper.onPause();
+		isResumed = false;
+	}
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        uiHelper.onActivityResult(requestCode, resultCode, data);
-    }
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		uiHelper.onActivityResult(requestCode, resultCode, data);
+	}
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        uiHelper.onDestroy();
-    }
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		uiHelper.onDestroy();
+	}
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        uiHelper.onSaveInstanceState(outState);
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		uiHelper.onSaveInstanceState(outState);
 
-        outState.putBoolean(USER_SKIPPED_LOGIN_KEY, userSkippedLogin);
-    }
+		outState.putBoolean(USER_SKIPPED_LOGIN_KEY, userSkippedLogin);
+	}
 
-    @Override
-    protected void onResumeFragments() {
-        super.onResumeFragments();
-        Session session = Session.getActiveSession();
+	@Override
+	protected void onResumeFragments() {
+		super.onResumeFragments();
+		Session session = Session.getActiveSession();
 
-        if (session != null && session.isOpened()) {
-            // if the session is already open, try to show the selection fragment
-            showFragment(SETTING, false);
-            userSkippedLogin = false;
-        } else if (userSkippedLogin) {
-            showFragment(SETTING, false);
-        } else {
-            // otherwise present the splash screen and ask the user to login, unless the user explicitly skipped.
-            showFragment(SPLASH, false);
-        }
-    }
-    private void onSessionStateChange(Session session, SessionState state, Exception exception) {
-        if (isResumed) {
-            FragmentManager manager = getSupportFragmentManager();
-            int backStackSize = manager.getBackStackEntryCount();
-            for (int i = 0; i < backStackSize; i++) {
-                manager.popBackStack();
-            }
-            // check for the OPENED state instead of session.isOpened() since for the
-            // OPENED_TOKEN_UPDATED state, the selection fragment should already be showing.
-            if (state.equals(SessionState.OPENED)) {
-                showFragment(SETTING, false);
-            } else if (state.isClosed()) {
-                showFragment(SPLASH, false);
-            }
-        }
-    }
-    private void showFragment(int fragmentIndex, boolean addToBackStack) {
-        FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction transaction = fm.beginTransaction();
-        for (int i = 0; i < fragments.length; i++) {
-            if (i == fragmentIndex) {
-                transaction.show(fragments[i]);
-            } else {
-                transaction.hide(fragments[i]);
-            }
-        }
-        if (addToBackStack) {
-            transaction.addToBackStack(null);
-        }
-        transaction.commit();
-    }
-    
+		if (session != null && session.isOpened()) {
+			// if the session is already open, try to show the selection
+			// fragment
+			showFragment(SETTING, false);
+			userSkippedLogin = false;
+		} else if (userSkippedLogin) {
+			showFragment(SETTING, false);
+		} else {
+			// otherwise present the splash screen and ask the user to login,
+			// unless the user explicitly skipped.
+			showFragment(SPLASH, false);
+		}
+	}
+
+	private void onSessionStateChange(Session session, SessionState state,
+			Exception exception) {
+		if (isResumed) {
+			FragmentManager manager = getSupportFragmentManager();
+			int backStackSize = manager.getBackStackEntryCount();
+			for (int i = 0; i < backStackSize; i++) {
+				manager.popBackStack();
+			}
+			// check for the OPENED state instead of session.isOpened() since
+			// for the
+			// OPENED_TOKEN_UPDATED state, the selection fragment should already
+			// be showing.
+			if (state.equals(SessionState.OPENED)) {
+				showFragment(SETTING, false);
+			} else if (state.isClosed()) {
+				showFragment(SPLASH, false);
+			}
+		}
+	}
+
+	private void showFragment(int fragmentIndex, boolean addToBackStack) {
+		FragmentManager fm = getSupportFragmentManager();
+		FragmentTransaction transaction = fm.beginTransaction();
+		for (int i = 0; i < fragments.length; i++) {
+			if (i == fragmentIndex) {
+				transaction.show(fragments[i]);
+			} else {
+				transaction.hide(fragments[i]);
+			}
+		}
+		if (addToBackStack) {
+			transaction.addToBackStack(null);
+		}
+		transaction.commit();
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
@@ -250,20 +268,20 @@ public class MainActivity extends FragmentActivity {
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		// If the nav drawer is open, hide action items related to the content
 		// view
-//		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-//		menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
-//		return super.onPrepareOptionsMenu(menu);
-		 // only add the menu when the selection fragment is showing
-        if (fragments[SETTING].isVisible()) {
-            if (menu.size() == 0) {
-                settings = menu.add(R.string.settings);
-            }
-            return true;
-        } else {
-            menu.clear();
-            settings = null;
-        }
-        return false;
+		// boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+		// menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
+		// return super.onPrepareOptionsMenu(menu);
+		// only add the menu when the selection fragment is showing
+		if (fragments[SETTING].isVisible()) {
+			if (menu.size() == 0) {
+				settings = menu.add(R.string.settings);
+			}
+			return true;
+		} else {
+			menu.clear();
+			settings = null;
+		}
+		return false;
 	}
 
 	@SuppressLint("NewApi")
@@ -274,10 +292,10 @@ public class MainActivity extends FragmentActivity {
 		if (mDrawerToggle.onOptionsItemSelected(item)) {
 			return true;
 		}
-		 if (item.equals(settings)) {
-	            showSettingsFragment();
-	            return true;
-	        }
+		if (item.equals(settings)) {
+			showSettingsFragment();
+			return true;
+		}
 		// Handle action buttons
 		switch (item.getItemId()) {
 		case R.id.action_websearch:
@@ -296,9 +314,11 @@ public class MainActivity extends FragmentActivity {
 			return super.onOptionsItemSelected(item);
 		}
 	}
-    public void showSettingsFragment() {
-        showFragment(USERSETTINGS, true);
-    }
+
+	public void showSettingsFragment() {
+		showFragment(USERSETTINGS, true);
+	}
+
 	/* The click listner for ListView in the navigation drawer */
 	private class DrawerItemClickListener implements
 			ListView.OnItemClickListener {
@@ -308,7 +328,15 @@ public class MainActivity extends FragmentActivity {
 			selectItem(position);
 		}
 	}
-
+	public boolean isGpsEnable() {
+		boolean isgpsenable = false;
+		String provider = Settings.Secure.getString(this.getContentResolver(),
+				Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+		if (provider.equals("network,gps")) { // GPS is Enabled
+			isgpsenable = true;
+		}
+		return isgpsenable;
+	}
 	@SuppressLint("NewApi")
 	private void selectItem(int position) {
 		// update the main content by replacing fragments
@@ -333,27 +361,48 @@ public class MainActivity extends FragmentActivity {
 			// Intent i = new Intent(this, LoginActivity.class);
 			// startActivity(i);
 			// settingFragment();
-//			fragmentManager
-//					.beginTransaction()
-//					.replace(R.id.content_frame,
-//							FacebookFragment.createInstacnce()).commit();
-			 showFragment(USERSETTINGS, false);
+			// fragmentManager
+			// .beginTransaction()
+			// .replace(R.id.content_frame,
+			// FacebookFragment.createInstacnce()).commit();
+			showFragment(USERSETTINGS, false);
 		} else if (position == 1) {
 			// fragmentManager.beginTransaction()
 			// .replace(R.id.content_frame, raceTrackFragment).commit();
-
-			Intent i = new Intent(this, RaceTrackSelectorActivity.class);
-			// i.putExtra(name, value)
-			startActivity(i);
+//			if (!isGpsEnable()) {
+//				DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+//					@Override
+//					public void onClick(DialogInterface dialog, int which) {
+//						switch (which) {
+//						case DialogInterface.BUTTON_POSITIVE:
+//							Intent intent = new Intent(
+//									Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//							startActivity(intent);
+//							break;
+//						case DialogInterface.BUTTON_NEGATIVE:
+//							// No button clicked
+//							break;
+//						}
+//					}
+//				};
+//				AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//				builder.setMessage("Setting GPS?")
+//						.setPositiveButton("Yes", dialogClickListener).show();
+//			} else {
+				Intent i = new Intent(this, RaceTrackSelectorActivity.class);
+				// i.putExtra(name, value)
+				startActivity(i);
+//			}
+			
 		} else if (position == 2) {
 		} else if (position == 3) {
 			// Intent i = new Intent(this, FinishActivity.class);
 			// startActivity(i);
-//			fragmentManager
-//					.beginTransaction()
-//					.replace(R.id.content_frame,
-//							SettingFragment.createInstacnce()).commit();
-			 showFragment(SETTING, false);
+			// fragmentManager
+			// .beginTransaction()
+			// .replace(R.id.content_frame,
+			// SettingFragment.createInstacnce()).commit();
+			showFragment(SETTING, false);
 
 		} else if (position == 4) {
 			exitApp();

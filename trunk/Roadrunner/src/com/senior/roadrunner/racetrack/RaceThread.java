@@ -1,6 +1,8 @@
 package com.senior.roadrunner.racetrack;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -13,6 +15,7 @@ import java.util.List;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -55,36 +58,23 @@ public class RaceThread extends Thread {
 		if (listTracker == null) {
 			return;
 		}
-		String name = "https://graph.facebook.com/" + listTracker.getfId()
-				+ "/picture?75=&height=75";
+		File f = new File(RoadRunnerSetting.SDPATH + "img/"
+				+ listTracker.getfId() + ".png");
 
-		String imgPath = RoadRunnerSetting.SDPATH +"img/";
-		File dir = new File(imgPath);
-
-		URL url_value;
 		try {
-			url_value = new URL(name);
-			profileIcon = BitmapFactory.decodeStream(url_value.openConnection()
-					.getInputStream());
-
-			if (!dir.exists())
-				dir.mkdirs();
-			File file = new File(dir, listTracker.getfId() + ".png");
-			FileOutputStream fOut = new FileOutputStream(file);
-
-			profileIcon.compress(Bitmap.CompressFormat.PNG, 85, fOut);
-			fOut.flush();
-			fOut.close();
-
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			profileIcon = BitmapFactory.decodeStream(new FileInputStream(f));
+		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+		System.out.println("THREAD : "+RoadRunnerSetting.SDPATH
+				+ listTracker.getTrackerDir());
 		data = TrackDataBase.loadXmlFile(RoadRunnerSetting.SDPATH
 				+ listTracker.getTrackerDir());
+		if(data == null){
+//			Toast.makeText(activity, "Data is error while loading tracker file from server.", 1000).show();
+			System.out.println("Data is error while loading tracker file from server");
+			return;
+		}
 		for (i = 0; i < data.size(); i++) {
 			try {
 				Date recentDate = sdf.parse(data.get(i).getWhen());
@@ -116,13 +106,21 @@ public class RaceThread extends Thread {
 						if (marker != null) {
 							marker.remove();
 						}
-
+						if(profileIcon==null){
+							marker = map.addMarker(new MarkerOptions()
+							.position(point)
+							.icon(BitmapDescriptorFactory
+									.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+							.title(listTracker.getfName())
+							.snippet("Speed : " + speed + "m/s"));
+						}else{
 						marker = map.addMarker(new MarkerOptions()
 								.position(point)
 								.icon(BitmapDescriptorFactory
 										.fromBitmap(profileIcon))
 								.title(listTracker.getfName())
 								.snippet("Speed : " + speed + "m/s"));
+						}
 						marker.showInfoWindow();
 						Spherical latLngInterpolator = new Spherical();
 						latLngInterpolator.interpolate(5.0f, point, end);
