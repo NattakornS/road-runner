@@ -1,5 +1,7 @@
 package com.senior.roadrunner.setting;
 
+import java.io.File;
+
 import com.facebook.model.GraphLocation;
 
 import android.graphics.Bitmap;
@@ -11,7 +13,7 @@ public class RoadRunnerSetting {
 	private static Bitmap mapScreen;
 	private static Bitmap profileIcon;
 	public static String SDPATH = Environment.getExternalStorageDirectory()
-			+ "/" + "roadrunner/";
+			+ File.separator + "roadrunner"+File.separator;
 	private static String city;
 
 	public static String getFacebookName() {

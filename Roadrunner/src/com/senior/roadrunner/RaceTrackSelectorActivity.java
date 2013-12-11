@@ -1,8 +1,8 @@
 package com.senior.roadrunner;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -17,12 +17,19 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.Settings;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -44,13 +51,13 @@ import com.facebook.Request;
 import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.Session.StatusCallback;
-import com.facebook.model.GraphUser;
 import com.facebook.SessionState;
+import com.facebook.model.GraphUser;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
 import com.google.android.gms.maps.GoogleMap.SnapshotReadyCallback;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -58,6 +65,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
+import com.senior.roadrunner.finish.FinishAdaptor;
 import com.senior.roadrunner.racetrack.TrackList;
 import com.senior.roadrunner.racetrack.TrackListAdapter;
 import com.senior.roadrunner.racetrack.TrackMemberList;
@@ -67,17 +75,16 @@ import com.senior.roadrunner.setting.RoadRunnerSetting;
 @SuppressLint("NewApi")
 public class RaceTrackSelectorActivity extends Activity implements
 		SearchView.OnQueryTextListener, SearchView.OnCloseListener,
-		OnClickListener, DrawerListener, StatusCallback {
+		OnClickListener, DrawerListener, StatusCallback, LocationListener {
 
-	public static String mapcapPath = Environment
-			.getExternalStorageDirectory() + "/" + "roadrunner/"
-			+ RoadRunnerSetting.getFacebookId() +".png";
+	public static String mapcapPath = Environment.getExternalStorageDirectory()
+			+ "/" + "roadrunner/" + RoadRunnerSetting.getFacebookId() + ".png";
 	private static final String URLServer = "http://roadrunner-5313180.dx.am/";// "http://192.168.1.111/";//
 	private static final String FACEBOOK_INFORMATION_URL = "http://graph.facebook.com/";
 	// 192.168.1.173//http://192.168.1.117/
 	ListView list;
 	TrackListAdapter adapter;
-	public Activity CustomListView = null;
+	public Activity activity = null;
 	public ArrayList<TrackList> trackList = new ArrayList<TrackList>();
 	public ArrayList<TrackMemberList> trackMemberList;
 	private ConnectServer connectServer;
@@ -97,6 +104,11 @@ public class RaceTrackSelectorActivity extends Activity implements
 	public ArrayList<LatLngTimeData> trackPathData = null;
 	private int listPosition;
 	private Session sessions;
+	private Location currentLoc;
+
+	private LocationManager mLocationManager;
+	private MarkerOptions startMarker;
+	private MarkerOptions endMarker;
 
 	@SuppressLint("NewApi")
 	@Override
@@ -104,7 +116,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.racetrack_layout);
 
-		CustomListView = this;
+		activity = this;
 		invalidateOptionsMenu();
 		/******** Take some data in Arraylist ( CustomListViewValuesArr ) ***********/
 
@@ -130,6 +142,49 @@ public class RaceTrackSelectorActivity extends Activity implements
 		trackDataTxtView = (TextView) findViewById(R.id.track_data_txtview);
 		// facebookGetData();s
 
+		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		boolean isGPSEnabled = mLocationManager
+				.isProviderEnabled(LocationManager.GPS_PROVIDER);
+		boolean isNetworkEnabled = mLocationManager
+				.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+		if (!isGPSEnabled && !isNetworkEnabled) {
+			DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					switch (which) {
+					case DialogInterface.BUTTON_POSITIVE:
+						Intent intent = new Intent(
+								Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+						startActivity(intent);
+						break;
+					case DialogInterface.BUTTON_NEGATIVE:
+						// No button clicked
+						break;
+					}
+				}
+			};
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage("Setting GPS?")
+					.setPositiveButton("Yes", dialogClickListener).show();
+		}
+		if (isGPSEnabled) {
+			mLocationManager.requestLocationUpdates(
+					LocationManager.GPS_PROVIDER, 5, 0, this);
+		} else if (isNetworkEnabled) {
+			mLocationManager.requestLocationUpdates(
+					LocationManager.NETWORK_PROVIDER, 5, 0, this);
+		}
+
+	}
+
+	public boolean isGpsEnable() {
+		boolean isgpsenable = false;
+		String provider = Settings.Secure.getString(this.getContentResolver(),
+				Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+		if (provider.equals("network,gps")) { // GPS is Enabled
+			isgpsenable = true;
+		}
+		return isgpsenable;
 	}
 
 	private void facebookGetData() {
@@ -247,6 +302,8 @@ public class RaceTrackSelectorActivity extends Activity implements
 	public void setListData() {
 		connectServer = new ConnectServer(this, URLServer
 				+ "/racetracklist.php");
+		connectServer.addValue("Latitude", currentLoc.getLatitude() + "");
+		connectServer.addValue("Longitude", currentLoc.getLongitude() + "");
 		connectServer.setRequestTag(ConnectServer.TRACK_LIST);
 		connectServer.execute();
 
@@ -330,14 +387,17 @@ public class RaceTrackSelectorActivity extends Activity implements
 				/******* Firstly take data in model object ******/
 				sched.setRaceTrackName(jsonObject.getString("Rname"));
 				sched.setrId(jsonObject.getString("Rid"));
-				String[] location = jsonObject.getString("Location").split(",");
-				sched.setDoubleLat(Double.parseDouble(location[0]));
-				sched.setDoubleLon(Double.parseDouble(location[1]));
+				// String[] location =
+				// jsonObject.getString("Location").split(",");
+				// sched.setDoubleLat(Double.parseDouble(location[0]));
+				// sched.setDoubleLon(Double.parseDouble(location[1]));
+				sched.setDoubleLat(jsonObject.getDouble("Latitude"));
+				sched.setDoubleLon(jsonObject.getDouble("Longitude"));
 				sched.setRdir(jsonObject.getString("Rdir"));
 				/******** Take Model Object in ArrayList **********/
 				trackList.add(sched);
 				/**************** Create Custom Adapter *********/
-				adapter = new TrackListAdapter(CustomListView, trackList, res);
+				adapter = new TrackListAdapter(activity, trackList, res);
 
 				// set up the drawer's list view with items and click listener
 				mDrawerList.setAdapter(adapter);
@@ -361,26 +421,25 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	// Drawing on map function.
 	public void drawTrackPath() {
-		
+
 		map.clear();
 		PolylineOptions options = new PolylineOptions();
-		MarkerOptions startMarker;
-		MarkerOptions endMarker;
-		
+
 		for (int i = 0; i < trackPathData.size(); i++) {
 			LatLng point = new LatLng(trackPathData.get(i).getCoordinate()
 					.getLat(), trackPathData.get(i).getCoordinate().getLng());
-			if(i==0){
-				startMarker=new MarkerOptions()
-				.position(point)
-				.icon(BitmapDescriptorFactory.fromResource(R.drawable.play))
-				.title("Start");
+			if (i == 0) {
+				startMarker = new MarkerOptions()
+						.position(point)
+						.icon(BitmapDescriptorFactory
+								.fromResource(R.drawable.play)).title("Start");
 				map.addMarker(startMarker);
-			}if(i==trackPathData.size()-1){
-				endMarker=new MarkerOptions()
-				.position(point)
-				.icon(BitmapDescriptorFactory.fromResource(R.drawable.flag))
-				.title("End");
+			}
+			if (i == trackPathData.size() - 1) {
+				endMarker = new MarkerOptions()
+						.position(point)
+						.icon(BitmapDescriptorFactory
+								.fromResource(R.drawable.flag)).title("End");
 				map.addMarker(endMarker);
 			}
 			options.add(point);
@@ -388,7 +447,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 		options.color(Color.RED);
 		options.width(8);
 		map.addPolyline(options);
-		
+
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
 				trackPathData.get(0).getCoordinate().getLat(), trackPathData
 						.get(0).getCoordinate().getLng()), 15.0f));
@@ -416,7 +475,58 @@ public class RaceTrackSelectorActivity extends Activity implements
 				trackMemberList.add(sched);
 
 			}
+			new Thread(new Runnable() {
 
+				@Override
+				public void run() {
+					try {
+						URL url_value;
+						Bitmap profileIcon;
+						String gurl = "https://graph.facebook.com/"
+								+ RoadRunnerSetting.getFacebookId()
+								+ "/picture?75=&height=75";
+						url_value = new URL(gurl);
+						profileIcon = BitmapFactory.decodeStream(url_value
+								.openConnection().getInputStream());
+						RoadRunnerSetting.setProfileImg(profileIcon);
+						for (int i = 0; i < trackMemberList.size(); i++) {
+
+							String name = "https://graph.facebook.com/"
+									+ trackMemberList.get(i).getfId()
+									+ "/picture?75=&height=75";
+
+							String imgPath = RoadRunnerSetting.SDPATH + "img/";
+							File dir = new File(imgPath);
+
+							url_value = new URL(name);
+							profileIcon = BitmapFactory.decodeStream(url_value
+									.openConnection().getInputStream());
+
+							if (!dir.exists())
+								dir.mkdirs();
+							File file = new File(dir, trackMemberList.get(i)
+									.getfId() + ".png");
+							if(!file.exists()){
+								FileOutputStream fOut = new FileOutputStream(file);
+
+								profileIcon.compress(Bitmap.CompressFormat.PNG, 85,
+										fOut);
+								fOut.flush();
+								fOut.close();
+							}
+							
+
+						}
+					} catch (MalformedURLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+				}
+			}).start();
 		} catch (JSONException e) {
 
 		}
@@ -428,11 +538,43 @@ public class RaceTrackSelectorActivity extends Activity implements
 		String trackMemberString = "";
 		for (int i = 0; i < trackMemberList.size(); i++) {
 			trackMemberString = trackMemberString
-					+ trackMemberList.get(i).getRank()+" "+trackMemberList.get(i).getfName() + "\n";
+					+ trackMemberList.get(i).getRank() + " "
+					+ trackMemberList.get(i).getfName() + " "
+					+ trackMemberList.get(i).getDuration() + "\n";
 
 		}
-		Toast.makeText(CustomListView, trackMemberString, 3000)
-				.show();
+
+		Toast.makeText(activity, trackMemberString, 3000).show();
+		map.setInfoWindowAdapter(new InfoWindowAdapter() {
+
+			@Override
+			public View getInfoWindow(Marker marker) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public View getInfoContents(Marker marker) {
+				// info view
+				System.out.println(marker.getTitle());
+				if (marker.getTitle().equals("Start")) {
+					View v = getLayoutInflater().inflate(R.layout.info_layout,
+							null);
+
+					if (trackMemberList != null) {
+						FinishAdaptor aa = new FinishAdaptor(activity,
+								trackMemberList);
+						final ListView ll = (ListView) v
+								.findViewById(R.id.finishListView);
+						ll.setAdapter(aa);
+					}
+
+					return v;
+				}
+				return null;
+
+			}
+		});
 
 		trackList.get(listPosition).setTrackMemberList(trackMemberList);
 	}
@@ -446,6 +588,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 	@Override
 	public void onClick(View v) {
 		if (v.equals(raceBtn)) {
+
 			if (trackMemberList == null || trackPathData == null) {
 				return;
 			}
@@ -475,10 +618,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	@Override
 	public void onDrawerOpened(View arg0) {
-		if (trackList.size() > 0) {
-			return;
-		}
-		setListData();
+
 	}
 
 	@Override
@@ -528,5 +668,36 @@ public class RaceTrackSelectorActivity extends Activity implements
 		// which is initialized in onCreate() =>
 		// myMap = ((SupportMapFragment)
 		// getSupportFragmentManager().findFragmentById(R.id.map_pass_home_call)).getMap();
+	}
+
+	@Override
+	public void onLocationChanged(Location location) {
+		this.currentLoc = location;
+		System.out.println("CURRENT LOCATION :" + currentLoc.getLatitude()
+				+ currentLoc.getLongitude());
+		if (trackList.size() > 0) {
+			return;
+		}
+		setListData();
+		mLocationManager.removeUpdates(this);
+
+	}
+
+	@Override
+	public void onProviderDisabled(String provider) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onProviderEnabled(String provider) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
+
 	}
 }

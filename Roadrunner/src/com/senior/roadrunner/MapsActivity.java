@@ -1,7 +1,9 @@
 package com.senior.roadrunner;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -67,7 +69,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 {
 	public static String rId = "";
 	public static final String fId = RoadRunnerSetting.getFacebookId();
-	public static final String savePath = RoadRunnerSetting.SDPATH + fId + ".xml";
+	public static final String savePath = RoadRunnerSetting.SDPATH + fId
+			+ ".xml";
 
 	GoogleMap map;
 	LocationManager myLocationManager;
@@ -75,7 +78,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private View btn_stop_track;
 	private Button btn_track;
 	private ArrayList<LatLngTimeData> latLngTimeData;
-//	private Button btn_load_track;
+	// private Button btn_load_track;
 	// private HistoryTrack historyTrack;
 	public static final String URLServer = "http://roadrunner-5313180.dx.am/";// "http://192.168.1.111/";
 
@@ -119,45 +122,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		trackMemberListTemp.addAll(trackMemberList);
 		// set current Rid
 		rId = trackMemberList.get(0).getrId();
-		new Thread(new Runnable() {
 
-			@Override
-			public void run() {
-				try {
-					URL url_value;
-					Bitmap profileIcon;
-					String gurl = "https://graph.facebook.com/"
-							+ RoadRunnerSetting.getFacebookId()
-							+ "/picture?75=&height=75";
-					url_value = new URL(gurl);
-					profileIcon = BitmapFactory
-							.decodeStream(url_value.openConnection()
-									.getInputStream());
-					RoadRunnerSetting.setProfileImg(profileIcon);
-					for (int i = 0; i < trackMemberList.size(); i++) {
-
-						String name = "https://graph.facebook.com/"
-								+ trackMemberList.get(i).getfId()
-								+ "/picture?75=&height=75";
-						
-
-						url_value = new URL(name);
-						profileIcon = BitmapFactory
-								.decodeStream(url_value.openConnection()
-										.getInputStream());
-//						trackMemberList.get(i).setProfileImg(profileIcon);
-
-					}
-				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			}
-		}).start();
 		trackPathData = intent.getStringExtra("TrackPathData");
 		initwidget();
 		loadFile();
@@ -166,14 +131,13 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		latLngTimeData = new ArrayList<LatLngTimeData>();
 		map = ((MapFragment) getFragmentManager().findFragmentById(R.id.maps))
 				.getMap();
-		map.setMyLocationEnabled(true);
+		// map.setMyLocationEnabled(true);
 		// SupportMapFragment supportMapFragment = (SupportMapFragment)
 		// getSupportFragmentManager()
 		// .findFragmentById(R.id.maps);
 
 		// map = supportMapFragment.getMap();
 		// map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-
 
 		// map.setMyLocationEnabled(true);
 		// CircleOptions options = new CircleOptions();
@@ -202,13 +166,13 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private void loadFile() {
 
 		for (int i = 0; i < trackMemberList.size(); i++) {
-			System.out.println("TrackerDir : "
-					+ trackMemberList.get(i).getTrackerDir());
+			// System.out.println("TrackerDir : "
+			// + trackMemberList.get(i).getTrackerDir());
 			ConnectServer connectServerTrackMemberData = new ConnectServer(
 					this, URLServer + "/getTrackPath.php");
 			connectServerTrackMemberData.addValue("Rdir", URLServer
 					+ trackMemberList.get(i).getTrackerDir());
-			//setIndex when xml return from server
+			// setIndex when xml return from server
 			connectServerTrackMemberData.setIndex(i);
 			connectServerTrackMemberData
 					.setRequestTag(ConnectServer.TRACK_MEMBER_PATH);
@@ -231,17 +195,18 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			double lng = data.get(i).getCoordinate().getLng();
 			options.add(new LatLng(lat, lng));
 			points.add(new Point(lat, lng));
-			if(i==0){
+			if (i == 0) {
 				MarkerOptions startMarker = new MarkerOptions()
-				.position(new LatLng(lat, lng))
-				.icon(BitmapDescriptorFactory.fromResource(R.drawable.play))
-				.title("Start");
+						.position(new LatLng(lat, lng))
+						.icon(BitmapDescriptorFactory
+								.fromResource(R.drawable.play)).title("Start");
 				map.addMarker(startMarker);
-			}if(i==data.size()-1){
+			}
+			if (i == data.size() - 1) {
 				MarkerOptions endMarker = new MarkerOptions()
-				.position(new LatLng(lat, lng))
-				.icon(BitmapDescriptorFactory.fromResource(R.drawable.flag))
-				.title("End");
+						.position(new LatLng(lat, lng))
+						.icon(BitmapDescriptorFactory
+								.fromResource(R.drawable.flag)).title("End");
 				map.addMarker(endMarker);
 			}
 		}
@@ -297,20 +262,22 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		}
 		polygonFinishOptions.fillColor(Color.BLACK);
 		map.addPolygon(polygonFinishOptions);
-		map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
-				points.get(0).x, points.get(0).y), 15.0f));
-
+		map.animateCamera(CameraUpdateFactory.newLatLngZoom(
+				new LatLng(points.get(0).x, points.get(0).y), 15.0f));
 
 	}
-//Check out/in path
+
+	// Check out/in path
 	private void checkisInPath(Point point) {
 		if (polygonStart != null && startCheck) {
 
 			if (polygonStart.contains(point)) {
-				Toast.makeText(this, "Start point : IN TRACK", Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, "Start point : IN TRACK",
+						Toast.LENGTH_SHORT).show();
 				btn_track.setEnabled(true);
 			} else {
-				Toast.makeText(this, "Start point : OUT TRACK", Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, "Start point : OUT TRACK",
+						Toast.LENGTH_SHORT).show();
 				btn_track.setEnabled(false);
 			}
 		}
@@ -343,8 +310,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		btn_track.setOnClickListener(this);
 		btn_stop_track = (Button) findViewById(R.id.btn_stop_track);
 		btn_stop_track.setOnClickListener(this);
-//		btn_load_track = (Button) findViewById(R.id.btn_load_track);
-//		btn_load_track.setOnClickListener(this);
+		// btn_load_track = (Button) findViewById(R.id.btn_load_track);
+		// btn_load_track.setOnClickListener(this);
 		txt_current_distace = (TextView) findViewById(R.id.txt_curent_distance);
 		txt_current_speed = (TextView) findViewById(R.id.txt_curent_speed);
 		txt_current_time = (TextView) findViewById(R.id.txt_curent_time);
@@ -390,14 +357,14 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			startActivity(intent);
 
 			myHandler.removeCallbacks(updateTimerMethod);
-//			exitActivity();
+			// exitActivity();
 			break;
 
-//		case R.id.btn_load_track:
-//			Toast.makeText(getApplicationContext(), "Load data",
-//					Toast.LENGTH_SHORT).show();
-//			raceThread();
-//			break;
+		// case R.id.btn_load_track:
+		// Toast.makeText(getApplicationContext(), "Load data",
+		// Toast.LENGTH_SHORT).show();
+		// raceThread();
+		// break;
 		}
 
 	}
@@ -434,16 +401,17 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		myTrack.setDuration(finalTime);
 		myTrack.setfId(fId);
 		myTrack.setfName(RoadRunnerSetting.getFacebookName());
-//		myTrack.setProfileImg(RoadRunnerSetting.getProfileIcon());
-//		myTrack.setRank(rank);
+		// myTrack.setProfileImg(RoadRunnerSetting.getProfileIcon());
+		// myTrack.setRank(rank);
 		myTrack.setrId(rId);
-//		myTrack.setTrackData(latLngTimeData);
-		myTrack.setTrackerDir("tracker/"+rId+"/"+RoadRunnerSetting.getFacebookId()+".xml");
+		// myTrack.setTrackData(latLngTimeData);
+		myTrack.setTrackerDir("tracker/" + rId + "/"
+				+ RoadRunnerSetting.getFacebookId() + ".xml");
 		trackMemberList.add(myTrack);
-		
-//		for (int i = 0; i < trackMemberList.size(); i++) {
-//			System.out.println(trackMemberList.get(i).getDuration());
-//		}
+
+		// for (int i = 0; i < trackMemberList.size(); i++) {
+		// System.out.println(trackMemberList.get(i).getDuration());
+		// }
 		Collections.sort(trackMemberList, new Comparator<TrackMemberList>() {
 			@Override
 			public int compare(TrackMemberList c1, TrackMemberList c2) {
@@ -451,10 +419,10 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 						.getDuration()));
 			}
 		});
-		//Set rank
+		// Set rank
 		for (int i = 0; i < trackMemberList.size(); i++) {
 			System.out.println(trackMemberList.get(i).getDuration());
-			trackMemberList.get(i).setRank(i+1);
+			trackMemberList.get(i).setRank(i + 1);
 		}
 	}
 
@@ -569,7 +537,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		}
 
 		marker = map.addMarker(new MarkerOptions().position(coord)
-				.icon(BitmapDescriptorFactory.fromResource(R.drawable.king))
+				.icon(BitmapDescriptorFactory.fromBitmap(RoadRunnerSetting.getProfileIcon()))
 				.title("Nattakorn Sanpabopit"));
 
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
@@ -583,8 +551,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private void recordTrack(Location loc) {
 		DecimalFormat df = new DecimalFormat("0.00");
 		if (loc.hasSpeed()) {
-//			Toast.makeText(this, "Speed : " + loc.getSpeed() + " KPH",
-//					Toast.LENGTH_SHORT).show();
+			// Toast.makeText(this, "Speed : " + loc.getSpeed() + " KPH",
+			// Toast.LENGTH_SHORT).show();
 
 			String gpsSpeed = df.format(loc.getSpeed() * 1000 / 3600);
 			txt_current_speed.setText(gpsSpeed);
@@ -681,19 +649,50 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	public void setList(String result) {
 		System.out.println("Result : " + result);
 	}
-//Return track.xml from dataBase server
+
+	// Return track.xml from dataBase server
 	public synchronized void setMemberTrack(String result, int index) {
-		// System.out.println("Index : "+ index);
-		List<LatLngTimeData> trackData = TrackDataBase.loadXmlString(result);
-		TrackDataBase.saveXmlFile(trackData, RoadRunnerSetting.SDPATH+trackMemberList.get(index).getTrackerDir());
-//		trackMemberList.get(index).setTrackData(trackData);
-		
+		try {
+			String s = RoadRunnerSetting.SDPATH
+					+ trackMemberList.get(index).getTrackerDir();
+			System.out.println(s);
+			File f = new File(s);
+			File pf = f.getParentFile();
+			if (pf != null) {
+				pf.mkdirs();
+			}
+			if ((pf.exists()) && (pf.isDirectory())) {
+				if ((!f.exists()) || (!f.isFile())) {
+					f.createNewFile();
+				}
+				if ((f.exists()) || (f.isFile())) {
+					FileOutputStream os = null;
+					os = new FileOutputStream(s, false);
+					if (os != null) {
+						OutputStreamWriter myOutWriter = new OutputStreamWriter(
+								os);
+						myOutWriter.write(result);//
+						myOutWriter.close();
+						System.out.println(result);
+					}
+					os.flush();
+					os.close();
+				}
+			}
+		} catch (IOException e) {
+			String s = e.toString();
+			System.out.println(s);
+		}
+
+		// trackMemberList.get(index).setTrackData(trackData);
+
 	}
 
 	public static ArrayList<TrackMemberList> getTrackMemberList() {
 		return trackMemberList;
 
 	}
+
 	private void exitActivity() {
 		finish();
 		android.os.Process.killProcess(android.os.Process.myPid());

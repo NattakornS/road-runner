@@ -42,7 +42,7 @@
         android:layout_width="150dp"
         android:layout_height="match_parent"
         android:layout_gravity="right"
-        android:background="#111"
+        android:background="#80000000"
         android:choiceMode="singleChoice"
         android:dividerHeight="1dp">
 

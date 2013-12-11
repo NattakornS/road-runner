@@ -78,7 +78,7 @@ public class UploadTask extends AsyncTask<String, Integer, String> {
 		String fileUri = params[0];
 		String imgUri = params[1];
 		File sourceFile = new File(fileUri);
-		File imgFile = new File(fileUri);
+		File imgFile = new File(imgUri);
 		PowerManager pm = (PowerManager) context
 				.getSystemService(Context.POWER_SERVICE);
 		PowerManager.WakeLock wl = pm.newWakeLock(

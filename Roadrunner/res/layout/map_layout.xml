@@ -21,7 +21,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_margin="10dp"
-        android:background="@drawable/blue_menu_btn"
+        android:background="@drawable/rounded_corners"
         android:gravity="fill"
          >
 
@@ -65,7 +65,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="10"
-                    android:textColor="@color/white_gage"
+                    android:textColor="@color/white"
                     android:textSize="40sp" />
             </LinearLayout>
 
@@ -79,6 +79,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="KM"
+                    android:textColor="@color/white"
                     android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
@@ -121,7 +122,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="01&apos;24"
-                    android:textColor="@color/white_gage"
+                    android:textColor="@color/white"
                     android:textSize="40sp" />
             </LinearLayout>
 
@@ -135,6 +136,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="MIN"
+                    android:textColor="@color/white"
                     android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
@@ -179,7 +181,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="15"
-                    android:textColor="@color/white_gage"
+                    android:textColor="@color/white"
                     android:textSize="40sp" />
             </LinearLayout>
 
@@ -193,6 +195,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="KPH"
+                    android:textColor="@color/white"
                     android:textSize="15dp" />
             </LinearLayout>
         </LinearLayout>
@@ -215,7 +218,8 @@
             android:layout_weight="0.5"
             android:background="@drawable/blue_menu_btn"
             android:text="START"
-            android:textColor="@color/white_gage" />
+            android:layout_margin="20dp"
+            android:textColor="@color/white" />
 
         <Button
             android:id="@+id/btn_stop_track"
@@ -224,7 +228,8 @@
             android:layout_weight="0.5"
             android:background="@drawable/blue_menu_btn"
             android:text="STOP"
-            android:textColor="@color/white_gage" />
+            android:layout_margin="20dp"
+            android:textColor="@color/white" />
     </LinearLayout>
 
 </RelativeLayout>

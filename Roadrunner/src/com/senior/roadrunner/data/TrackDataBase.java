@@ -95,6 +95,7 @@ public class TrackDataBase {
 		}
 		try {
 			File myFile = new File(savePath);
+			myFile.mkdirs();
 			myFile.createNewFile();
 			FileOutputStream fOut = new FileOutputStream(myFile);
 			OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
@@ -105,6 +106,7 @@ public class TrackDataBase {
 			// "Done writing SD 'mysdfile.txt'",
 			// Toast.LENGTH_SHORT).show();
 		} catch (Exception e) {
+			e.printStackTrace();
 			// Toast.makeText(null, e.getMessage(),
 			// Toast.LENGTH_SHORT).show();
 		}
