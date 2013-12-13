@@ -94,17 +94,41 @@ public class TrackDataBase {
 			trackdata.add(iterator.next());
 		}
 		try {
-			File myFile = new File(savePath);
-			myFile.mkdirs();
-			myFile.createNewFile();
-			FileOutputStream fOut = new FileOutputStream(myFile);
-			OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
-			myOutWriter.append(xstream.toXML(trackdata));// xstream.toXML(latLngTimeData)
-			myOutWriter.close();
-			fOut.close();
-			// Toast.makeText(null,
-			// "Done writing SD 'mysdfile.txt'",
-			// Toast.LENGTH_SHORT).show();
+//			File myFile = new File(savePath);
+//			myFile.mkdirs();
+//			myFile.createNewFile();
+//			FileOutputStream fOut = new FileOutputStream(myFile);
+//			OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+//			myOutWriter.append(xstream.toXML(trackdata));// xstream.toXML(latLngTimeData)
+//			myOutWriter.close();
+//			fOut.close();
+//			// Toast.makeText(null,
+//			// "Done writing SD 'mysdfile.txt'",
+//			// Toast.LENGTH_SHORT).show();
+			File f = new File(savePath);
+			File pf = f.getParentFile();
+			if (pf != null) {
+				pf.mkdirs();
+			}
+			if ((pf.exists()) && (pf.isDirectory())) {
+				if ((!f.exists()) || (!f.isFile())) {
+					f.createNewFile();
+				}
+				if ((f.exists()) || (f.isFile())) {
+					FileOutputStream os = null;
+					os = new FileOutputStream(savePath, false);
+					if (os != null) {
+						OutputStreamWriter myOutWriter = new OutputStreamWriter(
+								os);
+						myOutWriter.write(xstream.toXML(trackdata));//
+						myOutWriter.close();
+						System.out.println("Write file to memory");
+					}
+					os.flush();
+					os.close();
+				}
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			// Toast.makeText(null, e.getMessage(),

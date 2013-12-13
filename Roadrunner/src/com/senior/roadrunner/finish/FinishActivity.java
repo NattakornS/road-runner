@@ -282,30 +282,38 @@ public class FinishActivity extends FragmentActivity {
 	    private void postPhoto() {
 	        if (hasPublishPermission()) {
 	            Bitmap image = RoadRunnerSetting.getMapScreen();
-	            Request request = Request.newUploadPhotoRequest(Session.getActiveSession(), image, new Request.Callback() {
-	               
-
-					@Override
-	                public void onCompleted(Response response) {
-	                	
-	                    showPublishResult("Upload imag sucess ", response.getGraphObject(), response.getError());
-	                }
-	            });
-	            request.executeAsync();
+//	            Request request = Request.newUploadPhotoRequest(Session.getActiveSession(), image, new Request.Callback() {
+//	               
+//
+//					@Override
+//	                public void onCompleted(Response response) {
+//	                	
+//	                    showPublishResult("Upload imag sucess ", response.getGraphObject(), response.getError());
+//	                }
+//	            });
+//	            request.executeAsync();
 	            String stringPost = "";
 	            for (int i = 0; i < trackMemberList.size(); i++) {
-					stringPost=stringPost+i+" "+trackMemberList.get(i).getfName()+"\n";
+					stringPost=stringPost+(i+1)+" "+trackMemberList.get(i).getfName()+"\n";
 				}
-	            request=Request.newStatusUpdateRequest(Session.getActiveSession(), "Roadrunner : \n"+stringPost, null, null, new Request.Callback(){
-
-					@Override
-					public void onCompleted(Response response) {
-						// TODO Auto-generated method stub
-						
-					}
-	            	
+	            Request request = Request.newMyUploadPhotoRequest(Session.getActiveSession(), image,"Roadrunner @ "+RoadRunnerSetting.getRaceTrackName()+" : \n"+stringPost, "", new Request.Callback() {
+	                @Override
+	                public void onCompleted(Response response) {
+	                    showPublishResult(getString(R.string.photo_post), response.getGraphObject(), response.getError());
+	                }
 	            });
-	            request.executeAsync();
+	            Request.executeBatchAsync(request);
+	            
+//	            request=Request.newStatusUpdateRequest(Session.getActiveSession(), "Roadrunner : \n"+stringPost, null, null, new Request.Callback(){
+//
+//					@Override
+//					public void onCompleted(Response response) {
+//						// TODO Auto-generated method stub
+//						
+//					}
+//	            	
+//	            });
+//	            request.executeAsync();
 //	        	OpenGraphObject rdnr = OpenGraphObject.Factory.createForPost("road_runner:Course");
 //	        	rdnr.setProperty("title", "Roadrunner");
 ////	        	rdnr.setProperty("image", "https://example.com/cooking-app/meal/Shrimp-Curry.html");

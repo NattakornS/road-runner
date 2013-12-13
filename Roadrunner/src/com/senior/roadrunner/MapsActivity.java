@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,15 +20,12 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
@@ -407,6 +402,16 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		// myTrack.setTrackData(latLngTimeData);
 		myTrack.setTrackerDir("tracker/" + rId + "/"
 				+ RoadRunnerSetting.getFacebookId() + ".xml");
+		
+		/*replace a new record
+		 * 
+		 * */
+		for (int i = 0; i < trackMemberList.size(); i++) {
+			if(trackMemberList.get(i).getfId().equals(RoadRunnerSetting.getFacebookId())){
+				trackMemberList.remove(i);
+//				trackMemberList.set(i, myTrack);
+			}
+		}
 		trackMemberList.add(myTrack);
 
 		// for (int i = 0; i < trackMemberList.size(); i++) {
@@ -538,7 +543,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 		marker = map.addMarker(new MarkerOptions().position(coord)
 				.icon(BitmapDescriptorFactory.fromBitmap(RoadRunnerSetting.getProfileIcon()))
-				.title("Nattakorn Sanpabopit"));
+				.title("Me"));
 
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
 

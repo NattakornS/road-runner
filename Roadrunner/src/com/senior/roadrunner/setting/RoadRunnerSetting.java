@@ -15,6 +15,7 @@ public class RoadRunnerSetting {
 	public static String SDPATH = Environment.getExternalStorageDirectory()
 			+ File.separator + "roadrunner"+File.separator;
 	private static String city;
+	private static String raceTrackName;
 
 	public static String getFacebookName() {
 		return facebookName;
@@ -55,5 +56,13 @@ public class RoadRunnerSetting {
 	}
 	public static String getCity() {
 		return city;
+	}
+
+	public static void setRaceTrackName(String raceTrackName) {
+		RoadRunnerSetting.raceTrackName = raceTrackName;
+		
+	}
+	public static String getRaceTrackName() {
+		return raceTrackName;
 	}
 }
