@@ -325,12 +325,13 @@ public class RaceTrackSelectorActivity extends Activity implements
 		// mDrawerList.setSelection(mPosition);
 		setTitle(tempValues.getRaceTrackName());
 		mDrawerLayout.closeDrawer(mDrawerList);
-
+		RoadRunnerSetting.setRaceTrackName(tempValues.getRaceTrackName());
 		// get trackpath from server.
 		if (trackList.get(listPosition).getTrackData() != null
 				|| trackList.get(listPosition).getTrackMemberList() != null) {
 			setTrackPath(trackList.get(listPosition).getTrackData());
 			trackMemberList = trackList.get(listPosition).getTrackMemberList();
+			
 			printTrackData();
 			drawTrackPath();
 			return;
@@ -599,7 +600,6 @@ public class RaceTrackSelectorActivity extends Activity implements
 				// TODO: handle exception
 				e.printStackTrace();
 			}
-
 			Intent intent = new Intent(this, MapsActivity.class);
 			intent.putExtra("TrackMemberList", trackList.get(listPosition)
 					.getTrackMemberList());
