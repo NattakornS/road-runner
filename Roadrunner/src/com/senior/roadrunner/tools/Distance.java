@@ -1,10 +1,9 @@
 package com.senior.roadrunner.tools;
 
 
-import com.senior.roadrunner.data.Coordinate;
-
 import android.location.Address;
-import android.location.Location;;
+
+import com.senior.roadrunner.data.Coordinate;
 
 /**
  * Class to calculate the distance between two points

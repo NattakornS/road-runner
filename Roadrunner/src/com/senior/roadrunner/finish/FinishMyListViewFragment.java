@@ -30,6 +30,7 @@ public class FinishMyListViewFragment extends Fragment {
 	private TextView finishAvgkphTxtView;
 	private TextView finishPlaceTxtView;
 	private TextView finishDurationTxtView;
+	private RoadRunnerSetting roadRunnerSetting;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -41,7 +42,7 @@ public class FinishMyListViewFragment extends Fragment {
 			Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.finish_my_listview,
 				container, false);
-
+		roadRunnerSetting = RoadRunnerSetting.getInstance();
 		finishDurationTxtView = (TextView) rootView
 				.findViewById(R.id.finish_my_duration_txt);
 		finishPlaceTxtView = (TextView) rootView
@@ -59,7 +60,7 @@ public class FinishMyListViewFragment extends Fragment {
 		finishPlaceTxtView.setText(getArguments().getString("rank"));
 		finishAvgkphTxtView.setText("8");
 		finishCaloriesTxtView.setText("300");
-		finishNameTxtView.setText(RoadRunnerSetting.getFacebookName());
+		finishNameTxtView.setText(roadRunnerSetting.getFacebookName());
 		finishDurationTxtView.setText("" + minutes + ":"
 				+ String.format("%02d", seconds));
 

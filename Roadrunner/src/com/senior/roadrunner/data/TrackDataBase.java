@@ -15,13 +15,10 @@ import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
-import android.widget.Toast;
-
 import com.thoughtworks.xstream.XStream;
 
 public class TrackDataBase {
 
-	private static final String SDCARD_TRACKER_XML = "/sdcard/tracker1.xml";
 
 	// private TrackData trackData;
 	/**

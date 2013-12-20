@@ -1,6 +1,5 @@
 package com.senior.roadrunner.tools;
 
-import java.util.Iterator;
 import java.util.Vector;
 
 import com.senior.roadrunner.tools.Polygon.Builder;
@@ -8,13 +7,13 @@ import com.senior.roadrunner.tools.Polygon.Builder;
 public class PathArea {
 
 	public static Vector<Polygon> createPathArea(Vector<Point> points) {
-		int count = 0;
-		Vector<Integer> seperatePoint = new Vector<Integer>();
+//		int count = 0;
+//		Vector<Integer> seperatePoint = new Vector<Integer>();
 		Vector<Polygon> polygons = new Vector<Polygon>();
-		Vector<Point> pointL = new Vector<Point>();
-		Vector<Point> pointR = new Vector<Point>();
-		Point endPoint = null;
-		Point startPoint = null;
+//		Vector<Point> pointL = new Vector<Point>();
+//		Vector<Point> pointR = new Vector<Point>();
+//		Point endPoint = null;
+//		Point startPoint = null;
 
 		// for (int i = 7; i < points.size(); i++) {
 		// Point intersectPoint = null;
@@ -250,6 +249,7 @@ public class PathArea {
 		// return polygons;
 	}
 
+	@SuppressWarnings("unused")
 	private static Polygon createPolygon(Vector<Point> pointsSegment) {
 
 		Point startPoint = null;

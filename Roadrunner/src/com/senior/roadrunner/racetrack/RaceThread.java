@@ -3,19 +3,15 @@ package com.senior.roadrunner.racetrack;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -30,7 +26,6 @@ import com.senior.roadrunner.tools.LatLngInterpolator.Spherical;
 import com.senior.roadrunner.tools.MarkerAnimation;
 
 public class RaceThread extends Thread {
-	private static final String SDCARD_TRACKER_XML = "/sdcard/tracker.xml";
 	private int i;
 	private Marker marker = null;
 	private SimpleDateFormat sdf;
@@ -43,6 +38,7 @@ public class RaceThread extends Thread {
 	private TrackMemberList listTracker;
 	private Bitmap profileIcon;
 
+	@SuppressLint("SimpleDateFormat")
 	public RaceThread(TrackMemberList listTracker, GoogleMap map,
 			Activity activity) {
 		this.listTracker = listTracker;

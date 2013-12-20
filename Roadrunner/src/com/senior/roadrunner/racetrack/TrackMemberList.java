@@ -2,9 +2,6 @@ package com.senior.roadrunner.racetrack;
 
 import java.io.Serializable;
 
-import android.graphics.Bitmap;
-import android.os.Parcelable;
-
 public class TrackMemberList implements Serializable {
 	/**
 	 * 

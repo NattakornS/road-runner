@@ -45,8 +45,8 @@ public class PickupFragment extends Fragment implements OnClickListener {
 	private View btn_stop_track;
 	private Button btn_track;
 	private List<LatLngTimeData> latLngTimeData;
-//	private Button btn_load_track;
-	private HistoryTrack historyTrack;
+
+	@SuppressLint("SdCardPath")
 	private static final String SDCARD_TRACKER_XML = "/sdcard/tracker.xml";
 	
     public PickupFragment() {
@@ -111,7 +111,7 @@ public class PickupFragment extends Fragment implements OnClickListener {
          map.setMyLocationEnabled(true);
          map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
  				13.793888, 100.324146), 15.0f));
-         historyTrack = new HistoryTrack(map, getActivity());
+//         historyTrack = new HistoryTrack(map, getActivity());
       // ////////////////////// GPS tracker //////////////////////
 
  		myLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
@@ -123,9 +123,6 @@ public class PickupFragment extends Fragment implements OnClickListener {
 		btn_track.setOnClickListener(this);
 		btn_stop_track = (Button) getActivity().findViewById(R.id.btn_stop_track);
 		btn_stop_track.setOnClickListener(this);
-//		btn_load_track = (Button) getActivity().findViewById(R.id.btn_load_track);
-//		btn_load_track.setOnClickListener(this);
-
 	}
 
 	public boolean isGpsEnable() {
@@ -227,6 +224,7 @@ public class PickupFragment extends Fragment implements OnClickListener {
 
 	}
 
+	@SuppressLint("SimpleDateFormat")
 	private void runThread() {
 
 		new Thread() {

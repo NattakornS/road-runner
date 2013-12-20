@@ -6,8 +6,10 @@ import android.os.AsyncTask;
 
 public class DialogConnect extends ProgressDialog{
 	
+	@SuppressWarnings("rawtypes")
 	private AsyncTask task;
 	
+	@SuppressWarnings("rawtypes")
 	public DialogConnect(Context context,AsyncTask task) {
 		//à¸ªà¸£à¹?à¸²à¸? Dialog à¸?à¸²à¸? super class
 		super(context);

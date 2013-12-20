@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
@@ -16,9 +16,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.AppEventsLogger;
@@ -33,53 +31,27 @@ import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphObject;
 import com.facebook.model.GraphPlace;
 import com.facebook.model.GraphUser;
-import com.facebook.model.OpenGraphAction;
-import com.facebook.model.OpenGraphObject;
 import com.facebook.widget.FacebookDialog;
 import com.facebook.widget.FacebookDialog.ShareDialogBuilder;
-import com.facebook.widget.ProfilePictureView;
 import com.senior.roadrunner.MapsActivity;
 import com.senior.roadrunner.R;
-import com.senior.roadrunner.RaceTrackSelectorActivity;
 import com.senior.roadrunner.racetrack.TrackMemberList;
 import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.server.UploadTask;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 
 public class FinishActivity extends FragmentActivity {
-	private int imageArra[] = { R.drawable.action_search,
-			R.drawable.ic_launcher, R.drawable.bar_bg, R.drawable.blue_menu_btn };
-
-	private String text[] = new String[] { "Nattakorn Sanpabopit",
-			"Jetarin Samuel", "Pathompong Kornkaseam",
-			"Thanathan Choysongkroi", "Fernando Tortoa", "Max Ratthapol",
-			"Mapraw Naja", "Mai Ramita", "NNNNNNNNNNNNN NNNNNNNNNNN",
-			"Jaturong Panipak" };
 
 	private ArrayList<TrackMemberList> trackMemberList;
-	private ViewPagerAdapter mPagerAdapter;
 
 	private com.senior.roadrunner.finish.TabsAdapter mTabsAdapter;
 
-	private ViewPager pager;
-
-	private FinishMyListViewFragment finishMyListViewFragment;
-
 	private UiLifecycleHelper uiHelper;
 	private static final String PERMISSION = "publish_actions";
-	private static final Location SEATTLE_LOCATION = new Location("") {
-		{
-			setLatitude(47.6097);
-			setLongitude(-122.3331);
-		}
-	};
 
 	private final String PENDING_ACTION_BUNDLE_KEY = "com.facebook.samples.hellofacebook:PendingAction";
 
-	private ProfilePictureView profilePictureView;
-	private TextView greeting;
 	private PendingAction pendingAction = PendingAction.NONE;
-	private ViewGroup controlsContainer;
 	private GraphUser user;
 	private GraphPlace place;
 	private List<GraphUser> tags;
@@ -113,17 +85,22 @@ public class FinishActivity extends FragmentActivity {
 
 	private TrackMemberList myTrack;
 
+	private RoadRunnerSetting roadRunnerSetting;
+
+	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.finish_layout);
+		//get setting instance
+		roadRunnerSetting = RoadRunnerSetting.getInstance();
 		// set Uihelper to shared content
 		uiHelper = new UiLifecycleHelper(this, callback);
 		uiHelper.onCreate(savedInstanceState);
-		 Intent intent = getIntent();
-		 trackMemberList = (ArrayList<TrackMemberList>) intent
-		 .getSerializableExtra("TrackMemberList");
-//		trackMemberList = MapsActivity.getTrackMemberList();
+		Intent intent = getIntent();
+		trackMemberList = (ArrayList<TrackMemberList>) intent
+				.getSerializableExtra("TrackMemberList");
+		// trackMemberList = MapsActivity.getTrackMemberList();
 		if (trackMemberList != null) {
 			FinishAdaptor aa = new FinishAdaptor(this, trackMemberList);
 			final ListView ll = (ListView) findViewById(R.id.finishListView);
@@ -190,27 +167,29 @@ public class FinishActivity extends FragmentActivity {
 		updateUI();
 	}
 
+	@SuppressWarnings("unused")
 	private void updateUI() {
 		Session session = Session.getActiveSession();
 		boolean enableButtons = (session != null && session.isOpened());
 	}
 
-    @SuppressWarnings("incomplete-switch")
-    private void handlePendingAction() {
-        PendingAction previouslyPendingAction = pendingAction;
-        // These actions may re-set pendingAction if they are still pending, but we assume they
-        // will succeed.
-        pendingAction = PendingAction.NONE;
+	@SuppressWarnings("incomplete-switch")
+	private void handlePendingAction() {
+		PendingAction previouslyPendingAction = pendingAction;
+		// These actions may re-set pendingAction if they are still pending, but
+		// we assume they
+		// will succeed.
+		pendingAction = PendingAction.NONE;
 
-        switch (previouslyPendingAction) {
-            case POST_PHOTO:
-                postPhoto();
-                break;
-            case POST_STATUS_UPDATE:
-                postStatusUpdate();
-                break;
-        }
-    }
+		switch (previouslyPendingAction) {
+		case POST_PHOTO:
+			postPhoto();
+			break;
+		case POST_STATUS_UPDATE:
+			postStatusUpdate();
+			break;
+		}
+	}
 
 	private interface GraphObjectWithId extends GraphObject {
 		String getId();
@@ -234,23 +213,27 @@ public class FinishActivity extends FragmentActivity {
 				.setPositiveButton(R.string.ok, null).show();
 	}
 
+	@SuppressWarnings("unused")
 	private void onClickPostStatusUpdate() {
 		performPublish(PendingAction.POST_STATUS_UPDATE, canPresentShareDialog);
 	}
 
 	private ShareDialogBuilder createShareDialogBuilder() {
 
-		
-		 List<String> friends = new ArrayList<String>();
-		 for (int i = 0; i < trackMemberList.size(); i++) {
+		List<String> friends = new ArrayList<String>();
+		for (int i = 0; i < trackMemberList.size(); i++) {
 			friends.add(trackMemberList.get(i).getfId());
 		}
 		return new FacebookDialog.ShareDialogBuilder(this)
-		 .setName("Roadrunner")
-		 .setDescription("The 'Road Runner' Running and race application")
-		 .setPicture(MapsActivity.URLServer+"tracker/" + MapsActivity.rId + "/"+RoadRunnerSetting.getFacebookId() +".png")
-		 .setFriends(friends)
-		 .setLink("https://www.facebook.com/roadrunner5313180");
+				.setName("Roadrunner")
+				.setDescription(
+						"The 'Road Runner' Running and race application")
+				.setPicture(
+						RoadRunnerSetting.URLServer + "tracker/"
+								+ MapsActivity.rId + "/"
+								+ roadRunnerSetting.getFacebookId() + ".png")
+				.setFriends(friends)
+				.setLink("https://www.facebook.com/roadrunner5313180");
 	}
 
 	private void postStatusUpdate() {
@@ -275,66 +258,69 @@ public class FinishActivity extends FragmentActivity {
 			pendingAction = PendingAction.POST_STATUS_UPDATE;
 		}
 	}
-	 private void onClickPostPhoto() {
-	        performPublish(PendingAction.POST_PHOTO, canPresentShareDialog);
-	    }
 
-	    private void postPhoto() {
-	        if (hasPublishPermission()) {
-	            Bitmap image = RoadRunnerSetting.getMapScreen();
-//	            Request request = Request.newUploadPhotoRequest(Session.getActiveSession(), image, new Request.Callback() {
-//	               
-//
-//					@Override
-//	                public void onCompleted(Response response) {
-//	                	
-//	                    showPublishResult("Upload imag sucess ", response.getGraphObject(), response.getError());
-//	                }
-//	            });
-//	            request.executeAsync();
-	            String stringPost = "";
-	            for (int i = 0; i < trackMemberList.size(); i++) {
-					stringPost=stringPost+(i+1)+" "+trackMemberList.get(i).getfName()+"\n";
-				}
-	            Request request = Request.newMyUploadPhotoRequest(Session.getActiveSession(), image,"Roadrunner @ "+RoadRunnerSetting.getRaceTrackName()+" : \n"+stringPost, "", new Request.Callback() {
-	                @Override
-	                public void onCompleted(Response response) {
-	                    showPublishResult(getString(R.string.photo_post), response.getGraphObject(), response.getError());
-	                }
-	            });
-	            Request.executeBatchAsync(request);
-	            
-//	            request=Request.newStatusUpdateRequest(Session.getActiveSession(), "Roadrunner : \n"+stringPost, null, null, new Request.Callback(){
-//
-//					@Override
-//					public void onCompleted(Response response) {
-//						// TODO Auto-generated method stub
-//						
-//					}
-//	            	
-//	            });
-//	            request.executeAsync();
-//	        	OpenGraphObject rdnr = OpenGraphObject.Factory.createForPost("road_runner:Course");
-//	        	rdnr.setProperty("title", "Roadrunner");
-////	        	rdnr.setProperty("image", "https://example.com/cooking-app/meal/Shrimp-Curry.html");
-////	        	rdnr.setProperty("description", "...recipe text...");
-//
-//	        	Bitmap bitmap1 = RoadRunnerSetting.getMapScreen();
-//	        	List<Bitmap> images = new ArrayList<Bitmap>();
-//	        	images.add(bitmap1);
-//
-//	        	OpenGraphAction action = GraphObject.Factory.create(OpenGraphAction.class);
-//	        	action.setProperty("Run", rdnr);
-//	        	action.setType("road_runner:Run");
-//
-//	        	FacebookDialog shareDialog = new FacebookDialog.OpenGraphActionDialogBuilder(this, action, "Run")
-////	        	.setImageAttachmentsForAction(images, true)
-//	        	    .build();
-//	        	uiHelper.trackPendingDialogCall(shareDialog.present());
-	        } else {
-	            pendingAction = PendingAction.POST_PHOTO;
-	        }
-	    }
+	private void onClickPostPhoto() {
+		performPublish(PendingAction.POST_PHOTO, canPresentShareDialog);
+	}
+
+	private void postPhoto() {
+		if (hasPublishPermission()) {
+			Bitmap image = roadRunnerSetting.getMapScreen();
+			String stringPost = "";
+			for (int i = 0; i < trackMemberList.size(); i++) {
+				stringPost = stringPost + (i + 1) + " "
+						+ trackMemberList.get(i).getfName() + "\n";
+			}
+			Request request = Request.newMyUploadPhotoRequest(
+					Session.getActiveSession(), image, "Roadrunner @ "
+							+ roadRunnerSetting.getRaceTrackName() + " : \n"
+							+ stringPost, "", new Request.Callback() {
+						@Override
+						public void onCompleted(Response response) {
+							showPublishResult(getString(R.string.photo_post),
+									response.getGraphObject(),
+									response.getError());
+						}
+					});
+			Request.executeBatchAsync(request);
+
+			// request=Request.newStatusUpdateRequest(Session.getActiveSession(),
+			// "Roadrunner : \n"+stringPost, null, null, new Request.Callback(){
+			//
+			// @Override
+			// public void onCompleted(Response response) {
+			//
+			// }
+			//
+			// });
+			// request.executeAsync();
+			// OpenGraphObject rdnr =
+			// OpenGraphObject.Factory.createForPost("road_runner:Course");
+			// rdnr.setProperty("title", "Roadrunner");
+			// // rdnr.setProperty("image",
+			// "https://example.com/cooking-app/meal/Shrimp-Curry.html");
+			// // rdnr.setProperty("description", "...recipe text...");
+			//
+			// Bitmap bitmap1 = RoadRunnerSetting.getMapScreen();
+			// List<Bitmap> images = new ArrayList<Bitmap>();
+			// images.add(bitmap1);
+			//
+			// OpenGraphAction action =
+			// GraphObject.Factory.create(OpenGraphAction.class);
+			// action.setProperty("Run", rdnr);
+			// action.setType("road_runner:Run");
+			//
+			// FacebookDialog shareDialog = new
+			// FacebookDialog.OpenGraphActionDialogBuilder(this, action, "Run")
+			// // .setImageAttachmentsForAction(images, true)
+			// .build();
+			// uiHelper.trackPendingDialogCall(shareDialog.present());
+		} else {
+			pendingAction = PendingAction.POST_PHOTO;
+		}
+	}
+
+	@SuppressWarnings("unused")
 	private void showAlert(String title, String message) {
 		new AlertDialog.Builder(this).setTitle(title).setMessage(message)
 				.setPositiveButton(R.string.ok, null).show();
@@ -369,61 +355,29 @@ public class FinishActivity extends FragmentActivity {
 		}
 	}
 
-	private void initFragment() {
-		// Set data in page fragment
-		// if(finishMyListViewFragment == null){
-		// finishMyListViewFragment = new FinishMyListViewFragment();
-		// }else{
-		// // finishMyListViewFragment.set
-		// }
-		// FinishMyListViewFragment finishMylistViewFragment =
-		// (FinishMyListViewFragment) mTabsAdapter
-		// .getItem(0);
-		// finishMylistViewFragment.setDuration("30.00");
-		// finishMylistViewFragment.setName("Nattakorn_king");
-		// finishMylistViewFragment.setAvgKph("15.00");
-		// finishMylistViewFragment.setCalories("450");
-		// finishMylistViewFragment.setPlace("2nd");
-	}
-
 	private void initialisePaging() {
 
-		// List<Fragment> fragments = new Vector<Fragment>();
-		// fragments.add(Fragment.instantiate(this, List_View.class.getName()));
-		// fragments.add(Fragment.instantiate(this, List_View.class.getName()));
-		// fragments.add(Fragment.instantiate(this,
-		// FinishMapFragment.class.getName()));
-		// this.mPagerAdapter = new
-		// ViewPagerAdapter(super.getSupportFragmentManager(), fragments);
-		//
 		ViewPager pager = (ViewPager) super.findViewById(R.id.finishPager);
-		// pager = new ViewPager(this);
-		// pager.setId(R.id.finishPager);
 		ActionBar bar = getActionBar();
-		// setContentView(pager);
 		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		bar.setTitle("Roadrunner");
 		bar.setSubtitle("Race Result");
-		if (trackMemberList == null) {
-			trackMemberList = new ArrayList<TrackMemberList>();
-			TrackMemberList tt = new TrackMemberList();
-			tt.setRank(2);
-			trackMemberList.add(tt);
-		}
-		for (int i = 0; i < trackMemberList.size()	; i++) {
-			if(trackMemberList.get(i).getfName().equals(RoadRunnerSetting.getFacebookName())){
+		
+		System.out.println("Facebook Name : "+roadRunnerSetting.getFacebookId());
+		for (int i = 0; i < trackMemberList.size(); i++) {
+			System.out.println(trackMemberList.get(i).getfName());
+			if (trackMemberList.get(i).getfId()
+					.equals(roadRunnerSetting.getFacebookId())) {
 				myTrack = trackMemberList.get(i);
 				break;
 			}
 		}
+		System.out.println("MyTrack : " + myTrack);
 		mTabsAdapter = new TabsAdapter(this, pager, myTrack);
-		// mTabsAdapter.addTab(bar.newTab().setText("List Fragment 1"),
-		// List_View.class, null);
 		mTabsAdapter.addTab(bar.newTab().setText("Result"),
 				FinishMyListViewFragment.class, null);
 		mTabsAdapter.addTab(bar.newTab().setText("Maps"),
 				FinishMapFragment.class, null);
-		// pager.setAdapter(this.mPagerAdapter);
 		bar.setDisplayHomeAsUpEnabled(true);
 		invalidateOptionsMenu();
 	}
@@ -457,40 +411,45 @@ public class FinishActivity extends FragmentActivity {
 
 	private void submitRaceResult() {
 		System.out.println("Race result submited");
-//		
-//		OpenGraphAction action = GraphObject.Factory
-//				.create(OpenGraphAction.class);
-//		action.setProperty("Roadrunner",
-//				"https://www.facebook.com/roadrunner5313180");
-//
-//		Bitmap bitmap = RoadRunnerFacebookSetting.getMapScreen();
-//		System.out.println(bitmap.getHeight());
-//		List<Bitmap> images = new ArrayList<Bitmap>();
-//		images.add(bitmap);
-//		 FacebookDialog shareDialog = new FacebookDialog.OpenGraphActionDialogBuilder(
-//				this, action, "Roadrunner")
-//				.setImageAttachmentsForAction(images, true).build();
-//				uiHelper.trackPendingDialogCall(shareDialog.present());
-//				
-				
-//				OpenGraphObject recipe = OpenGraphObject.Factory.createForPost("running-app:Roadrunner");
-//				recipe.setProperty("title", "Roadrunner");
-//				recipe.setProperty("description", "Mahidol Track");
-//
-//				Bitmap bitmap1 = RoadRunnerFacebookSetting.getMapScreen();
-//				List<Bitmap> images = new ArrayList<Bitmap>();
-//				images.add(bitmap1);
-//
-//				OpenGraphAction action = GraphObject.Factory.create(OpenGraphAction.class);
-//				action.setProperty("recipe", recipe);
-//
-//				FacebookDialog shareDialog = new FacebookDialog.OpenGraphActionDialogBuilder(this, action,"Roadrunner")
-//				    .setImageAttachmentsForObject("running", images, true)
-//				    .build();
-//				uiHelper.trackPendingDialogCall(shareDialog.present());
+		//
+		// OpenGraphAction action = GraphObject.Factory
+		// .create(OpenGraphAction.class);
+		// action.setProperty("Roadrunner",
+		// "https://www.facebook.com/roadrunner5313180");
+		//
+		// Bitmap bitmap = RoadRunnerFacebookSetting.getMapScreen();
+		// System.out.println(bitmap.getHeight());
+		// List<Bitmap> images = new ArrayList<Bitmap>();
+		// images.add(bitmap);
+		// FacebookDialog shareDialog = new
+		// FacebookDialog.OpenGraphActionDialogBuilder(
+		// this, action, "Roadrunner")
+		// .setImageAttachmentsForAction(images, true).build();
+		// uiHelper.trackPendingDialogCall(shareDialog.present());
+		//
+
+		// OpenGraphObject recipe =
+		// OpenGraphObject.Factory.createForPost("running-app:Roadrunner");
+		// recipe.setProperty("title", "Roadrunner");
+		// recipe.setProperty("description", "Mahidol Track");
+		//
+		// Bitmap bitmap1 = RoadRunnerFacebookSetting.getMapScreen();
+		// List<Bitmap> images = new ArrayList<Bitmap>();
+		// images.add(bitmap1);
+		//
+		// OpenGraphAction action =
+		// GraphObject.Factory.create(OpenGraphAction.class);
+		// action.setProperty("recipe", recipe);
+		//
+		// FacebookDialog shareDialog = new
+		// FacebookDialog.OpenGraphActionDialogBuilder(this,
+		// action,"Roadrunner")
+		// .setImageAttachmentsForObject("running", images, true)
+		// .build();
+		// uiHelper.trackPendingDialogCall(shareDialog.present());
 		uploadFile();
 		updateDataBase();
-//		onClickPostStatusUpdate(); //Post to facebook
+		// onClickPostStatusUpdate(); //Post to facebook
 		onClickPostPhoto();
 		// initFragment();
 	}
@@ -498,32 +457,34 @@ public class FinishActivity extends FragmentActivity {
 	private void updateDataBase() {
 		// Update DataBase Server when finish racing
 
-			ConnectServer connectServer = new ConnectServer(this, MapsActivity.URLServer
-					+ "/connect_server.php");
-			connectServer.addValue("Fid", myTrack.getfId());
-			connectServer.addValue("Rid", myTrack.getrId());
-			connectServer.addValue("Trackerdir", myTrack.getTrackerDir());
-			connectServer.addValue("Rank", myTrack.getRank()+"");
-			connectServer.addValue("Time", myTrack.getDuration()+"");
-			connectServer.addValue("fName", myTrack.getfName());
-			connectServer.execute();
-		
+		ConnectServer connectServer = new ConnectServer(this,
+				RoadRunnerSetting.URLServer + "/connect_server.php");
+		connectServer.addValue("Fid", myTrack.getfId());
+		connectServer.addValue("Rid", myTrack.getrId());
+		connectServer.addValue("Trackerdir", myTrack.getTrackerDir());
+		connectServer.addValue("Rank", myTrack.getRank() + "");
+		connectServer.addValue("Time", myTrack.getDuration() + "");
+		connectServer.addValue("fName", myTrack.getfName());
+		connectServer.execute();
+
 	}
 
 	public void onItemClick(int mPosition) {
 		// TODO Auto-generated method stub
 
 	}
+
 	private void uploadFile() {
 		UploadTask uploadTask = new UploadTask(this);
-		String exString[] = {MapsActivity.savePath,RaceTrackSelectorActivity.mapcapPath};
+		String exString[] = { MapsActivity.savePath, MapsActivity.mapcapPath };
 		uploadTask.execute(exString);
 	}
 
+	@SuppressLint("ShowToast")
 	public void setDataBaseServerResponse(String result) {
 		// DataBase response result
 		Log.d("Response DataBase : ", result);
-		Toast.makeText(this, "Database : "+result, 500);
-		
+		Toast.makeText(this, "Database : " + result, 500).show();
+
 	}
 }

@@ -7,10 +7,12 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.PowerManager;
 
+@SuppressLint({ "SdCardPath", "Wakelock" })
 public class DownloadTask extends AsyncTask<String, Integer, String> {
 
     private Context context;
@@ -19,7 +21,8 @@ public class DownloadTask extends AsyncTask<String, Integer, String> {
         this.context = context;
     }
 
-    @Override
+    @SuppressWarnings("resource")
+	@Override
     protected String doInBackground(String... sUrl) {
         // take CPU lock to prevent CPU from going off if the user 
         // presses the power button during download
@@ -57,7 +60,7 @@ public class DownloadTask extends AsyncTask<String, Integer, String> {
                 while ((count = input.read(data)) != -1) {
                     // allow canceling with back button
                     if (isCancelled())
-                        return null;
+                        return "Cancle";
                     total += count;
                     // publishing the progress....
                     if (fileLength > 0) // only if total length is known

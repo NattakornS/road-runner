@@ -6,8 +6,10 @@ import android.os.AsyncTask;
 
 public class DialogUpload extends ProgressDialog {
 
+	@SuppressWarnings("rawtypes")
 	private AsyncTask task;
 
+	@SuppressWarnings("rawtypes")
 	public DialogUpload(Context context, AsyncTask task) {
 		super(context);
 

@@ -20,12 +20,14 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
@@ -36,6 +38,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.SnapshotReadyCallback;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -63,7 +66,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 // OnLocationChangedListener
 {
 	public static String rId = "";
-	public static final String fId = RoadRunnerSetting.getFacebookId();
+	public static String fId = "";
 	public static final String savePath = RoadRunnerSetting.SDPATH + fId
 			+ ".xml";
 
@@ -75,7 +78,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private ArrayList<LatLngTimeData> latLngTimeData;
 	// private Button btn_load_track;
 	// private HistoryTrack historyTrack;
-	public static final String URLServer = "http://roadrunner-5313180.dx.am/";// "http://192.168.1.111/";
+	// public static final String URLServer =
+	// "http://roadrunner-5313180.dx.am/";// "http://192.168.1.111/";
 
 	private Vector<Polygon> polygonsTrack = new Vector<Polygon>();
 	private Polygon polygonStart;
@@ -86,7 +90,6 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private Polyline poly;
 	private PolylineOptions track;
 	private boolean recordCheck = false;
-	private ConnectServer connectServer;
 	private Polygon polygonFinish;
 	private static ArrayList<TrackMemberList> trackMemberList;
 	private String trackPathData;
@@ -103,13 +106,23 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	protected long timeSwap = 0L;
 	protected long finalTime = 0L;
 	private double totalDistance = 0;
+	private RoadRunnerSetting roadRunnerSetting;
 	private static ArrayList<TrackMemberList> trackMemberListTemp;
+
+	public static String mapcapPath = "";
 
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map_layout);
+		
+		//get setting instance
+		roadRunnerSetting = RoadRunnerSetting.getInstance();
+		mapcapPath =Environment.getExternalStorageDirectory()
+				+ "/" + "roadrunner/" + roadRunnerSetting.getFacebookId() + ".png";//set mapcap path
+		fId=roadRunnerSetting.getFacebookId();
+		
 		Intent intent = getIntent();
 		trackMemberList = (ArrayList<TrackMemberList>) intent
 				.getSerializableExtra("TrackMemberList");
@@ -164,9 +177,10 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			// System.out.println("TrackerDir : "
 			// + trackMemberList.get(i).getTrackerDir());
 			ConnectServer connectServerTrackMemberData = new ConnectServer(
-					this, URLServer + "/getTrackPath.php");
-			connectServerTrackMemberData.addValue("Rdir", URLServer
-					+ trackMemberList.get(i).getTrackerDir());
+					this, RoadRunnerSetting.URLServer + "/getTrackPath.php");
+			connectServerTrackMemberData.addValue("Rdir",
+					RoadRunnerSetting.URLServer
+							+ trackMemberList.get(i).getTrackerDir());
 			// setIndex when xml return from server
 			connectServerTrackMemberData.setIndex(i);
 			connectServerTrackMemberData
@@ -305,8 +319,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		btn_track.setOnClickListener(this);
 		btn_stop_track = (Button) findViewById(R.id.btn_stop_track);
 		btn_stop_track.setOnClickListener(this);
-		// btn_load_track = (Button) findViewById(R.id.btn_load_track);
-		// btn_load_track.setOnClickListener(this);
+		// set Enable false for start
+		btn_stop_track.setEnabled(false);
 		txt_current_distace = (TextView) findViewById(R.id.txt_curent_distance);
 		txt_current_speed = (TextView) findViewById(R.id.txt_curent_speed);
 		txt_current_time = (TextView) findViewById(R.id.txt_curent_time);
@@ -337,31 +351,52 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			timer();
 			break;
 		case R.id.btn_stop_track:
-			// updateDataBase();
 			recordCheck = false;
 			myLocationManager.removeUpdates(this);
-			// if (latLngTimeData.isEmpty()) {
-			// break;
-			// }
 			// Save Track to file and set to trackMemberlist and sort by
 			// duration time.
 			saveTrackData();
-
+			try {
+				CaptureMapScreen();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			Intent intent = new Intent(this, FinishActivity.class);
 			intent.putExtra("TrackMemberList", trackMemberList);
 			startActivity(intent);
 
 			myHandler.removeCallbacks(updateTimerMethod);
-			// exitActivity();
+//			exitActivity();
 			break;
 
-		// case R.id.btn_load_track:
-		// Toast.makeText(getApplicationContext(), "Load data",
-		// Toast.LENGTH_SHORT).show();
-		// raceThread();
-		// break;
 		}
 
+	}
+
+	public void CaptureMapScreen() {
+		SnapshotReadyCallback callback = new SnapshotReadyCallback() {
+			Bitmap bitmap;
+
+			@Override
+			public void onSnapshotReady(Bitmap snapshot) {
+				// TODO Auto-generated method stub
+				bitmap = snapshot;
+				try {
+
+					FileOutputStream out = new FileOutputStream(mapcapPath);
+
+					// above "/mnt ..... png" => is a storage path (where image
+					// will be stored) + name of image you can customize as per
+					// your Requirement
+
+					bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
+					roadRunnerSetting.setMapScreen(bitmap);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		map.snapshot(callback);
 	}
 
 	private void timer() {
@@ -386,6 +421,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	}
 
+	@SuppressLint("UseValueOf")
 	private void saveTrackData() {
 		// save file to sdcard
 		TrackDataBase.saveXmlFile(latLngTimeData, savePath);
@@ -395,28 +431,26 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		myTrack.setCalories(0);
 		myTrack.setDuration(finalTime);
 		myTrack.setfId(fId);
-		myTrack.setfName(RoadRunnerSetting.getFacebookName());
+		myTrack.setfName(roadRunnerSetting.getFacebookName());
 		// myTrack.setProfileImg(RoadRunnerSetting.getProfileIcon());
 		// myTrack.setRank(rank);
 		myTrack.setrId(rId);
 		// myTrack.setTrackData(latLngTimeData);
 		myTrack.setTrackerDir("tracker/" + rId + "/"
-				+ RoadRunnerSetting.getFacebookId() + ".xml");
-		
-		/*replace a new record
-		 * 
-		 * */
+				+ roadRunnerSetting.getFacebookId() + ".xml");
+
+		/*
+		 * replace a new record
+		 */
 		for (int i = 0; i < trackMemberList.size(); i++) {
-			if(trackMemberList.get(i).getfId().equals(RoadRunnerSetting.getFacebookId())){
+			if (trackMemberList.get(i).getfId()
+					.equals(roadRunnerSetting.getFacebookId())) {
 				trackMemberList.remove(i);
-//				trackMemberList.set(i, myTrack);
 			}
 		}
 		trackMemberList.add(myTrack);
 
-		// for (int i = 0; i < trackMemberList.size(); i++) {
-		// System.out.println(trackMemberList.get(i).getDuration());
-		// }
+		// Sorting by duration Time.
 		Collections.sort(trackMemberList, new Comparator<TrackMemberList>() {
 			@Override
 			public int compare(TrackMemberList c1, TrackMemberList c2) {
@@ -429,27 +463,6 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			System.out.println(trackMemberList.get(i).getDuration());
 			trackMemberList.get(i).setRank(i + 1);
 		}
-	}
-
-	private void updateDataBase() {
-		connectServer = new ConnectServer(this,
-				"http://192.168.1.105/connect_server.php");
-		// $strFid = $_POST["Fid"];
-		// $strRid = $_POST["Rid"];
-		// $strTrackerdir = $_POST["Trackerdir"];
-		// $strRank = $_POST["Rank"];
-		// $strTime = $_POST["Time"];
-		// $strfName = $_POST["fName"];
-		connectServer.addValue("Fid", fId);
-		connectServer.addValue("Rid", rId);
-		connectServer.addValue("Trackerdir", "tracker/" + rId + "/" + fId
-				+ ".xml");
-		connectServer.addValue("Rank", "5");
-		connectServer.addValue("Time", "");
-		connectServer.addValue("fName", "");
-		connectServer.setRequestTag(ConnectServer.DATA_UPDATE);
-		connectServer.execute();
-
 	}
 
 	private void raceThread() {
@@ -541,9 +554,10 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			marker.remove();
 		}
 
-		marker = map.addMarker(new MarkerOptions().position(coord)
-				.icon(BitmapDescriptorFactory.fromBitmap(RoadRunnerSetting.getProfileIcon()))
-				.title("Me"));
+		marker = map.addMarker(new MarkerOptions()
+				.position(coord)
+				.icon(BitmapDescriptorFactory.fromBitmap(roadRunnerSetting
+						.getProfileIcon())).title("Me"));
 
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
 
@@ -553,6 +567,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	}
 
+	@SuppressLint("SimpleDateFormat")
 	private void recordTrack(Location loc) {
 		DecimalFormat df = new DecimalFormat("0.00");
 		if (loc.hasSpeed()) {
@@ -652,7 +667,6 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	}
 
 	public void setList(String result) {
-		System.out.println("Result : " + result);
 	}
 
 	// Return track.xml from dataBase server
@@ -660,7 +674,6 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		try {
 			String s = RoadRunnerSetting.SDPATH
 					+ trackMemberList.get(index).getTrackerDir();
-			System.out.println(s);
 			File f = new File(s);
 			File pf = f.getParentFile();
 			if (pf != null) {
@@ -678,7 +691,6 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 								os);
 						myOutWriter.write(result);//
 						myOutWriter.close();
-						System.out.println(result);
 					}
 					os.flush();
 					os.close();
