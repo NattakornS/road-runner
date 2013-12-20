@@ -1,7 +1,5 @@
 package com.senior.roadrunner.tools;
 
-import java.text.DecimalFormat;
-
 import com.google.android.gms.maps.model.LatLng;
 
 public class GPSSpeed {

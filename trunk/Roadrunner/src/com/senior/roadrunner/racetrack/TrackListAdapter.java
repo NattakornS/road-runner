@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.senior.roadrunner.R;
@@ -22,14 +21,16 @@ public class TrackListAdapter extends BaseAdapter   implements OnClickListener {
     
 	/*********** Declare Used Variables *********/
     private Activity activity;
-    private ArrayList data;
+    @SuppressWarnings("rawtypes")
+	private ArrayList data;
     private static LayoutInflater inflater=null;
     public Resources res;
     TrackList tempValues=null;
     int i=0;
     
     /*************  CustomAdapter Constructor *****************/
-    public TrackListAdapter(Activity a, ArrayList d,Resources resLocal) {
+    @SuppressWarnings("rawtypes")
+	public TrackListAdapter(Activity a, ArrayList d,Resources resLocal) {
     	
     	/********** Take passed values **********/
         activity = a;

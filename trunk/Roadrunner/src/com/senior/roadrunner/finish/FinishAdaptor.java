@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -29,6 +30,7 @@ public class FinishAdaptor extends BaseAdapter implements OnClickListener {
 	private ArrayList<TrackMemberList> data;
 	private LayoutInflater inflater;
 	private TrackMemberList tempValues;
+	@SuppressWarnings("unused")
 	private Bitmap profileIcon;
 
 	public FinishAdaptor(Activity finishActivity,
@@ -145,6 +147,7 @@ public class FinishAdaptor extends BaseAdapter implements OnClickListener {
 	}
 
 	/********* Called when Item click in ListView ************/
+	@SuppressLint("ShowToast")
 	private class OnItemClickListener implements OnClickListener {
 		private int mPosition;
 

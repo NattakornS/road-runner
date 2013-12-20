@@ -2,9 +2,6 @@ package com.senior.roadrunner.finish;
 
 import java.util.ArrayList;
 
-import com.senior.roadrunner.R;
-import com.senior.roadrunner.racetrack.TrackMemberList;
-
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
@@ -17,9 +14,11 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
-import android.widget.TextView;
+
+import com.senior.roadrunner.racetrack.TrackMemberList;
 
 public class TabsAdapter extends FragmentPagerAdapter implements TabListener, OnPageChangeListener{
+	@SuppressWarnings("unused")
 	private final Context mContext;
 	private final ActionBar mActionBar;
 	private final ViewPager mViewPager;
@@ -29,6 +28,7 @@ public class TabsAdapter extends FragmentPagerAdapter implements TabListener, On
 	
 	static final class TabInfo{
 		private final Class<?> clss;
+		@SuppressWarnings("unused")
 		private final Bundle args;
 		
 		TabInfo(Class<?> _class, Bundle _args){

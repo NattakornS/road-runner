@@ -56,12 +56,14 @@ public class SettingFragment extends Fragment {
             onSessionStateChange(session, state, exception);
         }
     };
+	private RoadRunnerSetting roadRunnerSetting;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 //        activity = (MainActivity) getActivity();
         uiHelper = new UiLifecycleHelper(getActivity(), sessionCallback);
         uiHelper.onCreate(savedInstanceState);
+        roadRunnerSetting = RoadRunnerSetting.getInstance();
     }
 
     @Override
@@ -179,44 +181,44 @@ public class SettingFragment extends Fragment {
 		if (session.isOpened()) {
 			
 //			facebookName.setText(URL_PREFIX_FRIENDS + session.getAccessToken());
-			new Thread(new Runnable() {
-				
-				@Override
-				public void run() {
-					// get json object from token string
-					try {
-						URL url = new URL(URL_PREFIX_FRIENDS+session.getAccessToken());
-						InputStream jsonIs = url.openConnection().getInputStream();
-						BufferedReader reader = new BufferedReader(new InputStreamReader(
-								jsonIs, "UTF-8"), 8);
-						StringBuilder sb = new StringBuilder();
-						String line = null;
-						while ((line = reader.readLine()) != null) {
-							sb.append(line + "\n");
-						}
-
-						jsonIs.close();
-						String jsonString = sb.toString();
-						JSONObject jsonObject = new JSONObject(jsonString);
-						String id =jsonObject.getString("id");
-						String name =jsonObject.getString("name");
-						RoadRunnerSetting.setFacebookId(id);
-						RoadRunnerSetting.setFacebookName(name);
-						facebookName.setText(name);
-						updateView();
-					} catch (MalformedURLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
-				}
-			});
+//			new Thread(new Runnable() {
+//				
+//				@Override
+//				public void run() {
+//					// get json object from token string
+//					try {
+//						URL url = new URL(URL_PREFIX_FRIENDS+session.getAccessToken());
+//						InputStream jsonIs = url.openConnection().getInputStream();
+//						BufferedReader reader = new BufferedReader(new InputStreamReader(
+//								jsonIs, "UTF-8"), 8);
+//						StringBuilder sb = new StringBuilder();
+//						String line = null;
+//						while ((line = reader.readLine()) != null) {
+//							sb.append(line + "\n");
+//						}
+//
+//						jsonIs.close();
+//						String jsonString = sb.toString();
+//						JSONObject jsonObject = new JSONObject(jsonString);
+//						String id =jsonObject.getString("id");
+//						String name =jsonObject.getString("name");
+//						RoadRunnerSetting.setFacebookId(id);
+//						RoadRunnerSetting.setFacebookName(name);
+//						facebookName.setText(name);
+//						updateView();
+//					} catch (MalformedURLException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					} catch (IOException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					} catch (JSONException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//					
+//				}
+//			});
 			buttonLoginLogout.setText(R.string.logout);
 			buttonLoginLogout.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View view) {
@@ -245,11 +247,11 @@ public class SettingFragment extends Fragment {
 				@Override
 				public void onCompleted(GraphUser user, Response response) {
 					if (user != null) {
-						facebookName.setText(user.getName());
-						RoadRunnerSetting.setFacebookId(user.getId());
-						RoadRunnerSetting.setFacebookName(user.getName());
-						RoadRunnerSetting.setCity(user.getLocation().getCity());
-						System.out.println("id :"+user.getId()+"\nname : "+user.getName());
+//						facebookName.setText(user.getName());
+//						RoadRunnerSetting.setFacebookId(user.getId());
+//						RoadRunnerSetting.setFacebookName(user.getName());
+//						RoadRunnerSetting.setCity(user.getLocation().getCity());
+//						System.out.println("id :"+user.getId()+"\nname : "+user.getName());
 					}
 				}
 			});
@@ -274,7 +276,7 @@ public class SettingFragment extends Fragment {
         if (session != null && session.isOpened()) {
             if (state.equals(SessionState.OPENED_TOKEN_UPDATED)) {
 //                tokenUpdated();
-            } else {
+            } else { 
                 makeMeRequest(session);
             }
         } else {
@@ -291,9 +293,12 @@ public class SettingFragment extends Fragment {
 	                        profilePictureView.setProfileId(user.getId());
 	                        facebookName.setText(user.getName());
 	                        System.out.println("name : "+ user.getName());
-	                        RoadRunnerSetting.setFacebookId(user.getId());
-							RoadRunnerSetting.setFacebookName(user.getName());
-							RoadRunnerSetting.setCity(user.getLocation().getCity());
+	                        roadRunnerSetting.setFacebookId(user.getId());
+	                        roadRunnerSetting.setFacebookName(user.getName());
+	                        
+//	                        RoadRunnerSetting.setFacebookId(user.getId());
+//							RoadRunnerSetting.setFacebookName(user.getName());
+//							RoadRunnerSetting.setCity(user.getLocation().getCity());
 	                    }
 	                }
 	                if (response.getError() != null) {

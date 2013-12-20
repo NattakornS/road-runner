@@ -4,8 +4,6 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.nio.charset.Charset;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -19,9 +17,6 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -30,13 +25,15 @@ import android.util.Log;
 
 import com.senior.roadrunner.MapsActivity;
 import com.senior.roadrunner.R;
+import com.senior.roadrunner.setting.RoadRunnerSetting;
 
+@SuppressWarnings("deprecation")
 public class UploadTask extends AsyncTask<String, Integer, String> {
 
 	private Context context;
 	int serverResponseCode = 0;
 	DialogUpload dialog;
-	String upLoadServerUri = MapsActivity.URLServer + "UploadToServer.php";
+	String upLoadServerUri = RoadRunnerSetting.URLServer + "UploadToServer.php";
 	// final String uploadFilePath = "/mnt/sdcard/";
 	// final String uploadFileName = "tracker.xml";
 	String rid = MapsActivity.rId;
@@ -48,7 +45,6 @@ public class UploadTask extends AsyncTask<String, Integer, String> {
 	int bytesRead, bytesAvailable, bufferSize;
 	byte[] buffer;
 	int maxBufferSize = 1 * 1024 * 1024;
-	private DataOutputStream dosUrl;
 
 	public UploadTask(Context context) {
 		this.context = context;

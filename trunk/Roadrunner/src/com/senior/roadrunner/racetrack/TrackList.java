@@ -1,19 +1,18 @@
 package com.senior.roadrunner.racetrack;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.senior.roadrunner.data.LatLngTimeData;
-
+@SuppressLint("ParcelCreator")
 public class TrackList implements Parcelable {
 
 	/**
 	 * 
 	 */
+	@SuppressWarnings("unused")
 	private static final long serialVersionUID = 1L;
 	private String rId = "";
 	private String raceTrackName = "";

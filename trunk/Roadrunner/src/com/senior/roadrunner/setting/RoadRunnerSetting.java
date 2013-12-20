@@ -2,67 +2,80 @@ package com.senior.roadrunner.setting;
 
 import java.io.File;
 
-import com.facebook.model.GraphLocation;
-
 import android.graphics.Bitmap;
 import android.os.Environment;
 
 public class RoadRunnerSetting {
-	private static String facebookName = "";
-	private static String facebookId = "";
-	private static Bitmap mapScreen;
-	private static Bitmap profileIcon;
+	private String facebookName;
+	private String facebookId;
+	private Bitmap mapScreen;
+	private Bitmap profileIcon;
 	public static String SDPATH = Environment.getExternalStorageDirectory()
-			+ File.separator + "roadrunner"+File.separator;
-	private static String city;
-	private static String raceTrackName;
+			+ File.separator + "roadrunner" + File.separator;
+	private String city;
+	private String raceTrackName;
+	public static String URLServer = "http://roadrunner-5313180.dx.am/";
+	private static RoadRunnerSetting instance;
 
-	public static String getFacebookName() {
+	public static synchronized RoadRunnerSetting getInstance() {
+		if (instance == null) {
+			instance = new RoadRunnerSetting();
+		}
+		return instance;
+	}
+
+	public String getFacebookName() {
+		System.out.println("getFacebookName : "+facebookName);
 		return facebookName;
 	}
 
-	public static void setFacebookName(String facebookName) {
-		RoadRunnerSetting.facebookName = facebookName;
+	public void setFacebookName(String facebookName) {
+		System.out.println("setFacebookName : "+facebookName);
+		this.facebookName = facebookName;
 	}
 
-	public static String getFacebookId() {
+	public String getFacebookId() {
+		System.out.println("getFacebookId : "+facebookId);
 		return facebookId;
 	}
 
-	public static void setFacebookId(String facebookId) {
-		RoadRunnerSetting.facebookId = facebookId;
+	public void setFacebookId(String facebookId) {
+		System.out.println("setFacebookId : "+facebookId);
+		this.facebookId = facebookId;
 	}
 
-	public static Bitmap getMapScreen() {
+	public Bitmap getMapScreen() {
 		return mapScreen;
 	}
 
-	public static void setMapScreen(Bitmap mapScreen) {
-		RoadRunnerSetting.mapScreen = mapScreen;
+	public void setMapScreen(Bitmap mapScreen) {
+		this.mapScreen = mapScreen;
 	}
 
-	public static void setProfileImg(Bitmap profileIcon) {
-		RoadRunnerSetting.profileIcon = profileIcon;
+	public void setProfileImg(Bitmap profileIcon) {
+		this.profileIcon = profileIcon;
 
 	}
 
-	public static Bitmap getProfileIcon() {
+	public Bitmap getProfileIcon() {
 		return profileIcon;
 	}
 
-	public static void setCity(String city) {
-		RoadRunnerSetting.city = city;
-		
+	public void setCity(String city) {
+		this.city = city;
+
 	}
-	public static String getCity() {
+
+	public String getCity() {
 		return city;
 	}
 
-	public static void setRaceTrackName(String raceTrackName) {
-		RoadRunnerSetting.raceTrackName = raceTrackName;
-		
+	public void setRaceTrackName(String raceTrackName) {
+		this.raceTrackName = raceTrackName;
+
 	}
-	public static String getRaceTrackName() {
+
+	public String getRaceTrackName() {
 		return raceTrackName;
 	}
 }

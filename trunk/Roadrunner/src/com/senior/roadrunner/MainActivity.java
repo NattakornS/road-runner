@@ -3,9 +3,7 @@ package com.senior.roadrunner;
 import java.util.Locale;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.app.SearchManager;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -48,6 +46,7 @@ public class MainActivity extends FragmentActivity {
 	private long lastPressedTime;
 	private static final int PERIOD = 2000;
 
+	@SuppressWarnings("unused")
 	private FragmentManager fragmentManager;
 
 	private static final String USER_SKIPPED_LOGIN_KEY = "user_skipped_login";
@@ -447,7 +446,6 @@ public class MainActivity extends FragmentActivity {
 	// //
 	// // @Override
 	// // public void onCompleted(List<GraphUser> users, Response response) {
-	// // // TODO Auto-generated method stub
 	// // if(response.getError()==null)
 	// // {
 	// // for (int i = 0; i < users.size(); i++) {
