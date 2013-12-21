@@ -1,10 +1,16 @@
 package com.senior.roadrunner;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
 import android.annotation.SuppressLint;
 import android.app.SearchManager;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.Signature;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -15,6 +21,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Base64;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -157,6 +165,18 @@ public class MainActivity extends FragmentActivity {
 		//
 		// }
 		// });
+		try {
+			PackageInfo info = getPackageManager().getPackageInfo("com.senior.roadrunner", PackageManager.GET_SIGNATURES);
+			for (Signature signature : info.signatures) {
+			    MessageDigest md = MessageDigest.getInstance("SHA");
+			    md.update(signature.toByteArray());
+			    Log.e("MY KEY HASH:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+			}
+			} catch (NameNotFoundException e) {
+
+			} catch (NoSuchAlgorithmException e) {
+
+			}
 
 	}
 

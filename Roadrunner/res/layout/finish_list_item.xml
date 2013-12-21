@@ -14,8 +14,8 @@
 
         <ImageView
             android:id="@+id/finish_pic_list_img"
-            android:layout_width="109dp"
-            android:layout_height="81dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:src="@drawable/com_facebook_profile_picture_blank_square"
             android:layout_margin="10dp" />
 
@@ -30,7 +30,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="Nattakorn Sanpabopit"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                android:textSize="15dp" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -41,7 +41,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Duration : "
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                    android:textSize="12dp" />
 
                 <TextView
                     android:id="@+id/finish_duration_list_txt"
@@ -51,7 +51,7 @@
                     android:layout_alignBottom="@+id/textView3"
                     android:layout_alignParentRight="true"
                     android:text="10.45"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                   android:textSize="12dp" />
             </RelativeLayout>
 
             <RelativeLayout
@@ -63,7 +63,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Place : "
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                    android:textSize="12dp" />
 
                 <TextView
                     android:id="@+id/finish_place_list_txt"
@@ -72,7 +72,7 @@
                     android:layout_alignParentRight="true"
                     android:layout_alignParentTop="true"
                     android:text="1ST"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                    android:textSize="12dp" />
 
             </RelativeLayout>
         </LinearLayout>

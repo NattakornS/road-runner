@@ -32,6 +32,7 @@ import android.provider.Settings;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -60,6 +61,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.finish.FinishAdaptor;
+import com.senior.roadrunner.racetrack.InfoAdaptor;
 import com.senior.roadrunner.racetrack.TrackList;
 import com.senior.roadrunner.racetrack.TrackListAdapter;
 import com.senior.roadrunner.racetrack.TrackMemberList;
@@ -77,7 +79,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 	ListView list;
 	TrackListAdapter adapter;
 	public Activity activity = null;
-	public ArrayList<TrackList> trackList = new ArrayList<TrackList>();
+	public ArrayList<TrackList> trackList;
 	public ArrayList<TrackMemberList> trackMemberList;
 	private ConnectServer connectServer;
 	private SearchView mSearchView;
@@ -100,6 +102,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 	private MarkerOptions startMarker;
 	private MarkerOptions endMarker;
 	private RoadRunnerSetting roadRunnerSetting;
+	private static final String TAG = "RaceTrackSelectorActivity";
 
 	@SuppressLint("NewApi")
 	@Override
@@ -107,7 +110,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.racetrack_layout);
 
-		roadRunnerSetting=RoadRunnerSetting.getInstance();
+		roadRunnerSetting = RoadRunnerSetting.getInstance();
 		activity = this;
 		invalidateOptionsMenu();
 		/******** Take some data in Arraylist ( CustomListViewValuesArr ) ***********/
@@ -134,6 +137,13 @@ public class RaceTrackSelectorActivity extends Activity implements
 		trackDataTxtView = (TextView) findViewById(R.id.track_data_txtview);
 		// facebookGetData();s
 
+		setListenCurrentLocation();
+
+	}
+
+	private void setListenCurrentLocation() {
+		// set request location to refresh track list
+		trackList = new ArrayList<TrackList>();
 		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		boolean isGPSEnabled = mLocationManager
 				.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -171,16 +181,17 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	public boolean isGpsEnable() {
 		boolean isgpsenable = false;
-//		String provider = Settings.Secure.getString(this.getContentResolver(),
-//				Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-//		if (provider.equals("network,gps")) { // GPS is Enabled
-//			isgpsenable = true;
-//		}
-		  if (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-			  isgpsenable = true;
-		    }else{
-		    	isgpsenable = false;
-		    }
+		// String provider =
+		// Settings.Secure.getString(this.getContentResolver(),
+		// Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+		// if (provider.equals("network,gps")) { // GPS is Enabled
+		// isgpsenable = true;
+		// }
+		if (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+			isgpsenable = true;
+		} else {
+			isgpsenable = false;
+		}
 		return isgpsenable;
 	}
 
@@ -189,7 +200,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
 		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.main, menu);
+		inflater.inflate(R.menu.race_sellector_menu, menu);
 		MenuItem searchItem = menu.findItem(R.id.action_websearch);
 		mSearchView = (SearchView) searchItem.getActionView();
 		setupSearchView(searchItem);
@@ -201,9 +212,11 @@ public class RaceTrackSelectorActivity extends Activity implements
 		switch (item.getItemId()) {
 		// Respond to the action bar's Up/Home button
 		case android.R.id.home:
-			System.out.println("BACKPRESS");
 			// NavUtils.navigateUpFromSameTask(this);
 			onBackPressed();
+			return true;
+		case R.id.action_current_location:
+			setListenCurrentLocation();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -261,10 +274,11 @@ public class RaceTrackSelectorActivity extends Activity implements
 	public void onItemClick(int mPosition) {
 		this.listPosition = mPosition;
 		TrackList tempValues = (TrackList) trackList.get(mPosition);
-		trackDataTxtView.setText("" + tempValues.getRaceTrackName() + " \nRid:"
-				+ tempValues.getrId() + " \nLatLon:"
-				+ tempValues.getDoubleLat() + "\t" + tempValues.getDoubleLon()
-				+ " \nRdir:" + tempValues.getRdir());
+		// trackDataTxtView.setText("" + tempValues.getRaceTrackName() +
+		// " \nRid:"
+		// + tempValues.getrId() + " \nLatLon:"
+		// + tempValues.getDoubleLat() + "\t" + tempValues.getDoubleLon()
+		// + " \nRdir:" + tempValues.getRdir());
 
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
 				tempValues.getDoubleLat(), tempValues.getDoubleLon()), 15.0f));
@@ -274,7 +288,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 		// mDrawerList.setSelection(mPosition);
 		setTitle(tempValues.getRaceTrackName());
 		mDrawerLayout.closeDrawer(mDrawerList);
-		//set track name in Roadrunner setting.
+		// set track name in Roadrunner setting.
 		roadRunnerSetting.setRaceTrackName(tempValues.getRaceTrackName());
 		// get trackpath from server.
 		if (trackList.get(listPosition).getTrackData() != null
@@ -299,8 +313,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 		connectServer.addValue("Rid", tempValues.getrId());
 		connectServer.setRequestTag(ConnectServer.TRACK_MEMBER);
 		connectServer.execute();
-		raceBtn.setVisibility(View.VISIBLE);
-		raceBtn.startAnimation(animAlpha);
+
 	}
 
 	@Override
@@ -376,7 +389,10 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 		map.clear();
 		PolylineOptions options = new PolylineOptions();
-
+		if (trackPathData == null) {
+			Log.e(TAG, "trackPathData is null");
+			return;
+		}
 		for (int i = 0; i < trackPathData.size(); i++) {
 			LatLng point = new LatLng(trackPathData.get(i).getCoordinate()
 					.getLat(), trackPathData.get(i).getCoordinate().getLng());
@@ -498,36 +514,49 @@ public class RaceTrackSelectorActivity extends Activity implements
 		}
 
 		Toast.makeText(activity, trackMemberString, 3000).show();
-		map.setInfoWindowAdapter(new InfoWindowAdapter() {
+		// View v = getLayoutInflater().inflate(R.layout.info_layout,
+		// null);
 
-			@Override
-			public View getInfoWindow(Marker marker) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public View getInfoContents(Marker marker) {
-				// info view
-				System.out.println(marker.getTitle());
-				if (marker.getTitle().equals("Start")) {
-					View v = getLayoutInflater().inflate(R.layout.info_layout,
-							null);
-
-					if (trackMemberList != null) {
-						FinishAdaptor aa = new FinishAdaptor(activity,
-								trackMemberList);
-						final ListView ll = (ListView) v
-								.findViewById(R.id.finishListView);
-						ll.setAdapter(aa);
-					}
-
-					return v;
-				}
-				return null;
-
-			}
-		});
+		if (trackMemberList != null) {
+			InfoAdaptor aa = new InfoAdaptor(activity, trackMemberList);
+			final ListView ll = (ListView) findViewById(R.id.infoListView);
+			ll.setAdapter(aa);
+			ll.setVisibility(View.VISIBLE);
+			ll.startAnimation(animAlpha);
+			// go button enable
+			raceBtn.setVisibility(View.VISIBLE);
+			raceBtn.startAnimation(animAlpha);
+		}
+		// map.setInfoWindowAdapter(new InfoWindowAdapter() {
+		//
+		// @Override
+		// public View getInfoWindow(Marker marker) {
+		// // TODO Auto-generated method stub
+		// return null;
+		// }
+		//
+		// @Override
+		// public View getInfoContents(Marker marker) {
+		// // info view
+		// System.out.println(marker.getTitle());
+		// if (marker.getTitle().equals("Start")) {
+		// View v = getLayoutInflater().inflate(R.layout.info_layout,
+		// null);
+		//
+		// if (trackMemberList != null) {
+		// InfoAdaptor aa = new InfoAdaptor(activity,
+		// trackMemberList);
+		// final ListView ll = (ListView) v
+		// .findViewById(R.id.finishListView);
+		// ll.setAdapter(aa);
+		// }
+		//
+		// return v;
+		// }
+		// return null;
+		//
+		// }
+		// });
 
 		trackList.get(listPosition).setTrackMemberList(trackMemberList);
 	}
@@ -586,7 +615,14 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	@Override
 	public void onLocationChanged(Location location) {
+
 		this.currentLoc = location;
+
+		if (!(currentLoc.getLatitude() == location.getLatitude() && currentLoc
+				.getLongitude() == location.getLongitude())) {
+			setListData();
+		}
+
 		System.out.println("CURRENT LOCATION :" + currentLoc.getLatitude()
 				+ currentLoc.getLongitude());
 		if (trackList.size() > 0) {

@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import android.R.drawable;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -128,15 +129,15 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 					+ String.format("%02d", seconds));
 			if (countOut) {
 				timeOutInMillies = SystemClock.uptimeMillis() - startOutTime;
-				int sec = (int) (timeOutInMillies / 1000);
+				int sec = (int) (timeOutInMillies / 1500);
 				if (sec > 5 && sec <= 10) {
-//					Toast.makeText(
-//							MapsActivity.this,
-//							"Out of track  count "
-//									+ (sec-5) + " s",
-//							50).show();
-					progress_out_time.setProgress(sec-5);
-					exitActivity();
+					// Toast.makeText(
+					// MapsActivity.this,
+					// "Out of track  count "
+					// + (sec-5) + " s",
+					// 50).show();
+
+					progress_out_time.setProgress((sec - 5) * 10);
 				} else if (sec > 10) {
 					DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 						@Override
@@ -145,6 +146,10 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 							case DialogInterface.BUTTON_POSITIVE:
 								timeSwap += timeInMillies;
 								myHandler.removeCallbacks(updateTimerMethod);
+								Intent intent = new Intent(MapsActivity.this,
+										MainActivity.class);
+								intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+								startActivity(intent);
 								break;
 							case DialogInterface.BUTTON_NEGATIVE:
 								// No button clicked
@@ -157,7 +162,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 					builder.setMessage("Leave race. you running out of track !")
 							.setPositiveButton("Yes", dialogClickListener)
 							.show();
-					
+
 					countOut = false;
 				}
 
@@ -165,7 +170,6 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			myHandler.postDelayed(this, 0);
 		}
 	};
-
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -354,50 +358,44 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 				if (polygon.contains(point)) {
 					// Toast.makeText(this, "IN TRACK",
 					// Toast.LENGTH_SHORT).show();
+					progress_out_time.setProgress(0);
 					countOut = false;
 					break;
 				}
 				if (i == polygonsTrack.size() - 1) {
 					Toast.makeText(this, "Path : OUT TRACK", Toast.LENGTH_SHORT)
 							.show();
-					if(!countOut)
-					startOutTime = SystemClock.uptimeMillis();
+					if (!countOut) {
+						startOutTime = SystemClock.uptimeMillis();
+					}
 					countOut = true;
-					// else
-					// if((SystemClock.uptimeMillis()-startOutTime)>5000&&(SystemClock.uptimeMillis()-startOutTime)<10000){
-					// Toast.makeText(this,
-					// "If you leave ignore warnning in 5s ",
-					// Toast.LENGTH_LONG).show();
-					// }else
-					// if((SystemClock.uptimeMillis()-startOutTime)>10000){
-					// DialogInterface.OnClickListener dialogClickListener = new
-					// DialogInterface.OnClickListener() {
-					// @Override
-					// public void onClick(DialogInterface dialog, int which) {
-					// switch (which) {
-					// case DialogInterface.BUTTON_POSITIVE:
-					//
-					// break;
-					// case DialogInterface.BUTTON_NEGATIVE:
-					// // No button clicked
-					// break;
-					// }
-					// }
-					// };
-					// AlertDialog.Builder builder = new
-					// AlertDialog.Builder(this);
-					// builder.setMessage("Leave race. you running out of track !")
-					// .setPositiveButton("Yes", dialogClickListener).show();
-					// }
 				}
 			}
 		}
 		if (polygonFinish != null && pathCheck) {
 			if (polygonFinish.contains(point)) {
 				Toast.makeText(this, "Finish", Toast.LENGTH_SHORT).show();
-				btn_stop_track.setEnabled(true);
+//				btn_stop_track.setEnabled(true);
+				//finish race
+				recordCheck = false;
+				myLocationManager.removeUpdates(this);
+				// Save Track to file and set to trackMemberlist and sort by
+				// duration time.
+				saveTrackData();
+				try {
+					CaptureMapScreen();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				// stop timer
+				timeSwap += timeInMillies;
+				myHandler.removeCallbacks(updateTimerMethod);
+				
+				Intent intent = new Intent(this, FinishActivity.class);
+				intent.putExtra("TrackMemberList", trackMemberList);
+				startActivity(intent);
 			} else {
-				btn_stop_track.setEnabled(false);
+//				btn_stop_track.setEnabled(false);
 			}
 		}
 	}
@@ -409,17 +407,18 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		btn_stop_track = (Button) findViewById(R.id.btn_stop_track);
 		btn_stop_track.setOnClickListener(this);
 		// set Enable false for start
-		btn_stop_track.setEnabled(false);
+//		btn_stop_track.setEnabled(false);
 		txt_current_distace = (TextView) findViewById(R.id.txt_curent_distance);
 		txt_current_speed = (TextView) findViewById(R.id.txt_curent_speed);
 		txt_current_time = (TextView) findViewById(R.id.txt_curent_time);
 		txt_current_speed.setText("0");
 		txt_current_distace.setText("0");
 		txt_current_time.setText("00:00");
-		
+
 		progress_out_time = (ProgressBar) findViewById(R.id.progressBar);
-		progress_out_time.setMax(5);
-		progress_out_time.setBackgroundColor(Color.YELLOW);
+		progress_out_time.setMax(100);
+		progress_out_time.setBackgroundResource(drawable.alert_dark_frame);
+		progress_out_time.setDrawingCacheBackgroundColor(Color.YELLOW);
 	}
 
 	public boolean isGpsEnable() {
@@ -452,23 +451,15 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 			break;
 		case R.id.btn_stop_track:
+			//leave race
 			recordCheck = false;
 			myLocationManager.removeUpdates(this);
-			// Save Track to file and set to trackMemberlist and sort by
-			// duration time.
-			saveTrackData();
-			try {
-				CaptureMapScreen();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			Intent intent = new Intent(this, FinishActivity.class);
-			intent.putExtra("TrackMemberList", trackMemberList);
-			startActivity(intent);
-
-			// stop timer
 			timeSwap += timeInMillies;
 			myHandler.removeCallbacks(updateTimerMethod);
+			Intent intent = new Intent(MapsActivity.this,
+					MainActivity.class);
+			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
 
 			// exitActivity();
 			break;
@@ -794,7 +785,6 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	private void exitActivity() {
 		finish();
-		android.os.Process.killProcess(android.os.Process.myPid());
 		super.onDestroy();
 
 	}
