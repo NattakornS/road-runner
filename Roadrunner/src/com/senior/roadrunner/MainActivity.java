@@ -190,6 +190,7 @@ public class MainActivity extends FragmentActivity {
 	public void onDestroy() {
 		super.onDestroy();
 		uiHelper.onDestroy();
+		
 	}
 
 	@Override
@@ -471,6 +472,7 @@ public class MainActivity extends FragmentActivity {
 		finish();
 		android.os.Process.killProcess(android.os.Process.myPid());
 		super.onDestroy();
+		
 
 	}
 

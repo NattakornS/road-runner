@@ -33,6 +33,7 @@ import android.os.SystemClock;
 import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -97,8 +98,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private TextView txt_current_speed;
 	private TextView txt_current_time;
 
-	private Handler myHandler;
-	private Runnable updateTimerMethod;
+	private Handler myHandler = new Handler();;
 	// private ArrayList<LatLngTimeData> latLngTimeData;
 	// private static final String SDCARD_TRACKER_XML = "/sdcard/tracker.xml";
 	private long startTime = 0L;
@@ -107,22 +107,80 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	protected long finalTime = 0L;
 	private double totalDistance = 0;
 	private RoadRunnerSetting roadRunnerSetting;
+	private boolean countOut = false;
+	private long startOutTime = 0L;
 	private static ArrayList<TrackMemberList> trackMemberListTemp;
-
+	private long timeOutInMillies;
 	public static String mapcapPath = "";
+	private ProgressBar progress_out_time;
+	// Timer Thread
+	private Runnable updateTimerMethod = new Runnable() {
+
+		public void run() {
+			timeInMillies = SystemClock.uptimeMillis() - startTime;
+			finalTime = timeSwap + timeInMillies;
+
+			int seconds = (int) (finalTime / 1000);
+			int minutes = seconds / 60;
+			seconds = seconds % 60;
+			// int milliseconds = (int) (finalTime % 1000);
+			txt_current_time.setText("" + minutes + ":"
+					+ String.format("%02d", seconds));
+			if (countOut) {
+				timeOutInMillies = SystemClock.uptimeMillis() - startOutTime;
+				int sec = (int) (timeOutInMillies / 1000);
+				if (sec > 5 && sec <= 10) {
+//					Toast.makeText(
+//							MapsActivity.this,
+//							"Out of track  count "
+//									+ (sec-5) + " s",
+//							50).show();
+					progress_out_time.setProgress(sec-5);
+					exitActivity();
+				} else if (sec > 10) {
+					DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							switch (which) {
+							case DialogInterface.BUTTON_POSITIVE:
+								timeSwap += timeInMillies;
+								myHandler.removeCallbacks(updateTimerMethod);
+								break;
+							case DialogInterface.BUTTON_NEGATIVE:
+								// No button clicked
+								break;
+							}
+						}
+					};
+					AlertDialog.Builder builder = new AlertDialog.Builder(
+							MapsActivity.this);
+					builder.setMessage("Leave race. you running out of track !")
+							.setPositiveButton("Yes", dialogClickListener)
+							.show();
+					
+					countOut = false;
+				}
+
+			}
+			myHandler.postDelayed(this, 0);
+		}
+	};
+
 
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map_layout);
-		
-		//get setting instance
+
+		// get setting instance
 		roadRunnerSetting = RoadRunnerSetting.getInstance();
-		mapcapPath =Environment.getExternalStorageDirectory()
-				+ "/" + "roadrunner/" + roadRunnerSetting.getFacebookId() + ".png";//set mapcap path
-		fId=roadRunnerSetting.getFacebookId();
-		
+		mapcapPath = Environment.getExternalStorageDirectory() + "/"
+				+ "roadrunner/" + roadRunnerSetting.getFacebookId() + ".png";// set
+																				// mapcap
+																				// path
+		fId = roadRunnerSetting.getFacebookId();
+
 		Intent intent = getIntent();
 		trackMemberList = (ArrayList<TrackMemberList>) intent
 				.getSerializableExtra("TrackMemberList");
@@ -294,12 +352,43 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			for (int i = 0; i < polygonsTrack.size(); i++) {
 				Polygon polygon = polygonsTrack.get(i);
 				if (polygon.contains(point)) {
-					Toast.makeText(this, "IN TRACK", Toast.LENGTH_SHORT).show();
+					// Toast.makeText(this, "IN TRACK",
+					// Toast.LENGTH_SHORT).show();
+					countOut = false;
 					break;
 				}
 				if (i == polygonsTrack.size() - 1) {
 					Toast.makeText(this, "Path : OUT TRACK", Toast.LENGTH_SHORT)
 							.show();
+					if(!countOut)
+					startOutTime = SystemClock.uptimeMillis();
+					countOut = true;
+					// else
+					// if((SystemClock.uptimeMillis()-startOutTime)>5000&&(SystemClock.uptimeMillis()-startOutTime)<10000){
+					// Toast.makeText(this,
+					// "If you leave ignore warnning in 5s ",
+					// Toast.LENGTH_LONG).show();
+					// }else
+					// if((SystemClock.uptimeMillis()-startOutTime)>10000){
+					// DialogInterface.OnClickListener dialogClickListener = new
+					// DialogInterface.OnClickListener() {
+					// @Override
+					// public void onClick(DialogInterface dialog, int which) {
+					// switch (which) {
+					// case DialogInterface.BUTTON_POSITIVE:
+					//
+					// break;
+					// case DialogInterface.BUTTON_NEGATIVE:
+					// // No button clicked
+					// break;
+					// }
+					// }
+					// };
+					// AlertDialog.Builder builder = new
+					// AlertDialog.Builder(this);
+					// builder.setMessage("Leave race. you running out of track !")
+					// .setPositiveButton("Yes", dialogClickListener).show();
+					// }
 				}
 			}
 		}
@@ -314,7 +403,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	}
 
 	private void initwidget() {
-		myHandler = new Handler();
+
 		btn_track = (Button) findViewById(R.id.btn_track);
 		btn_track.setOnClickListener(this);
 		btn_stop_track = (Button) findViewById(R.id.btn_stop_track);
@@ -327,14 +416,23 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		txt_current_speed.setText("0");
 		txt_current_distace.setText("0");
 		txt_current_time.setText("00:00");
+		
+		progress_out_time = (ProgressBar) findViewById(R.id.progressBar);
+		progress_out_time.setMax(5);
+		progress_out_time.setBackgroundColor(Color.YELLOW);
 	}
 
 	public boolean isGpsEnable() {
 		boolean isgpsenable = false;
-		String provider = Settings.Secure.getString(getContentResolver(),
-				Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-		if (!provider.equals("")) { // GPS is Enabled
+		// String provider = Settings.Secure.getString(getContentResolver(),
+		// Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+		// if (!provider.equals("")) { // GPS is Enabled
+		// isgpsenable = true;
+		// }
+		if (myLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
 			isgpsenable = true;
+		} else {
+			isgpsenable = false;
 		}
 		return isgpsenable;
 	}
@@ -348,7 +446,10 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			recordCheck = true;
 			btn_track.setEnabled(false);
 			raceThread();
-			timer();
+			// startTimer
+			startTime = SystemClock.uptimeMillis();
+			myHandler.postDelayed(updateTimerMethod, 0);
+
 			break;
 		case R.id.btn_stop_track:
 			recordCheck = false;
@@ -365,8 +466,11 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			intent.putExtra("TrackMemberList", trackMemberList);
 			startActivity(intent);
 
+			// stop timer
+			timeSwap += timeInMillies;
 			myHandler.removeCallbacks(updateTimerMethod);
-//			exitActivity();
+
+			// exitActivity();
 			break;
 
 		}
@@ -397,28 +501,6 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			}
 		};
 		map.snapshot(callback);
-	}
-
-	private void timer() {
-		updateTimerMethod = new Runnable() {
-
-			public void run() {
-				timeInMillies = SystemClock.uptimeMillis() - startTime;
-				finalTime = timeSwap + timeInMillies;
-
-				int seconds = (int) (finalTime / 1000);
-				int minutes = seconds / 60;
-				seconds = seconds % 60;
-				// int milliseconds = (int) (finalTime % 1000);
-				txt_current_time.setText("" + minutes + ":"
-						+ String.format("%02d", seconds));
-				myHandler.postDelayed(this, 0);
-			}
-
-		};
-		startTime = SystemClock.uptimeMillis();
-		myHandler.postDelayed(updateTimerMethod, 0);
-
 	}
 
 	@SuppressLint("UseValueOf")
