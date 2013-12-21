@@ -33,6 +33,7 @@ import com.facebook.model.GraphPlace;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.FacebookDialog;
 import com.facebook.widget.FacebookDialog.ShareDialogBuilder;
+import com.senior.roadrunner.MainActivity;
 import com.senior.roadrunner.MapsActivity;
 import com.senior.roadrunner.R;
 import com.senior.roadrunner.racetrack.TrackMemberList;
@@ -92,7 +93,7 @@ public class FinishActivity extends FragmentActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.finish_layout);
-		//get setting instance
+		// get setting instance
 		roadRunnerSetting = RoadRunnerSetting.getInstance();
 		// set Uihelper to shared content
 		uiHelper = new UiLifecycleHelper(this, callback);
@@ -362,8 +363,9 @@ public class FinishActivity extends FragmentActivity {
 		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		bar.setTitle("Roadrunner");
 		bar.setSubtitle("Race Result");
-		
-		System.out.println("Facebook Name : "+roadRunnerSetting.getFacebookId());
+
+		System.out.println("Facebook Name : "
+				+ roadRunnerSetting.getFacebookId());
 		for (int i = 0; i < trackMemberList.size(); i++) {
 			System.out.println(trackMemberList.get(i).getfName());
 			if (trackMemberList.get(i).getfId()
@@ -396,6 +398,9 @@ public class FinishActivity extends FragmentActivity {
 		switch (item.getItemId()) {
 		case R.id.save_finish_menu_btn:
 			submitRaceResult();
+			Intent intent = new Intent(FinishActivity.this, MainActivity.class);
+			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
 			return true;
 
 		default:

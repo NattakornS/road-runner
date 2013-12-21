@@ -14,24 +14,33 @@
         android:layout_height="fill_parent"
         class="com.google.android.gms.maps.MapFragment" />
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true" />
+
     <LinearLayout
         android:id="@+id/gageLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_margin="10dp"
+        android:layout_below="@+id/progressBar"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
         android:background="@drawable/rounded_corners"
-        android:gravity="fill"
-         >
+        android:gravity="fill" >
 
         <LinearLayout
             android:id="@+id/col1"
             android:layout_width="match_parent"
             android:layout_height="fill_parent"
             android:layout_weight="2.4"
-            android:orientation="vertical"
-            android:dividerPadding="10dp" >
+            android:dividerPadding="10dp"
+            android:orientation="vertical" >
 
             <LinearLayout
                 android:id="@+id/col1_row1"
@@ -215,30 +224,21 @@
             android:id="@+id/btn_track"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="20dp"
             android:layout_weight="0.5"
             android:background="@drawable/blue_menu_btn"
             android:text="START"
-            android:layout_margin="20dp"
             android:textColor="@color/white" />
 
         <Button
             android:id="@+id/btn_stop_track"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="20dp"
             android:layout_weight="0.5"
             android:background="@drawable/blue_menu_btn"
-            android:text="STOP"
-            android:layout_margin="20dp"
+            android:text="Leave"
             android:textColor="@color/white" />
     </LinearLayout>
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/gridbutton"
-        android:layout_alignRight="@+id/gageLayout"
-        android:layout_below="@+id/gageLayout" />
 
 </RelativeLayout>
