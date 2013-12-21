@@ -139,7 +139,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 				.isProviderEnabled(LocationManager.GPS_PROVIDER);
 		boolean isNetworkEnabled = mLocationManager
 				.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-		if (!isGPSEnabled && !isNetworkEnabled) {
+		if (!isGPSEnabled) {
 			DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
@@ -171,11 +171,16 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	public boolean isGpsEnable() {
 		boolean isgpsenable = false;
-		String provider = Settings.Secure.getString(this.getContentResolver(),
-				Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-		if (provider.equals("network,gps")) { // GPS is Enabled
-			isgpsenable = true;
-		}
+//		String provider = Settings.Secure.getString(this.getContentResolver(),
+//				Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+//		if (provider.equals("network,gps")) { // GPS is Enabled
+//			isgpsenable = true;
+//		}
+		  if (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+			  isgpsenable = true;
+		    }else{
+		    	isgpsenable = false;
+		    }
 		return isgpsenable;
 	}
 

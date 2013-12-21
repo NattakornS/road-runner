@@ -232,4 +232,13 @@
             android:textColor="@color/white" />
     </LinearLayout>
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/gridbutton"
+        android:layout_alignRight="@+id/gageLayout"
+        android:layout_below="@+id/gageLayout" />
+
 </RelativeLayout>
