@@ -7,7 +7,7 @@
     <string-array name="menu_drawer_array">
         <item>Facebook setting</item>
         <item>Race Track</item>
-        <item>Feeds</item>
+        <item>Create Track</item>
         <item>Setting</item>
         <item>Exit</item>
     </string-array>

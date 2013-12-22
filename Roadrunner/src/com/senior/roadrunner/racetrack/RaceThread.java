@@ -24,6 +24,7 @@ import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.tools.GPSSpeed;
 import com.senior.roadrunner.tools.LatLngInterpolator.Spherical;
 import com.senior.roadrunner.tools.MarkerAnimation;
+import com.senior.roadrunner.trackchooser.TrackMemberList;
 
 public class RaceThread extends Thread {
 	private int i;

@@ -40,6 +40,7 @@ import com.facebook.AppEventsLogger;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
+import com.senior.roadrunner.trackchooser.RaceTrackSelectorActivity;
 
 @SuppressLint("NewApi")
 public class MainActivity extends FragmentActivity {
@@ -415,6 +416,9 @@ public class MainActivity extends FragmentActivity {
 //			}
 			
 		} else if (position == 2) {
+			Intent i = new Intent(this, CreateTrackActivity.class);
+			startActivity(i);
+		
 		} else if (position == 3) {
 			// Intent i = new Intent(this, FinishActivity.class);
 			// startActivity(i);

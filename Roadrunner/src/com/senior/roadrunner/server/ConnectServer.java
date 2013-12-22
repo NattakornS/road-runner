@@ -22,10 +22,10 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.senior.roadrunner.MapsActivity;
 import com.senior.roadrunner.R;
-import com.senior.roadrunner.RaceTrackSelectorActivity;
 import com.senior.roadrunner.finish.FinishActivity;
+import com.senior.roadrunner.racetrack.MapsActivity;
+import com.senior.roadrunner.trackchooser.RaceTrackSelectorActivity;
 
 public class ConnectServer extends AsyncTask<String, Integer, String> {
 	

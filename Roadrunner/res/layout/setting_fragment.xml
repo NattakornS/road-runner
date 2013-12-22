@@ -136,7 +136,15 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="0.4"
                     android:gravity="left|center_vertical"
-                    android:text="Langauge"
+                    android:text="Language"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                <TextView
+                    android:id="@+id/languageTxt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6"
+                    android:gravity="center"
+                    android:text="--"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
         </LinearLayout>

@@ -23,8 +23,8 @@ import android.os.AsyncTask;
 import android.os.PowerManager;
 import android.util.Log;
 
-import com.senior.roadrunner.MapsActivity;
 import com.senior.roadrunner.R;
+import com.senior.roadrunner.racetrack.MapsActivity;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 
 @SuppressWarnings("deprecation")

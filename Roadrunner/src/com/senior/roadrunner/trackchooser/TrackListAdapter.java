@@ -1,4 +1,4 @@
-package com.senior.roadrunner.racetrack;
+package com.senior.roadrunner.trackchooser;
 
 import java.util.ArrayList;
 
@@ -14,7 +14,6 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.senior.roadrunner.R;
-import com.senior.roadrunner.RaceTrackSelectorActivity;
 
 /********* Adapter class extends with BaseAdapter and implements with OnClickListener ************/
 public class TrackListAdapter extends BaseAdapter   implements OnClickListener {

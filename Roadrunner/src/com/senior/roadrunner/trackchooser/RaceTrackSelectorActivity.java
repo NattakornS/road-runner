@@ -1,4 +1,4 @@
-package com.senior.roadrunner;
+package com.senior.roadrunner.trackchooser;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -58,14 +58,16 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.senior.roadrunner.R;
+import com.senior.roadrunner.R.anim;
+import com.senior.roadrunner.R.drawable;
+import com.senior.roadrunner.R.id;
+import com.senior.roadrunner.R.layout;
+import com.senior.roadrunner.R.menu;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.finish.FinishAdaptor;
-import com.senior.roadrunner.racetrack.InfoAdaptor;
-import com.senior.roadrunner.racetrack.RaceTrackBitmapProfile;
-import com.senior.roadrunner.racetrack.TrackList;
-import com.senior.roadrunner.racetrack.TrackListAdapter;
-import com.senior.roadrunner.racetrack.TrackMemberList;
+import com.senior.roadrunner.racetrack.MapsActivity;
 import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 
@@ -437,13 +439,14 @@ public class RaceTrackSelectorActivity extends Activity implements
 				sched.setfId(jsonObject.getString("Fid"));
 				sched.setfName(jsonObject.getString("fName"));
 				sched.setrId(jsonObject.getString("Rid"));
-				sched.setRank(Integer.parseInt(jsonObject.getString("Rank")));
+				sched.setRank(i+1);//rank has been query by duration.
 				sched.setTrackerDir(jsonObject.getString("Trackerdir"));
 				sched.setDuration(Integer.parseInt(jsonObject.getString("Time")));
 				/******** Take Model Object in ArrayList **********/
 				trackMemberList.add(sched);
 
 			}
+			//load profile picture to sd card
 			RaceTrackBitmapProfile getBitmapProfile = new RaceTrackBitmapProfile(trackMemberList);
 			getBitmapProfile.start();
 		} catch (JSONException e) {
