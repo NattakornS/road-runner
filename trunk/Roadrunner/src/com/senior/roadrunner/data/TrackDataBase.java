@@ -102,6 +102,7 @@ public class TrackDataBase {
 //			// Toast.makeText(null,
 //			// "Done writing SD 'mysdfile.txt'",
 //			// Toast.LENGTH_SHORT).show();
+			System.out.println(savePath);
 			File f = new File(savePath);
 			File pf = f.getParentFile();
 			if (pf != null) {

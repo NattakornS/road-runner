@@ -1,4 +1,4 @@
-package com.senior.roadrunner;
+package com.senior.roadrunner.racetrack;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -50,18 +50,22 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.senior.roadrunner.MainActivity;
+import com.senior.roadrunner.R;
+import com.senior.roadrunner.R.id;
+import com.senior.roadrunner.R.layout;
 import com.senior.roadrunner.data.Coordinate;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.finish.FinishActivity;
-import com.senior.roadrunner.racetrack.RaceThread;
-import com.senior.roadrunner.racetrack.TrackMemberList;
 import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.tools.Distance;
 import com.senior.roadrunner.tools.PathArea;
 import com.senior.roadrunner.tools.Point;
 import com.senior.roadrunner.tools.Polygon;
+import com.senior.roadrunner.tools.RoadrunnerTools;
+import com.senior.roadrunner.trackchooser.TrackMemberList;
 
 @SuppressLint("NewApi")
 public class MapsActivity extends Activity implements View.OnClickListener,
@@ -70,8 +74,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 {
 	public static String rId = "";
 	public static String fId = "";
-	public static final String savePath = RoadRunnerSetting.SDPATH + fId
-			+ ".xml";
+	public static String savePath = RoadRunnerSetting.SDPATH + fId + ".xml";
 
 	GoogleMap map;
 	LocationManager myLocationManager;
@@ -375,28 +378,29 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		}
 		if (polygonFinish != null && pathCheck) {
 			if (polygonFinish.contains(point)) {
-				Toast.makeText(this, "Finish", Toast.LENGTH_SHORT).show();
-//				btn_stop_track.setEnabled(true);
-				//finish race
-				recordCheck = false;
-				myLocationManager.removeUpdates(this);
-				// Save Track to file and set to trackMemberlist and sort by
-				// duration time.
-				saveTrackData();
 				try {
 					CaptureMapScreen();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				Toast.makeText(this, "Finish", Toast.LENGTH_SHORT).show();
+				// btn_stop_track.setEnabled(true);
+				// finish race
+				recordCheck = false;
+				myLocationManager.removeUpdates(this);
+				// Save Track to file and set to trackMemberlist and sort by
+				// duration time.
+				saveTrackData();
+				
 				// stop timer
 				timeSwap += timeInMillies;
 				myHandler.removeCallbacks(updateTimerMethod);
-				
+
 				Intent intent = new Intent(this, FinishActivity.class);
 				intent.putExtra("TrackMemberList", trackMemberList);
 				startActivity(intent);
 			} else {
-//				btn_stop_track.setEnabled(false);
+				// btn_stop_track.setEnabled(false);
 			}
 		}
 	}
@@ -408,7 +412,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		btn_stop_track = (Button) findViewById(R.id.btn_stop_track);
 		btn_stop_track.setOnClickListener(this);
 		// set Enable false for start
-//		btn_stop_track.setEnabled(false);
+		// btn_stop_track.setEnabled(false);
 		txt_current_distace = (TextView) findViewById(R.id.txt_curent_distance);
 		txt_current_speed = (TextView) findViewById(R.id.txt_curent_speed);
 		txt_current_time = (TextView) findViewById(R.id.txt_curent_time);
@@ -452,13 +456,12 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 			break;
 		case R.id.btn_stop_track:
-			//leave race
+			// leave race
 			recordCheck = false;
 			myLocationManager.removeUpdates(this);
 			timeSwap += timeInMillies;
 			myHandler.removeCallbacks(updateTimerMethod);
-			Intent intent = new Intent(MapsActivity.this,
-					MainActivity.class);
+			Intent intent = new Intent(MapsActivity.this, MainActivity.class);
 			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 
@@ -498,6 +501,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	@SuppressLint("UseValueOf")
 	private void saveTrackData() {
 		// save file to sdcard
+		savePath = RoadRunnerSetting.SDPATH + fId + ".xml";
 		TrackDataBase.saveXmlFile(latLngTimeData, savePath);
 		Toast.makeText(getApplicationContext(), "Save data", Toast.LENGTH_SHORT)
 				.show();
@@ -506,7 +510,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		myTrack.setDuration(finalTime);
 		myTrack.setfId(fId);
 		myTrack.setDistance(totalDistance);
-		myTrack.setAVGSpeed((totalDistance*3600)/(finalTime/1000));
+		myTrack.setAVGSpeed((totalDistance * 3600) / (finalTime / 1000));
 		myTrack.setfName(roadRunnerSetting.getFacebookName());
 		// myTrack.setProfileImg(RoadRunnerSetting.getProfileIcon());
 		// myTrack.setRank(rank);
@@ -630,15 +634,17 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			marker.remove();
 		}
 
-		if(roadRunnerSetting.getProfileIcon()==null){
+		if (roadRunnerSetting.getProfileIcon() == null) {
 			marker = map.addMarker(new MarkerOptions()
-			.position(coord)
-			.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).title("Me"));
-		}else{
-		marker = map.addMarker(new MarkerOptions()
-				.position(coord)
-				.icon(BitmapDescriptorFactory.fromBitmap(roadRunnerSetting
-						.getProfileIcon())).title("Me"));
+					.position(coord)
+					.icon(BitmapDescriptorFactory
+							.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+					.title("Me"));
+		} else {
+			marker = map.addMarker(new MarkerOptions()
+					.position(coord)
+					.icon(BitmapDescriptorFactory.fromBitmap(roadRunnerSetting
+							.getProfileIcon())).title("Me"));
 		}
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
 
@@ -752,35 +758,38 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	// Return track.xml from dataBase server
 	public synchronized void setMemberTrack(String result, int index) {
-		try {
-			String s = RoadRunnerSetting.SDPATH
-					+ trackMemberList.get(index).getTrackerDir();
-			File f = new File(s);
-			File pf = f.getParentFile();
-			if (pf != null) {
-				pf.mkdirs();
-			}
-			if ((pf.exists()) && (pf.isDirectory())) {
-				if ((!f.exists()) || (!f.isFile())) {
-					f.createNewFile();
-				}
-				if ((f.exists()) || (f.isFile())) {
-					FileOutputStream os = null;
-					os = new FileOutputStream(s, false);
-					if (os != null) {
-						OutputStreamWriter myOutWriter = new OutputStreamWriter(
-								os);
-						myOutWriter.write(result);//
-						myOutWriter.close();
-					}
-					os.flush();
-					os.close();
-				}
-			}
-		} catch (IOException e) {
-			String s = e.toString();
-			System.out.println(s);
-		}
+		String path = RoadRunnerSetting.SDPATH
+				+ trackMemberList.get(index).getTrackerDir();
+		RoadrunnerTools.writeStringToFile(path, result);
+		// try {
+		// String s = RoadRunnerSetting.SDPATH
+		// + trackMemberList.get(index).getTrackerDir();
+		// File f = new File(s);
+		// File pf = f.getParentFile();
+		// if (pf != null) {
+		// pf.mkdirs();
+		// }
+		// if ((pf.exists()) && (pf.isDirectory())) {
+		// if ((!f.exists()) || (!f.isFile())) {
+		// f.createNewFile();
+		// }
+		// if ((f.exists()) || (f.isFile())) {
+		// FileOutputStream os = null;
+		// os = new FileOutputStream(s, false);
+		// if (os != null) {
+		// OutputStreamWriter myOutWriter = new OutputStreamWriter(
+		// os);
+		// myOutWriter.write(result);//
+		// myOutWriter.close();
+		// }
+		// os.flush();
+		// os.close();
+		// }
+		// }
+		// } catch (IOException e) {
+		// String s = e.toString();
+		// System.out.println(s);
+		// }
 
 		// trackMemberList.get(index).setTrackData(trackData);
 

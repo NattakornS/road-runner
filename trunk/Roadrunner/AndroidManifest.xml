@@ -44,11 +44,14 @@
             android:name="com.senior.roadrunner.finish.FinishActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.senior.roadrunner.MapsActivity"
+            android:name="com.senior.roadrunner.CreateTrackActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.senior.roadrunner.racetrack.MapsActivity"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen" />
         <activity
-            android:name="com.senior.roadrunner.RaceTrackSelectorActivity"
+            android:name="com.senior.roadrunner.trackchooser.RaceTrackSelectorActivity"
             android:label="Race track"
             android:parentActivityName="com.senior.roadrunner.MainActivity"
             android:screenOrientation="portrait" >

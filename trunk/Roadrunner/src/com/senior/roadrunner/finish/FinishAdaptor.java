@@ -21,8 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.senior.roadrunner.R;
-import com.senior.roadrunner.racetrack.TrackMemberList;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
+import com.senior.roadrunner.trackchooser.TrackMemberList;
 
 public class FinishAdaptor extends BaseAdapter implements OnClickListener {
 

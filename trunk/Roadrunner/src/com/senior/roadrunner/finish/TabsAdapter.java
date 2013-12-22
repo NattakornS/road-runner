@@ -15,7 +15,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
 
-import com.senior.roadrunner.racetrack.TrackMemberList;
+import com.senior.roadrunner.trackchooser.TrackMemberList;
 
 public class TabsAdapter extends FragmentPagerAdapter implements TabListener, OnPageChangeListener{
 	@SuppressWarnings("unused")

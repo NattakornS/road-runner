@@ -34,12 +34,12 @@ import com.facebook.model.GraphUser;
 import com.facebook.widget.FacebookDialog;
 import com.facebook.widget.FacebookDialog.ShareDialogBuilder;
 import com.senior.roadrunner.MainActivity;
-import com.senior.roadrunner.MapsActivity;
 import com.senior.roadrunner.R;
-import com.senior.roadrunner.racetrack.TrackMemberList;
+import com.senior.roadrunner.racetrack.MapsActivity;
 import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.server.UploadTask;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
+import com.senior.roadrunner.trackchooser.TrackMemberList;
 
 public class FinishActivity extends FragmentActivity {
 
@@ -398,7 +398,7 @@ public class FinishActivity extends FragmentActivity {
 		switch (item.getItemId()) {
 		case R.id.save_finish_menu_btn:
 			submitRaceResult();
-			backToHome();
+//			backToHome();
 			return true;
 		case android.R.id.home:
 			backToHome();
