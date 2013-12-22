@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.AlertDialog;
@@ -33,11 +36,15 @@ import com.facebook.model.GraphPlace;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.FacebookDialog;
 import com.facebook.widget.FacebookDialog.ShareDialogBuilder;
+import com.senior.roadrunner.CreateTrackActivity;
 import com.senior.roadrunner.MainActivity;
 import com.senior.roadrunner.R;
+import com.senior.roadrunner.data.LatLngTimeData;
+import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.racetrack.MapsActivity;
 import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.server.UploadTask;
+import com.senior.roadrunner.server.UploadTrack;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.trackchooser.TrackMemberList;
 
@@ -88,6 +95,14 @@ public class FinishActivity extends FragmentActivity {
 
 	private RoadRunnerSetting roadRunnerSetting;
 
+	private String trackName;
+
+	private String parentName;
+
+	private double lng;
+
+	private double lat;
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -99,6 +114,8 @@ public class FinishActivity extends FragmentActivity {
 		uiHelper = new UiLifecycleHelper(this, callback);
 		uiHelper.onCreate(savedInstanceState);
 		Intent intent = getIntent();
+		parentName = intent.getStringExtra("ClassName");
+		trackName = intent.getStringExtra("TrackName");
 		trackMemberList = (ArrayList<TrackMemberList>) intent
 				.getSerializableExtra("TrackMemberList");
 		// trackMemberList = MapsActivity.getTrackMemberList();
@@ -374,7 +391,15 @@ public class FinishActivity extends FragmentActivity {
 				break;
 			}
 		}
-		
+
+		List<LatLngTimeData> trackFile = TrackDataBase
+				.loadXmlFile(roadRunnerSetting.SDPATH
+						+ roadRunnerSetting.getFacebookId() + ".xml");
+		if (trackFile != null) {
+			lat = trackFile.get(0).getCoordinate().getLat();
+			lng = trackFile.get(0).getCoordinate().getLng();
+		}
+
 		mTabsAdapter = new TabsAdapter(this, pager, myTrack);
 		mTabsAdapter.addTab(bar.newTab().setText("Result"),
 				FinishMyListViewFragment.class, null);
@@ -398,7 +423,7 @@ public class FinishActivity extends FragmentActivity {
 		switch (item.getItemId()) {
 		case R.id.save_finish_menu_btn:
 			submitRaceResult();
-//			backToHome();
+			// backToHome();
 			return true;
 		case android.R.id.home:
 			backToHome();
@@ -459,8 +484,7 @@ public class FinishActivity extends FragmentActivity {
 		// .build();
 		// uiHelper.trackPendingDialogCall(shareDialog.present());
 		uploadFile();
-		updateDataBase();
-		// onClickPostStatusUpdate(); //Post to facebook
+		onClickPostStatusUpdate(); // Post to facebook
 		onClickPostPhoto();
 		// initFragment();
 	}
@@ -472,7 +496,8 @@ public class FinishActivity extends FragmentActivity {
 				RoadRunnerSetting.URLServer + "/connect_server.php");
 		connectServer.addValue("Fid", myTrack.getfId());
 		connectServer.addValue("Rid", myTrack.getrId());
-		connectServer.addValue("Trackerdir", myTrack.getTrackerDir());
+		connectServer.addValue("Trackerdir", "tracker/" + myTrack.getrId()
+				+ "/" + roadRunnerSetting.getFacebookId() + ".xml");
 		connectServer.addValue("Rank", myTrack.getRank() + "");
 		connectServer.addValue("Time", myTrack.getDuration() + "");
 		connectServer.addValue("fName", myTrack.getfName());
@@ -486,9 +511,19 @@ public class FinishActivity extends FragmentActivity {
 	}
 
 	private void uploadFile() {
-		UploadTask uploadTask = new UploadTask(this);
-		String exString[] = { MapsActivity.savePath, MapsActivity.mapcapPath };
-		uploadTask.execute(exString);
+		if (parentName.equals("CreateTrackActivity")) {
+			System.out.println("Upload Track");
+			UploadTrack uploadTrack = new UploadTrack(this, lat, lng, trackName);
+			String exString[] = { CreateTrackActivity.savePath };
+			uploadTrack.execute(exString);
+
+		} else {
+			updateDataBase();
+			UploadTask uploadTask = new UploadTask(this);
+			String exString[] = { MapsActivity.savePath,
+					MapsActivity.mapcapPath, MapsActivity.rId };
+			uploadTask.execute(exString);
+		}
 	}
 
 	@SuppressLint("ShowToast")
@@ -497,5 +532,27 @@ public class FinishActivity extends FragmentActivity {
 		Log.d("Response DataBase : ", result);
 		Toast.makeText(this, "Database : " + result, 500).show();
 
+	}
+
+	public void uploadTrackResponse(String response) {
+		JSONObject jsonObject;
+		try {
+			jsonObject = new JSONObject(response);
+			String rid = jsonObject.getString("NumRow");
+			System.out.println(rid);
+			myTrack.setrId(rid);
+
+			// Upload racetrack
+			UploadTask uploadTask = new UploadTask(this);
+			String string[] = { CreateTrackActivity.savePath,
+					CreateTrackActivity.mapcapPath, rid };
+			uploadTask.execute(string);
+
+			updateDataBase();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// updateDataBase();
 	}
 }

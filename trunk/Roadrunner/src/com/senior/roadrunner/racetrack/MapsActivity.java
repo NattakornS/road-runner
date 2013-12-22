@@ -174,6 +174,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			myHandler.postDelayed(this, 0);
 		}
 	};
+	private String trackName;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -190,13 +191,13 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		fId = roadRunnerSetting.getFacebookId();
 
 		Intent intent = getIntent();
+		trackName=intent.getStringExtra("TrackName");
 		trackMemberList = (ArrayList<TrackMemberList>) intent
 				.getSerializableExtra("TrackMemberList");
 		trackMemberListTemp = new ArrayList<TrackMemberList>();
 		trackMemberListTemp.addAll(trackMemberList);
 		// set current Rid
 		rId = trackMemberList.get(0).getrId();
-
 		trackPathData = intent.getStringExtra("TrackPathData");
 		initwidget();
 		loadFile();
@@ -397,6 +398,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 				myHandler.removeCallbacks(updateTimerMethod);
 
 				Intent intent = new Intent(this, FinishActivity.class);
+				intent.putExtra("ClassName", "MapsActivity");
+				intent.putExtra("TrackName", trackName);
 				intent.putExtra("TrackMemberList", trackMemberList);
 				startActivity(intent);
 			} else {

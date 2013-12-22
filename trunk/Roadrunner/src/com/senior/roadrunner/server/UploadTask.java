@@ -73,6 +73,7 @@ public class UploadTask extends AsyncTask<String, Integer, String> {
 		// presses the power button during download
 		String fileUri = params[0];
 		String imgUri = params[1];
+		this.rid = params[2];
 		File sourceFile = new File(fileUri);
 		File imgFile = new File(imgUri);
 		PowerManager pm = (PowerManager) context
