@@ -29,8 +29,10 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.text.Editable;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,6 +51,7 @@ import com.senior.roadrunner.data.Coordinate;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.finish.FinishActivity;
+import com.senior.roadrunner.racetrack.MapsActivity;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.tools.Distance;
 import com.senior.roadrunner.tools.Point;
@@ -67,7 +70,7 @@ public class CreateTrackActivity extends Activity implements
 	GoogleMap map;
 	LocationManager myLocationManager;
 	// MyLocationListener myLocationListener;
-	private View btn_stop_track;
+	private Button btn_stop_track;
 	private Button btn_track;
 	private ArrayList<LatLngTimeData> latLngTimeData;
 	// private Button btn_load_track;
@@ -122,6 +125,8 @@ public class CreateTrackActivity extends Activity implements
 			myHandler.postDelayed(this, 0);
 		}
 	};
+	private EditText nameInput;
+	protected Editable trackName;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -154,8 +159,10 @@ public class CreateTrackActivity extends Activity implements
 	private void initwidget() {
 
 		btn_track = (Button) findViewById(R.id.btn_track);
+		btn_track.setText("Start");
 		btn_track.setOnClickListener(this);
 		btn_stop_track = (Button) findViewById(R.id.btn_stop_track);
+		btn_stop_track.setText("Finish");
 		btn_stop_track.setOnClickListener(this);
 		// set Enable false for start
 		// btn_stop_track.setEnabled(false);
@@ -206,28 +213,51 @@ public class CreateTrackActivity extends Activity implements
 			// MainActivity.class);
 			// intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			// startActivity(intent);
-
 			try {
 				CaptureMapScreen();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			Toast.makeText(this, "Finish", Toast.LENGTH_SHORT).show();
-			// btn_stop_track.setEnabled(true);
-			// finish race
-			recordCheck = false;
-			myLocationManager.removeUpdates(this);
-			// Save Track to file and set to trackMemberlist and sort by
-			// duration time.
-			saveTrackData();
+			DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					switch (which) {
+					case DialogInterface.BUTTON_POSITIVE:
+						trackName=nameInput.getText();
+						Toast.makeText(CreateTrackActivity.this, "Track name : "+trackName, Toast.LENGTH_SHORT).show();
+						// btn_stop_track.setEnabled(true);
+						// finish race
+						recordCheck = false;
+						myLocationManager.removeUpdates(CreateTrackActivity.this);
+						// Save Track to file and set to trackMemberlist and sort by
+						// duration time.
+						saveTrackData();
 
-			// stop timer
-			timeSwap += timeInMillies;
-			myHandler.removeCallbacks(updateTimerMethod);
+						// stop timer
+						timeSwap += timeInMillies;
+						myHandler.removeCallbacks(updateTimerMethod);
 
-			Intent intent = new Intent(this, FinishActivity.class);
-			intent.putExtra("TrackMemberList", trackMemberList);
-			startActivity(intent);
+						Intent intent = new Intent(CreateTrackActivity.this, FinishActivity.class);
+						intent.putExtra("ClassName", "CreateTrackActivity");
+						intent.putExtra("TrackName", trackName.toString());
+						intent.putExtra("TrackMemberList", trackMemberList);
+						startActivity(intent);
+						break;
+					case DialogInterface.BUTTON_NEGATIVE:
+						// No button clicked
+						break;
+					}
+				}
+			};
+			nameInput=new EditText(this);
+			AlertDialog.Builder builder = new AlertDialog.Builder(
+					CreateTrackActivity.this);
+			builder.setMessage("Name your track !")
+					.setPositiveButton("Yes", dialogClickListener)
+					.setView(nameInput)
+					.show();
+
+			
 			break;
 
 		}

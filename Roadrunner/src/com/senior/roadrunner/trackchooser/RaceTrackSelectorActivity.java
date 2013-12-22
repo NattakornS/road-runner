@@ -530,6 +530,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 			}
 
 			Intent intent = new Intent(this, MapsActivity.class);
+			intent.putExtra("TrackName", trackList.get(listPosition).getRaceTrackName());
 			intent.putExtra("TrackMemberList", trackList.get(listPosition)
 					.getTrackMemberList());
 			intent.putExtra("TrackPathData", trackList.get(listPosition)
