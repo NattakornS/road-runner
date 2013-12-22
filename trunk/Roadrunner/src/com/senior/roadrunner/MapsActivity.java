@@ -42,6 +42,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.SnapshotReadyCallback;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -129,8 +130,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 					+ String.format("%02d", seconds));
 			if (countOut) {
 				timeOutInMillies = SystemClock.uptimeMillis() - startOutTime;
-				int sec = (int) (timeOutInMillies / 1500);
-				if (sec > 5 && sec <= 10) {
+				int sec = (int) (timeOutInMillies / 1000);
+				if (sec > 5 && sec <= 15) {
 					// Toast.makeText(
 					// MapsActivity.this,
 					// "Out of track  count "
@@ -138,7 +139,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 					// 50).show();
 
 					progress_out_time.setProgress((sec - 5) * 10);
-				} else if (sec > 10) {
+				} else if (sec > 15) {
 					DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
@@ -504,6 +505,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		myTrack.setCalories(0);
 		myTrack.setDuration(finalTime);
 		myTrack.setfId(fId);
+		myTrack.setDistance(totalDistance);
+		myTrack.setAVGSpeed((totalDistance*3600)/(finalTime/1000));
 		myTrack.setfName(roadRunnerSetting.getFacebookName());
 		// myTrack.setProfileImg(RoadRunnerSetting.getProfileIcon());
 		// myTrack.setRank(rank);
@@ -627,11 +630,16 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			marker.remove();
 		}
 
+		if(roadRunnerSetting.getProfileIcon()==null){
+			marker = map.addMarker(new MarkerOptions()
+			.position(coord)
+			.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).title("Me"));
+		}else{
 		marker = map.addMarker(new MarkerOptions()
 				.position(coord)
 				.icon(BitmapDescriptorFactory.fromBitmap(roadRunnerSetting
 						.getProfileIcon())).title("Me"));
-
+		}
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
 
 		checkisInPath(point);

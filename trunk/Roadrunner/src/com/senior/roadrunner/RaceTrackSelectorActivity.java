@@ -62,6 +62,7 @@ import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.finish.FinishAdaptor;
 import com.senior.roadrunner.racetrack.InfoAdaptor;
+import com.senior.roadrunner.racetrack.RaceTrackBitmapProfile;
 import com.senior.roadrunner.racetrack.TrackList;
 import com.senior.roadrunner.racetrack.TrackListAdapter;
 import com.senior.roadrunner.racetrack.TrackMemberList;
@@ -443,58 +444,8 @@ public class RaceTrackSelectorActivity extends Activity implements
 				trackMemberList.add(sched);
 
 			}
-			new Thread(new Runnable() {
-
-				@Override
-				public void run() {
-					try {
-						URL url_value;
-						Bitmap profileIcon;
-						String gurl = "https://graph.facebook.com/"
-								+ roadRunnerSetting.getFacebookId()
-								+ "/picture?75=&height=75";
-						url_value = new URL(gurl);
-						profileIcon = BitmapFactory.decodeStream(url_value
-								.openConnection().getInputStream());
-						roadRunnerSetting.setProfileImg(profileIcon);
-						for (int i = 0; i < trackMemberList.size(); i++) {
-
-							String name = "https://graph.facebook.com/"
-									+ trackMemberList.get(i).getfId()
-									+ "/picture?75=&height=75";
-
-							String imgPath = RoadRunnerSetting.SDPATH + "img/";
-							File dir = new File(imgPath);
-
-							url_value = new URL(name);
-							profileIcon = BitmapFactory.decodeStream(url_value
-									.openConnection().getInputStream());
-
-							if (!dir.exists())
-								dir.mkdirs();
-							File file = new File(dir, trackMemberList.get(i)
-									.getfId() + ".png");
-							if (!file.exists()) {
-								FileOutputStream fOut = new FileOutputStream(
-										file);
-
-								profileIcon.compress(Bitmap.CompressFormat.PNG,
-										85, fOut);
-								fOut.flush();
-								fOut.close();
-							}
-
-						}
-					} catch (MalformedURLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-				}
-			}).start();
+			RaceTrackBitmapProfile getBitmapProfile = new RaceTrackBitmapProfile(trackMemberList);
+			getBitmapProfile.start();
 		} catch (JSONException e) {
 
 		}

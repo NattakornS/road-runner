@@ -374,7 +374,7 @@ public class FinishActivity extends FragmentActivity {
 				break;
 			}
 		}
-		System.out.println("MyTrack : " + myTrack);
+		
 		mTabsAdapter = new TabsAdapter(this, pager, myTrack);
 		mTabsAdapter.addTab(bar.newTab().setText("Result"),
 				FinishMyListViewFragment.class, null);
@@ -398,14 +398,20 @@ public class FinishActivity extends FragmentActivity {
 		switch (item.getItemId()) {
 		case R.id.save_finish_menu_btn:
 			submitRaceResult();
-			Intent intent = new Intent(FinishActivity.this, MainActivity.class);
-			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			startActivity(intent);
+			backToHome();
 			return true;
-
+		case android.R.id.home:
+			backToHome();
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private void backToHome() {
+		Intent intent = new Intent(FinishActivity.this, MainActivity.class);
+		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		startActivity(intent);
 	}
 
 	@Override

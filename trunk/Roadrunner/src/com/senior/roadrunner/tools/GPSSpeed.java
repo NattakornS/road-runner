@@ -15,7 +15,7 @@ public class GPSSpeed {
 		System.out.println("Distance km : "+ distance);
 		long sec =(startTime-endTime)/(1000);
 		System.out.println("Time : "+sec);
-		speed=(long) (distance*1000/sec);
+		speed=(long) ((distance*3600)/sec);
 		return speed;
 		
 	}
