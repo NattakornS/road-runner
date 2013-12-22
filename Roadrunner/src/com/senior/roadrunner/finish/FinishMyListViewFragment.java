@@ -18,7 +18,7 @@ public class FinishMyListViewFragment extends Fragment {
 		FinishMyListViewFragment finishMyListViewFragment = new FinishMyListViewFragment();
 		Bundle bundle = new Bundle();
 		bundle.putString("rank", trackMemberList.getRank()+"");
-//		bundle.putString("avgkph", trackMemberList.getRank()+"");
+		bundle.putString("avgkph", String.format("%.2f",trackMemberList.getAVGSpeed()));
 		bundle.putLong("duration", trackMemberList.getDuration());
 //		bundle.putString("calories", trackMemberList.getRank()+"");
 		finishMyListViewFragment.setArguments(bundle);
@@ -58,7 +58,7 @@ public class FinishMyListViewFragment extends Fragment {
 		int minutes = seconds / 60;
 		seconds = seconds % 60;
 		finishPlaceTxtView.setText(getArguments().getString("rank"));
-		finishAvgkphTxtView.setText("8");
+		finishAvgkphTxtView.setText(getArguments().getString("avgkph"));
 		finishCaloriesTxtView.setText("300");
 		finishNameTxtView.setText(roadRunnerSetting.getFacebookName());
 		finishDurationTxtView.setText("" + minutes + ":"

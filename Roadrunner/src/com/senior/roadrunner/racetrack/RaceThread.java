@@ -108,14 +108,14 @@ public class RaceThread extends Thread {
 							.icon(BitmapDescriptorFactory
 									.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
 							.title(listTracker.getfName())
-							.snippet("Speed : " + speed + "m/s"));
+							.snippet("Speed : " + speed + "KPH"));
 						}else{
 						marker = map.addMarker(new MarkerOptions()
 								.position(point)
 								.icon(BitmapDescriptorFactory
 										.fromBitmap(profileIcon))
 								.title(listTracker.getfName())
-								.snippet("Speed : " + speed + "m/s"));
+								.snippet("Speed : " + speed + "KPH"));
 						}
 						marker.showInfoWindow();
 						Spherical latLngInterpolator = new Spherical();

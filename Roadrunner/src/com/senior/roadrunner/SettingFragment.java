@@ -1,15 +1,5 @@
 package com.senior.roadrunner;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -54,6 +44,7 @@ public class SettingFragment extends Fragment {
         @Override
         public void call(final Session session, final SessionState state, final Exception exception) {
             onSessionStateChange(session, state, exception);
+            updateView();
         }
     };
 	private RoadRunnerSetting roadRunnerSetting;
@@ -179,46 +170,10 @@ public class SettingFragment extends Fragment {
 	private void updateView() {
 		final Session session = Session.getActiveSession();
 		if (session.isOpened()) {
-			
-//			facebookName.setText(URL_PREFIX_FRIENDS + session.getAccessToken());
-//			new Thread(new Runnable() {
-//				
-//				@Override
-//				public void run() {
-//					// get json object from token string
-//					try {
-//						URL url = new URL(URL_PREFIX_FRIENDS+session.getAccessToken());
-//						InputStream jsonIs = url.openConnection().getInputStream();
-//						BufferedReader reader = new BufferedReader(new InputStreamReader(
-//								jsonIs, "UTF-8"), 8);
-//						StringBuilder sb = new StringBuilder();
-//						String line = null;
-//						while ((line = reader.readLine()) != null) {
-//							sb.append(line + "\n");
-//						}
-//
-//						jsonIs.close();
-//						String jsonString = sb.toString();
-//						JSONObject jsonObject = new JSONObject(jsonString);
-//						String id =jsonObject.getString("id");
-//						String name =jsonObject.getString("name");
-//						RoadRunnerSetting.setFacebookId(id);
-//						RoadRunnerSetting.setFacebookName(name);
-//						facebookName.setText(name);
-//						updateView();
-//					} catch (MalformedURLException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					} catch (IOException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					} catch (JSONException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//					
-//				}
-//			});
+			//set data when activity exit
+        	profilePictureView.setProfileId(roadRunnerSetting.getFacebookId());
+            facebookName.setText(roadRunnerSetting.getFacebookName());
+            
 			buttonLoginLogout.setText(R.string.logout);
 			buttonLoginLogout.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View view) {
@@ -247,11 +202,10 @@ public class SettingFragment extends Fragment {
 				@Override
 				public void onCompleted(GraphUser user, Response response) {
 					if (user != null) {
-//						facebookName.setText(user.getName());
-//						RoadRunnerSetting.setFacebookId(user.getId());
-//						RoadRunnerSetting.setFacebookName(user.getName());
-//						RoadRunnerSetting.setCity(user.getLocation().getCity());
-//						System.out.println("id :"+user.getId()+"\nname : "+user.getName());
+						facebookName.setText(user.getName());
+						roadRunnerSetting.setFacebookId(user.getId());
+						roadRunnerSetting.setFacebookName(user.getName());
+						roadRunnerSetting.setCity(user.getLocation().getCity());
 					}
 				}
 			});
@@ -295,10 +249,8 @@ public class SettingFragment extends Fragment {
 	                        System.out.println("name : "+ user.getName());
 	                        roadRunnerSetting.setFacebookId(user.getId());
 	                        roadRunnerSetting.setFacebookName(user.getName());
-	                        
-//	                        RoadRunnerSetting.setFacebookId(user.getId());
-//							RoadRunnerSetting.setFacebookName(user.getName());
-//							RoadRunnerSetting.setCity(user.getLocation().getCity());
+							roadRunnerSetting.setCity(user.getLocation().getCity());
+							
 	                    }
 	                }
 	                if (response.getError() != null) {

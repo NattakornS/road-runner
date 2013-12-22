@@ -16,6 +16,8 @@ public class TrackMemberList implements Serializable {
 	private String trackerDir = "";
 //	private List<LatLngTimeData> trackData;s
 //	private Bitmap profileImg;
+	private double totalDistance;
+	private double avgSpeed;
 
 	public String getrId() {
 		return rId;
@@ -82,10 +84,26 @@ public class TrackMemberList implements Serializable {
 		this.calories = calories;
 	}
 
+	public void setDistance(double totalDistance) {
+		this.totalDistance = totalDistance;
+		
+	}
+	public double getDistance() {
+		return totalDistance;
+		
+	}
 //	public Bitmap getProfileImg() {
 //		return profileImg;
 //	}
 
+	public void setAVGSpeed(double avgSpeed) {
+		this.avgSpeed=avgSpeed;
+		
+	}
+	public double getAVGSpeed() {
+		return avgSpeed;
+		
+	}
 //	public void setProfileImg(Bitmap profileImg) {
 //		this.profileImg = profileImg;
 //	}
