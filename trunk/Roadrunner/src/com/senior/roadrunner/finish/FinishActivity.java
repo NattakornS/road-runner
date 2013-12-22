@@ -291,7 +291,7 @@ public class FinishActivity extends FragmentActivity {
 			}
 			Request request = Request.newMyUploadPhotoRequest(
 					Session.getActiveSession(), image, "Roadrunner @ "
-							+ roadRunnerSetting.getRaceTrackName() + " : \n"
+							+ trackName + " : \n"
 							+ stringPost, "", new Request.Callback() {
 						@Override
 						public void onCompleted(Response response) {
@@ -484,8 +484,8 @@ public class FinishActivity extends FragmentActivity {
 		// .build();
 		// uiHelper.trackPendingDialogCall(shareDialog.present());
 		uploadFile();
-		onClickPostStatusUpdate(); // Post to facebook
-		onClickPostPhoto();
+//		onClickPostStatusUpdate(); // Post to facebook
+		
 		// initFragment();
 	}
 
@@ -523,6 +523,7 @@ public class FinishActivity extends FragmentActivity {
 			String exString[] = { MapsActivity.savePath,
 					MapsActivity.mapcapPath, MapsActivity.rId };
 			uploadTask.execute(exString);
+			onClickPostPhoto();
 		}
 	}
 
@@ -549,6 +550,7 @@ public class FinishActivity extends FragmentActivity {
 			uploadTask.execute(string);
 
 			updateDataBase();
+			onClickPostPhoto();
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

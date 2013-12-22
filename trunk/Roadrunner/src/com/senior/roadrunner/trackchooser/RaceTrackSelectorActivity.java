@@ -221,6 +221,13 @@ public class RaceTrackSelectorActivity extends Activity implements
 		case R.id.action_current_location:
 			setListenCurrentLocation();
 			return true;
+		case R.id.action_open_close_drawer:
+			if(mDrawerLayout.isDrawerOpen(mDrawerList)){
+				mDrawerLayout.closeDrawers();
+			}else{
+				mDrawerLayout.openDrawer(mDrawerList);
+			}
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
