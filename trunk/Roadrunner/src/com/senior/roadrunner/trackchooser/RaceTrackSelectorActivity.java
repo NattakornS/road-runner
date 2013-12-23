@@ -90,6 +90,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 	private MarkerOptions startMarker;
 	private MarkerOptions endMarker;
 	private RoadRunnerSetting roadRunnerSetting;
+	private Animation animTranslate;
 	private static final String TAG = "RaceTrackSelectorActivity";
 
 	@SuppressLint("NewApi")
@@ -119,6 +120,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 				.getMap();
 		raceBtn = (Button) findViewById(R.id.race_btn);
 		animAlpha = AnimationUtils.loadAnimation(this, R.anim.anim_alpha);
+		animTranslate = AnimationUtils.loadAnimation(this, R.anim.anim_translate);
 		raceBtn.setVisibility(View.INVISIBLE);
 		raceBtn.setOnClickListener(this);
 		// raceBtn.setAlpha(0.0f);
@@ -466,9 +468,10 @@ public class RaceTrackSelectorActivity extends Activity implements
 		if (trackMemberList != null) {
 			InfoAdaptor aa = new InfoAdaptor(activity, trackMemberList);
 			final ListView ll = (ListView) findViewById(R.id.infoListView);
+			ll.setVisibility(View.GONE);
 			ll.setAdapter(aa);
+			ll.startAnimation(animTranslate);
 			ll.setVisibility(View.VISIBLE);
-			ll.startAnimation(animAlpha);
 			// go button enable
 			raceBtn.setVisibility(View.VISIBLE);
 			raceBtn.startAnimation(animAlpha);
