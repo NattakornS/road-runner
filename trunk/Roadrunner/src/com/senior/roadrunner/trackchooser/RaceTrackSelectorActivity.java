@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
+import android.content.ClipData.Item;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -211,8 +212,10 @@ public class RaceTrackSelectorActivity extends Activity implements
 		case R.id.action_open_close_drawer:
 			if(mDrawerLayout.isDrawerOpen(mDrawerList)){
 				mDrawerLayout.closeDrawers();
+				item.setIcon(R.drawable.al);
 			}else{
 				mDrawerLayout.openDrawer(mDrawerList);
+				item.setIcon(R.drawable.ar);
 			}
 			return true;
 		default:
@@ -468,10 +471,10 @@ public class RaceTrackSelectorActivity extends Activity implements
 		if (trackMemberList != null) {
 			InfoAdaptor aa = new InfoAdaptor(activity, trackMemberList);
 			final ListView ll = (ListView) findViewById(R.id.infoListView);
-			ll.setVisibility(View.GONE);
+//			ll.setVisibility(View.GONE);
 			ll.setAdapter(aa);
 			ll.startAnimation(animTranslate);
-			ll.setVisibility(View.VISIBLE);
+//			ll.setVisibility(View.VISIBLE);
 			// go button enable
 			raceBtn.setVisibility(View.VISIBLE);
 			raceBtn.startAnimation(animAlpha);
@@ -543,7 +546,6 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	@Override
 	public void onDrawerOpened(View arg0) {
-
 	}
 
 	@Override

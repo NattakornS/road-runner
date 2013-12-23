@@ -14,7 +14,7 @@
         android:title="@string/current_location"/>
     <item
         android:id="@+id/action_open_close_drawer"
-        android:icon="@drawable/ic_drawer"
+        android:icon="@drawable/al"
         android:showAsAction="always"
         android:title="icdrawer"/>
 </menu>
