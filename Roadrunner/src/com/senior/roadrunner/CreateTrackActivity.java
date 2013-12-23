@@ -1,11 +1,12 @@
 package com.senior.roadrunner;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -19,7 +20,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -30,9 +34,15 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.text.Editable;
+import android.util.DisplayMetrics;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,7 +61,6 @@ import com.senior.roadrunner.data.Coordinate;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.finish.FinishActivity;
-import com.senior.roadrunner.racetrack.MapsActivity;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.tools.Distance;
 import com.senior.roadrunner.tools.Point;
@@ -141,7 +150,31 @@ public class CreateTrackActivity extends Activity implements
 																				// mapcap
 																				// path
 		fId = roadRunnerSetting.getFacebookId();
+		new Thread(new Runnable() {
 
+			@Override
+			public void run() {
+
+				URL url_value;
+				Bitmap profileIcon;
+				String gurl = "https://graph.facebook.com/"
+						+ roadRunnerSetting.getFacebookId()
+						+ "/picture?75=&height=75";
+				try {
+					url_value = new URL(gurl);
+					profileIcon = BitmapFactory.decodeStream(url_value
+							.openConnection().getInputStream());
+					roadRunnerSetting.setProfileImg(profileIcon);
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			}
+		}).start();
 		initwidget();
 
 		track = new PolylineOptions();
@@ -156,7 +189,22 @@ public class CreateTrackActivity extends Activity implements
 		enableGPSListener();
 	}
 
+	@Override
+	public void onBackPressed() {
+		// TODO Auto-generated method stub
+		super.onBackPressed();
+		if (recordCheck) {
+			recordCheck = false;
+			myLocationManager.removeUpdates(this);
+			timeSwap += timeInMillies;
+			myHandler.removeCallbacks(updateTimerMethod);
+		}
+	}
+
 	private void initwidget() {
+		// enable ActionBar app icon to behave as action to toggle nav drawer
+		getActionBar().setDisplayHomeAsUpEnabled(true);
+		getActionBar().setHomeButtonEnabled(true);
 
 		btn_track = (Button) findViewById(R.id.btn_track);
 		btn_track.setText("Start");
@@ -177,6 +225,32 @@ public class CreateTrackActivity extends Activity implements
 		progress_out_time.setMax(100);
 		progress_out_time.setBackgroundResource(drawable.alert_dark_frame);
 		progress_out_time.setDrawingCacheBackgroundColor(Color.YELLOW);
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+		// MenuInflater inflater = getMenuInflater();
+		// inflater.inflate(R.menu.race_sellector_menu, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		// Respond to the action bar's Up/Home button
+		case android.R.id.home:
+			if (recordCheck) {
+				recordCheck = false;
+				myLocationManager.removeUpdates(this);
+				timeSwap += timeInMillies;
+				myHandler.removeCallbacks(updateTimerMethod);
+			}
+			onBackPressed();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 
 	public boolean isGpsEnable() {
@@ -205,10 +279,10 @@ public class CreateTrackActivity extends Activity implements
 			break;
 		case R.id.btn_stop_track:
 			// leave race
-			// recordCheck = false;
-			// myLocationManager.removeUpdates(this);
-			// timeSwap += timeInMillies;
-			// myHandler.removeCallbacks(updateTimerMethod);
+			recordCheck = false;
+			myLocationManager.removeUpdates(this);
+			timeSwap += timeInMillies;
+			myHandler.removeCallbacks(updateTimerMethod);
 			// Intent intent = new Intent(CreateTrackActivity.this,
 			// MainActivity.class);
 			// intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -223,13 +297,17 @@ public class CreateTrackActivity extends Activity implements
 				public void onClick(DialogInterface dialog, int which) {
 					switch (which) {
 					case DialogInterface.BUTTON_POSITIVE:
-						trackName=nameInput.getText();
-						Toast.makeText(CreateTrackActivity.this, "Track name : "+trackName, Toast.LENGTH_SHORT).show();
+						trackName = nameInput.getText();
+						Toast.makeText(CreateTrackActivity.this,
+								"Track name : " + trackName, Toast.LENGTH_SHORT)
+								.show();
 						// btn_stop_track.setEnabled(true);
 						// finish race
 						recordCheck = false;
-						myLocationManager.removeUpdates(CreateTrackActivity.this);
-						// Save Track to file and set to trackMemberlist and sort by
+						myLocationManager
+								.removeUpdates(CreateTrackActivity.this);
+						// Save Track to file and set to trackMemberlist and
+						// sort by
 						// duration time.
 						saveTrackData();
 
@@ -237,7 +315,8 @@ public class CreateTrackActivity extends Activity implements
 						timeSwap += timeInMillies;
 						myHandler.removeCallbacks(updateTimerMethod);
 
-						Intent intent = new Intent(CreateTrackActivity.this, FinishActivity.class);
+						Intent intent = new Intent(CreateTrackActivity.this,
+								FinishActivity.class);
 						intent.putExtra("ClassName", "CreateTrackActivity");
 						intent.putExtra("TrackName", trackName.toString());
 						intent.putExtra("TrackMemberList", trackMemberList);
@@ -249,15 +328,13 @@ public class CreateTrackActivity extends Activity implements
 					}
 				}
 			};
-			nameInput=new EditText(this);
+			nameInput = new EditText(this);
 			AlertDialog.Builder builder = new AlertDialog.Builder(
 					CreateTrackActivity.this);
 			builder.setMessage("Name your track !")
 					.setPositiveButton("Yes", dialogClickListener)
-					.setView(nameInput)
-					.show();
+					.setView(nameInput).show();
 
-			
 			break;
 
 		}
@@ -397,15 +474,64 @@ public class CreateTrackActivity extends Activity implements
 							.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
 					.title("Me"));
 		} else {
+			View customMarker = ((LayoutInflater) this
+					.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+					.inflate(R.layout.custom_marker_layout, null);
+			ImageView imageView = (ImageView) customMarker
+					.findViewById(R.id.profileIcon);
+			imageView.setImageBitmap(modifyCanvas(roadRunnerSetting
+					.getProfileIcon()));
 			marker = map.addMarker(new MarkerOptions()
 					.position(coord)
-					.icon(BitmapDescriptorFactory.fromBitmap(roadRunnerSetting
-							.getProfileIcon())).title("Me"));
+					.icon(BitmapDescriptorFactory
+							.fromBitmap(createDrawableFromView(this,
+									customMarker))).title("Me"));
+			// marker = map.addMarker(new MarkerOptions()
+			// .position(coord)
+			// .icon(BitmapDescriptorFactory.fromBitmap(roadRunnerSetting
+			// .getProfileIcon())).title("Me"));
 		}
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
 		if (recordCheck)
 			recordTrack(loc);
 
+	}
+
+	private Bitmap modifyCanvas(Bitmap bitmap) {
+		Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+		Bitmap bmp = Bitmap.createBitmap(65, 65, conf);
+		Canvas canvas1 = new Canvas(bmp);
+
+		// paint defines the text color,
+		// stroke width, size
+		Paint color = new Paint();
+		color.setTextSize(35);
+		color.setColor(Color.BLACK);
+
+		// modify canvas
+		canvas1.drawBitmap(bitmap, 0, 0, color);
+		// canvas1.drawText(listTracker.getfName(), 30, 40, color);
+		return bmp;
+	}
+
+	// Convert a view to bitmap
+	public static Bitmap createDrawableFromView(Context context, View view) {
+		DisplayMetrics displayMetrics = new DisplayMetrics();
+		((Activity) context).getWindowManager().getDefaultDisplay()
+				.getMetrics(displayMetrics);
+		view.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,
+				LayoutParams.WRAP_CONTENT));
+		view.measure(displayMetrics.widthPixels, displayMetrics.heightPixels);
+		view.layout(0, 0, displayMetrics.widthPixels,
+				displayMetrics.heightPixels);
+		view.buildDrawingCache();
+		Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(),
+				view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+
+		Canvas canvas = new Canvas(bitmap);
+		view.draw(canvas);
+
+		return bitmap;
 	}
 
 	@SuppressLint("SimpleDateFormat")
