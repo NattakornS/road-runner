@@ -1,9 +1,6 @@
 package com.senior.roadrunner.racetrack;
 
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,7 +19,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -32,8 +31,12 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,7 +45,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.SnapshotReadyCallback;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -52,8 +54,6 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.senior.roadrunner.MainActivity;
 import com.senior.roadrunner.R;
-import com.senior.roadrunner.R.id;
-import com.senior.roadrunner.R.layout;
 import com.senior.roadrunner.data.Coordinate;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
@@ -191,7 +191,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		fId = roadRunnerSetting.getFacebookId();
 
 		Intent intent = getIntent();
-		trackName=intent.getStringExtra("TrackName");
+		trackName = intent.getStringExtra("TrackName");
 		trackMemberList = (ArrayList<TrackMemberList>) intent
 				.getSerializableExtra("TrackMemberList");
 		trackMemberListTemp = new ArrayList<TrackMemberList>();
@@ -392,7 +392,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 				// Save Track to file and set to trackMemberlist and sort by
 				// duration time.
 				saveTrackData();
-				
+
 				// stop timer
 				timeSwap += timeInMillies;
 				myHandler.removeCallbacks(updateTimerMethod);
@@ -644,10 +644,21 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 							.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
 					.title("Me"));
 		} else {
+			View customMarker = ((LayoutInflater) this
+					.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+					.inflate(R.layout.custom_marker_layout, null);
+			ImageView imageView = (ImageView) customMarker
+					.findViewById(R.id.profileIcon);
+			imageView.setImageBitmap(modifyCanvas(roadRunnerSetting.getProfileIcon()));
 			marker = map.addMarker(new MarkerOptions()
 					.position(coord)
-					.icon(BitmapDescriptorFactory.fromBitmap(roadRunnerSetting
-							.getProfileIcon())).title("Me"));
+					.icon(BitmapDescriptorFactory
+							.fromBitmap(createDrawableFromView(this,
+									customMarker))).title("Me"));
+			// marker = map.addMarker(new MarkerOptions()
+			// .position(coord)
+			// .icon(BitmapDescriptorFactory.fromBitmap(roadRunnerSetting
+			// .getProfileIcon())).title("Me"));
 		}
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
 
@@ -655,6 +666,43 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		if (recordCheck)
 			recordTrack(loc);
 
+	}
+
+	private Bitmap modifyCanvas(Bitmap bitmap) {
+		Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+		Bitmap bmp = Bitmap.createBitmap(65, 65, conf);
+		Canvas canvas1 = new Canvas(bmp);
+
+		// paint defines the text color,
+		// stroke width, size
+		Paint color = new Paint();
+		color.setTextSize(35);
+		color.setColor(Color.BLACK);
+
+		// modify canvas
+		canvas1.drawBitmap(bitmap, 0, 0, color);
+		// canvas1.drawText(listTracker.getfName(), 30, 40, color);
+		return bmp;
+	}
+
+	// Convert a view to bitmap
+	public static Bitmap createDrawableFromView(Context context, View view) {
+		DisplayMetrics displayMetrics = new DisplayMetrics();
+		((Activity) context).getWindowManager().getDefaultDisplay()
+				.getMetrics(displayMetrics);
+		view.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,
+				LayoutParams.WRAP_CONTENT));
+		view.measure(displayMetrics.widthPixels, displayMetrics.heightPixels);
+		view.layout(0, 0, displayMetrics.widthPixels,
+				displayMetrics.heightPixels);
+		view.buildDrawingCache();
+		Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(),
+				view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+
+		Canvas canvas = new Canvas(bitmap);
+		view.draw(canvas);
+
+		return bitmap;
 	}
 
 	@SuppressLint("SimpleDateFormat")
