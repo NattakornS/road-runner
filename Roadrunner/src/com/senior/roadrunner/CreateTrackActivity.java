@@ -142,6 +142,7 @@ public class CreateTrackActivity extends Activity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map_layout);
+		setTitle("Create Track");
 		trackMemberList = new ArrayList<TrackMemberList>();
 		// get setting instance
 		roadRunnerSetting = RoadRunnerSetting.getInstance();
@@ -181,7 +182,7 @@ public class CreateTrackActivity extends Activity implements
 		latLngTimeData = new ArrayList<LatLngTimeData>();
 		map = ((MapFragment) getFragmentManager().findFragmentById(R.id.maps))
 				.getMap();
-
+		map.getUiSettings().setZoomControlsEnabled(false);
 		// ////////////////////// GPS tracker //////////////////////
 
 		myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -212,6 +213,7 @@ public class CreateTrackActivity extends Activity implements
 		btn_stop_track = (Button) findViewById(R.id.btn_stop_track);
 		btn_stop_track.setText("Finish");
 		btn_stop_track.setOnClickListener(this);
+		btn_stop_track.setEnabled(false);
 		// set Enable false for start
 		// btn_stop_track.setEnabled(false);
 		txt_current_distace = (TextView) findViewById(R.id.txt_curent_distance);
@@ -272,25 +274,15 @@ public class CreateTrackActivity extends Activity implements
 			setStartPointTracking(false);
 			recordCheck = true;
 			btn_track.setEnabled(false);
+			btn_stop_track.setEnabled(true);
 			// startTimer
 			startTime = SystemClock.uptimeMillis();
 			myHandler.postDelayed(updateTimerMethod, 0);
 
 			break;
 		case R.id.btn_stop_track:
-			// leave race
-			recordCheck = false;
-			myLocationManager.removeUpdates(this);
-			timeSwap += timeInMillies;
-			myHandler.removeCallbacks(updateTimerMethod);
-			// Intent intent = new Intent(CreateTrackActivity.this,
-			// MainActivity.class);
-			// intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			// startActivity(intent);
-			try {
-				CaptureMapScreen();
-			} catch (Exception e) {
-				e.printStackTrace();
+			if (latLngTimeData == null) {
+				return;
 			}
 			DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 				@Override
@@ -328,13 +320,35 @@ public class CreateTrackActivity extends Activity implements
 					}
 				}
 			};
-			nameInput = new EditText(this);
-			AlertDialog.Builder builder = new AlertDialog.Builder(
-					CreateTrackActivity.this);
-			builder.setMessage("Name your track !")
-					.setPositiveButton("Yes", dialogClickListener)
-					.setView(nameInput).show();
-
+			if (latLngTimeData.size() < 5) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						CreateTrackActivity.this);
+				builder.setMessage("Your track is too short or gps point is less than 5 points. Please continue create track.")
+						.show();
+				return;
+			} else {
+				nameInput = new EditText(this);
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						CreateTrackActivity.this);
+				builder.setMessage("Name your track !")
+						.setPositiveButton("OK", dialogClickListener)
+						.setView(nameInput).show();
+			}
+			// leave race
+			recordCheck = false;
+			myLocationManager.removeUpdates(this);
+			timeSwap += timeInMillies;
+			myHandler.removeCallbacks(updateTimerMethod);
+			// Intent intent = new Intent(CreateTrackActivity.this,
+			// MainActivity.class);
+			// intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			// startActivity(intent);
+			try {
+				CaptureMapScreen();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
 			break;
 
 		}
@@ -541,7 +555,7 @@ public class CreateTrackActivity extends Activity implements
 			// Toast.makeText(this, "Speed : " + loc.getSpeed() + " KPH",
 			// Toast.LENGTH_SHORT).show();
 
-			String gpsSpeed = df.format(loc.getSpeed() * 1000 / 3600);
+			String gpsSpeed = df.format(loc.getSpeed() * 3.6);
 			txt_current_speed.setText(gpsSpeed);
 		}
 

@@ -169,6 +169,12 @@ public class FinishActivity extends FragmentActivity {
 		super.onDestroy();
 		uiHelper.onDestroy();
 	}
+	@Override
+	public void onBackPressed() {
+		super.onBackPressed();
+		backToHome();
+		uiHelper.onDestroy();
+	}
 
 	private void onSessionStateChange(Session session, SessionState state,
 			Exception exception) {
@@ -434,6 +440,7 @@ public class FinishActivity extends FragmentActivity {
 	}
 
 	private void backToHome() {
+		
 		Intent intent = new Intent(FinishActivity.this, MainActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		startActivity(intent);

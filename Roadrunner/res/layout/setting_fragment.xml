@@ -236,14 +236,16 @@
                 android:id="@+id/aboutLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp" >
+                android:layout_margin="10dp"
+                android:focusable="true" >
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="left|center_vertical"
                     android:text="About"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:focusable="true" />
             </LinearLayout>
 
             <LinearLayout

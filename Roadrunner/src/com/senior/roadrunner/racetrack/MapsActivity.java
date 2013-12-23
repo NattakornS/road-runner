@@ -206,6 +206,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		latLngTimeData = new ArrayList<LatLngTimeData>();
 		map = ((MapFragment) getFragmentManager().findFragmentById(R.id.maps))
 				.getMap();
+		map.getUiSettings().setZoomControlsEnabled(false);
 		// map.setMyLocationEnabled(true);
 		// SupportMapFragment supportMapFragment = (SupportMapFragment)
 		// getSupportFragmentManager()
@@ -712,7 +713,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			// Toast.makeText(this, "Speed : " + loc.getSpeed() + " KPH",
 			// Toast.LENGTH_SHORT).show();
 
-			String gpsSpeed = df.format(loc.getSpeed() * 1000 / 3600);
+			String gpsSpeed = df.format(loc.getSpeed() * 3.6);
 			txt_current_speed.setText(gpsSpeed);
 		}
 

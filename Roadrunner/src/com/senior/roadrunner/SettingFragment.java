@@ -4,14 +4,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.facebook.LoggingBehavior;
 import com.facebook.Request;
@@ -23,10 +29,11 @@ import com.facebook.Settings;
 import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.ProfilePictureView;
+import com.senior.roadrunner.finish.FinishActivity;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.tools.RoadrunnerTools;
 
-public class SettingFragment extends Fragment {
+public class SettingFragment extends Fragment implements OnClickListener {
 	private static final String WEIGHT = "weight";
 	private static final String LANGUAGE = "language";
 	private static final String URL_PREFIX_FRIENDS = "https://graph.facebook.com/me/profile?access_token=";
@@ -59,6 +66,10 @@ public class SettingFragment extends Fragment {
 	private RoadRunnerSetting roadRunnerSetting;
 	private TextView weight_txt;
 	private TextView language_txt;
+	private View aboutLayout;
+	private TextView weightTxtView;
+	private View weightLayout;
+	private EditText nameInput;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -84,6 +95,12 @@ public class SettingFragment extends Fragment {
 		facebookName = (TextView) view.findViewById(R.id.facebookNameTxt);
 		profilePictureView = (ProfilePictureView) view
 				.findViewById(R.id.profile_pic);
+		aboutLayout=(View)view.findViewById(R.id.aboutLayout);
+		aboutLayout.setOnClickListener(this);
+		aboutLayout.setClickable(true);
+		weightLayout = (View)view.findViewById(R.id.weightLayout);
+		weightLayout.setOnClickListener(this);
+		weightTxtView = (TextView)view.findViewById(R.id.weightTxt);
 		language_txt = (TextView) view.findViewById(R.id.languageTxt);
 		weight_txt = (TextView) view.findViewById(R.id.weightTxt);
 
@@ -272,5 +289,33 @@ public class SettingFragment extends Fragment {
 				});
 		request.executeAsync();
 
+	}
+
+	@Override
+	public void onClick(View v) {
+		if(v.equals(aboutLayout)){
+			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+			builder.setMessage("Contact : Nattakorn Sanpabopit\nE-mail : nattakor.kingman@gmail.com")
+					.show();
+		}else if(v.equals(weightLayout)){
+			DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					switch (which) {
+					case DialogInterface.BUTTON_POSITIVE:
+						weight_txt.setText(nameInput.getText());
+						break;
+					}
+				}
+			};
+			nameInput = new EditText(getActivity());
+			nameInput.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+			AlertDialog.Builder builder = new AlertDialog.Builder(
+					getActivity());
+			builder.setMessage("Weight in KG")
+					.setPositiveButton("OK", dialogClickListener)
+					.setView(nameInput).show();
+		}
+		
 	}
 }
