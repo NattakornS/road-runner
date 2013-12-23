@@ -24,7 +24,7 @@
             android:id="@+id/infoListView"
             android:layout_width="wrap_content"
             android:layout_height="200dp"
-            android:background="@drawable/blue_menu_btn"
+            android:background="@drawable/rounded_corners"
             android:divider="@color/white_gage"
             android:scrollbars="vertical"
             android:visibility="gone" >
