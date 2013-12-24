@@ -434,6 +434,9 @@ public class FinishActivity extends FragmentActivity {
 		case android.R.id.home:
 			backToHome();
 			return true;
+		case R.id.share_facebook_finish_menu_btn:
+			onClickPostPhoto();
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -530,7 +533,7 @@ public class FinishActivity extends FragmentActivity {
 			String exString[] = { MapsActivity.savePath,
 					MapsActivity.mapcapPath, MapsActivity.rId };
 			uploadTask.execute(exString);
-			onClickPostPhoto();
+//			onClickPostPhoto();
 		}
 	}
 
@@ -557,7 +560,7 @@ public class FinishActivity extends FragmentActivity {
 			uploadTask.execute(string);
 
 			updateDataBase();
-			onClickPostPhoto();
+//			onClickPostPhoto();
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
