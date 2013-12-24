@@ -1,6 +1,5 @@
 package com.senior.roadrunner;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -17,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.facebook.LoggingBehavior;
 import com.facebook.Request;
@@ -29,7 +27,6 @@ import com.facebook.Settings;
 import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.ProfilePictureView;
-import com.senior.roadrunner.finish.FinishActivity;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.tools.RoadrunnerTools;
 
@@ -195,6 +192,7 @@ public class SettingFragment extends Fragment implements OnClickListener {
 		if (session.isOpened()) {
 			// set data when activity exit
 			profilePictureView.setProfileId(roadRunnerSetting.getFacebookId());
+			roadRunnerSetting.setProfileImg(profilePictureView.getDrawingCache());
 			facebookName.setText(roadRunnerSetting.getFacebookName());
 
 			buttonLoginLogout.setText(R.string.logout);
@@ -272,6 +270,7 @@ public class SettingFragment extends Fragment implements OnClickListener {
 						if (session == Session.getActiveSession()) {
 							if (user != null) {
 								profilePictureView.setProfileId(user.getId());
+								roadRunnerSetting.setProfileImg(profilePictureView.getDrawingCache());
 								facebookName.setText(user.getName());
 								System.out.println("name : " + user.getName());
 								roadRunnerSetting.setFacebookId(user.getId());

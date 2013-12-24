@@ -16,6 +16,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -163,7 +164,7 @@ public class RaceThread extends Thread {
 	}
 
 	// Convert a view to bitmap
-	public static Bitmap createDrawableFromView(Context context, View view) {
+	public Bitmap createDrawableFromView(Context context, View view) {
 		DisplayMetrics displayMetrics = new DisplayMetrics();
 		((Activity) context).getWindowManager().getDefaultDisplay()
 				.getMetrics(displayMetrics);
@@ -178,10 +179,19 @@ public class RaceThread extends Thread {
 
 		Canvas canvas = new Canvas(bitmap);
 		view.draw(canvas);
-
-		return bitmap;
+		
+		return adjustOpacity(bitmap,200);
 	}
-
+	public Bitmap adjustOpacity(Bitmap bitmap, int opacity)
+	{
+	    Bitmap mutableBitmap = bitmap.isMutable()
+	                           ? bitmap
+	                           : bitmap.copy(Bitmap.Config.ARGB_8888, true);
+	    Canvas canvas = new Canvas(mutableBitmap);
+	    int colour = (opacity & 0xFF) << 24;
+	    canvas.drawColor(colour, PorterDuff.Mode.DST_IN);
+	    return mutableBitmap;
+	}
 	private void modifyCanvas() {
 		Bitmap.Config conf = Bitmap.Config.ARGB_8888;
 		bmp = Bitmap.createBitmap(65,65,conf);

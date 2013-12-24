@@ -12,12 +12,14 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
-import android.content.ClipData.Item;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -26,15 +28,19 @@ import android.provider.Settings;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -48,6 +54,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.senior.roadrunner.R;
@@ -92,6 +99,9 @@ public class RaceTrackSelectorActivity extends Activity implements
 	private MarkerOptions endMarker;
 	private RoadRunnerSetting roadRunnerSetting;
 	private Animation animTranslate;
+	private Menu menu;
+	private Marker marker;
+	private LatLng currentcoord;
 	private static final String TAG = "RaceTrackSelectorActivity";
 
 	@SuppressLint("NewApi")
@@ -190,11 +200,13 @@ public class RaceTrackSelectorActivity extends Activity implements
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
+		
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.race_sellector_menu, menu);
 		MenuItem searchItem = menu.findItem(R.id.action_websearch);
 		mSearchView = (SearchView) searchItem.getActionView();
 		setupSearchView(searchItem);
+		this.menu=menu;
 		return true;
 	}
 
@@ -388,6 +400,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 	public void drawTrackPath() {
 
 		map.clear();
+		setCurrentMarker();
 		PolylineOptions options = new PolylineOptions();
 		if (trackPathData == null) {
 			Log.e(TAG, "trackPathData is null");
@@ -471,10 +484,9 @@ public class RaceTrackSelectorActivity extends Activity implements
 		if (trackMemberList != null) {
 			InfoAdaptor aa = new InfoAdaptor(activity, trackMemberList);
 			final ListView ll = (ListView) findViewById(R.id.infoListView);
-//			ll.setVisibility(View.GONE);
+			ll.setVisibility(View.VISIBLE);
 			ll.setAdapter(aa);
 			ll.startAnimation(animTranslate);
-//			ll.setVisibility(View.VISIBLE);
 			// go button enable
 			raceBtn.setVisibility(View.VISIBLE);
 			raceBtn.startAnimation(animAlpha);
@@ -540,12 +552,27 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	@Override
 	public void onDrawerClosed(View arg0) {
-		// System.out.println("Drawer close"+ arg0);
+		for (int i = 0; i < menu.size(); i++) {
+			MenuItem array_element = menu.getItem(i);
+			if(array_element.getItemId()==R.id.action_open_close_drawer){
+					array_element.setIcon(R.drawable.ar);
+				
+			}
+			
+		}
 
 	}
 
 	@Override
 	public void onDrawerOpened(View arg0) {
+		for (int i = 0; i < menu.size(); i++) {
+			MenuItem array_element = menu.getItem(i);
+			if(array_element.getItemId()==R.id.action_open_close_drawer){
+					array_element.setIcon(R.drawable.al);
+				
+			}
+			
+		}
 	}
 
 	@Override
@@ -569,22 +596,81 @@ public class RaceTrackSelectorActivity extends Activity implements
 	public void onLocationChanged(Location location) {
 
 		this.currentLoc = location;
-
-		if (!(currentLoc.getLatitude() == location.getLatitude() && currentLoc
-				.getLongitude() == location.getLongitude())) {
-			setListData();
-		}
-
-		System.out.println("CURRENT LOCATION :" + currentLoc.getLatitude()
-				+ currentLoc.getLongitude());
+		currentcoord = new LatLng(location.getLatitude(), location.getLongitude());
 		if (trackList.size() > 0) {
 			return;
 		}
 		setListData();
+		setCurrentMarker();
+		
 		mLocationManager.removeUpdates(this);
 
 	}
 
+	private void setCurrentMarker() {
+		if(currentcoord==null){
+			return;
+		}
+		if (marker != null) {
+			marker.remove();
+		}
+		if (roadRunnerSetting.getProfileIcon() == null) {
+			marker = map.addMarker(new MarkerOptions()
+					.position(currentcoord)
+					.icon(BitmapDescriptorFactory
+							.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+					.title("Me"));
+		} else {
+			View customMarker = ((LayoutInflater) this
+					.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+					.inflate(R.layout.custom_marker_layout, null);
+			ImageView imageView = (ImageView) customMarker
+					.findViewById(R.id.profileIcon);
+			imageView.setImageBitmap(modifyCanvas(roadRunnerSetting.getProfileIcon()));
+			marker = map.addMarker(new MarkerOptions()
+					.position(currentcoord)
+					.icon(BitmapDescriptorFactory
+							.fromBitmap(createDrawableFromView(this,
+									customMarker))).title("Me"));
+		}
+		map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentcoord, 15.0f));
+	}
+	private Bitmap modifyCanvas(Bitmap bitmap) {
+		Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+		Bitmap bmp = Bitmap.createBitmap(65, 65, conf);
+		Canvas canvas1 = new Canvas(bmp);
+
+		// paint defines the text color,
+		// stroke width, size
+		Paint color = new Paint();
+		color.setTextSize(35);
+		color.setColor(Color.BLACK);
+
+		// modify canvas
+		canvas1.drawBitmap(bitmap, 0, 0, color);
+		// canvas1.drawText(listTracker.getfName(), 30, 40, color);
+		return bmp;
+	}
+
+	// Convert a view to bitmap
+	public static Bitmap createDrawableFromView(Context context, View view) {
+		DisplayMetrics displayMetrics = new DisplayMetrics();
+		((Activity) context).getWindowManager().getDefaultDisplay()
+				.getMetrics(displayMetrics);
+		view.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,
+				LayoutParams.WRAP_CONTENT));
+		view.measure(displayMetrics.widthPixels, displayMetrics.heightPixels);
+		view.layout(0, 0, displayMetrics.widthPixels,
+				displayMetrics.heightPixels);
+		view.buildDrawingCache();
+		Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(),
+				view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+
+		Canvas canvas = new Canvas(bitmap);
+		view.draw(canvas);
+
+		return bitmap;
+	}
 	@Override
 	public void onProviderDisabled(String provider) {
 		// TODO Auto-generated method stub
