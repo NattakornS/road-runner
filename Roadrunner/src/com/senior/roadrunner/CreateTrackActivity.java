@@ -49,6 +49,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnMapLoadedCallback;
 import com.google.android.gms.maps.GoogleMap.SnapshotReadyCallback;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -344,7 +345,7 @@ public class CreateTrackActivity extends Activity implements
 			// intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			// startActivity(intent);
 			try {
-				CaptureMapScreen();
+				takeSnapshot();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -355,14 +356,17 @@ public class CreateTrackActivity extends Activity implements
 
 	}
 
-	public void CaptureMapScreen() {
-		SnapshotReadyCallback callback = new SnapshotReadyCallback() {
-			Bitmap bitmap;
+	private void takeSnapshot() {
+		if (map == null) {
+			return;
+		}
 
+
+		final SnapshotReadyCallback callback = new SnapshotReadyCallback() {
 			@Override
 			public void onSnapshotReady(Bitmap snapshot) {
-				// TODO Auto-generated method stub
-				bitmap = snapshot;
+				// Callback is called from the main thread, so we can modify the
+				// ImageView safely.
 				try {
 
 					FileOutputStream out = new FileOutputStream(mapcapPath);
@@ -371,14 +375,16 @@ public class CreateTrackActivity extends Activity implements
 					// will be stored) + name of image you can customize as per
 					// your Requirement
 
-					bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
-					roadRunnerSetting.setMapScreen(bitmap);
+					snapshot.compress(Bitmap.CompressFormat.PNG, 90, out);
+					roadRunnerSetting.setMapScreen(snapshot);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		};
+
 		map.snapshot(callback);
+
 	}
 
 	@SuppressLint("UseValueOf")

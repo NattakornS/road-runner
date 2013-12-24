@@ -43,6 +43,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnMapLoadedCallback;
 import com.google.android.gms.maps.GoogleMap.SnapshotReadyCallback;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -381,7 +382,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		if (polygonFinish != null && pathCheck) {
 			if (polygonFinish.contains(point)) {
 				try {
-					CaptureMapScreen();
+					takeSnapshot();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -476,14 +477,16 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	}
 
-	public void CaptureMapScreen() {
-		SnapshotReadyCallback callback = new SnapshotReadyCallback() {
-			Bitmap bitmap;
+	private void takeSnapshot() {
+		if (map == null) {
+			return;
+		}
 
+		final SnapshotReadyCallback callback = new SnapshotReadyCallback() {
 			@Override
 			public void onSnapshotReady(Bitmap snapshot) {
-				// TODO Auto-generated method stub
-				bitmap = snapshot;
+				// Callback is called from the main thread, so we can modify the
+				// ImageView safely.
 				try {
 
 					FileOutputStream out = new FileOutputStream(mapcapPath);
@@ -492,14 +495,21 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 					// will be stored) + name of image you can customize as per
 					// your Requirement
 
-					bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
-					roadRunnerSetting.setMapScreen(bitmap);
+					snapshot.compress(Bitmap.CompressFormat.PNG, 90, out);
+					roadRunnerSetting.setMapScreen(snapshot);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		};
 		map.snapshot(callback);
+//		map.setOnMapLoadedCallback(new OnMapLoadedCallback() {
+//			@Override
+//			public void onMapLoaded() {
+//				map.snapshot(callback);
+//			}
+//		});
+
 	}
 
 	@SuppressLint("UseValueOf")
@@ -628,10 +638,9 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		if (!loc.hasAccuracy()) {
 			return;
 		}
-		System.out.println(loc.hasAccuracy());
+		System.out.println("Acuracy : " + loc.hasAccuracy());
 		double latitude = loc.getLatitude();
 		double longitude = loc.getLongitude();
-		System.out.println("INCOMMING : " + latitude + "    " + longitude);
 		Point point = new Point(latitude, longitude);
 		LatLng coord = new LatLng(loc.getLatitude(), loc.getLongitude());
 		if (marker != null) {
@@ -650,7 +659,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 					.inflate(R.layout.custom_marker_layout, null);
 			ImageView imageView = (ImageView) customMarker
 					.findViewById(R.id.profileIcon);
-			imageView.setImageBitmap(modifyCanvas(roadRunnerSetting.getProfileIcon()));
+			imageView.setImageBitmap(modifyCanvas(roadRunnerSetting
+					.getProfileIcon()));
 			marker = map.addMarker(new MarkerOptions()
 					.position(coord)
 					.icon(BitmapDescriptorFactory
