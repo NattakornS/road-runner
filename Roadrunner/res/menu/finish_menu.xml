@@ -4,4 +4,8 @@
           android:icon="@drawable/right_arrow"
           android:showAsAction="always"
           android:title="Submit"/>
+    <item android:id="@+id/share_facebook_finish_menu_btn"
+          android:icon="@drawable/com_facebook_logo"
+          android:showAsAction="always"
+          android:title="Share to facebook"/>
 </menu>
