@@ -28,7 +28,7 @@ public class RaceTrackBitmapProfile extends Thread {
 			Bitmap profileIcon;
 			String gurl = "https://graph.facebook.com/"
 					+ roadRunnerSetting.getFacebookId()
-					+ "/picture?75=&height=75";
+					+ "/picture?width=75&height=75";
 			url_value = new URL(gurl);
 			profileIcon = BitmapFactory.decodeStream(url_value.openConnection()
 					.getInputStream());
@@ -37,7 +37,7 @@ public class RaceTrackBitmapProfile extends Thread {
 
 				String name = "https://graph.facebook.com/"
 						+ trackMemberList.get(i).getfId()
-						+ "/picture?75=&height=75";
+						+ "/picture?width=75&height=75";
 
 				String imgPath = RoadRunnerSetting.SDPATH + "img/";
 				File dir = new File(imgPath);

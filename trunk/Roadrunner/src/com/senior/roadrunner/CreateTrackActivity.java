@@ -28,6 +28,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -62,6 +63,7 @@ import com.senior.roadrunner.data.Coordinate;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.finish.FinishActivity;
+import com.senior.roadrunner.server.GetMyProfulePicture;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.tools.Distance;
 import com.senior.roadrunner.tools.Point;
@@ -136,7 +138,9 @@ public class CreateTrackActivity extends Activity implements
 		}
 	};
 	private EditText nameInput;
-	protected Editable trackName;
+	protected String trackName;
+	private View customMarker;
+	private ImageView imageView;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -152,31 +156,6 @@ public class CreateTrackActivity extends Activity implements
 																				// mapcap
 																				// path
 		fId = roadRunnerSetting.getFacebookId();
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-
-				URL url_value;
-				Bitmap profileIcon;
-				String gurl = "https://graph.facebook.com/"
-						+ roadRunnerSetting.getFacebookId()
-						+ "/picture?75=&height=75";
-				try {
-					url_value = new URL(gurl);
-					profileIcon = BitmapFactory.decodeStream(url_value
-							.openConnection().getInputStream());
-					roadRunnerSetting.setProfileImg(profileIcon);
-				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			}
-		}).start();
 		initwidget();
 
 		track = new PolylineOptions();
@@ -189,6 +168,29 @@ public class CreateTrackActivity extends Activity implements
 		myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
 		enableGPSListener();
+
+		customMarker = ((LayoutInflater) this
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(
+				R.layout.custom_marker_layout, null);
+		imageView = (ImageView) customMarker.findViewById(R.id.profileIcon);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (!isGpsEnable())
+			enableGPSListener();
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (recordCheck) {
+			recordCheck = false;
+			myLocationManager.removeUpdates(this);
+			timeSwap += timeInMillies;
+			myHandler.removeCallbacks(updateTimerMethod);
+		}
 	}
 
 	@Override
@@ -258,6 +260,14 @@ public class CreateTrackActivity extends Activity implements
 
 	public boolean isGpsEnable() {
 		boolean isgpsenable = false;
+		// String provider = Settings.Secure.getString(getContentResolver(),
+		// Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+		// Toast.makeText(this,
+		// "GPS Provider : "+provider+"  "+LocationManager.GPS_PROVIDER,
+		// 2000).show();
+		// if (!provider.equals("")) { // GPS is Enabled
+		// isgpsenable = true;
+		// }
 		if (myLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
 			isgpsenable = true;
 		} else {
@@ -285,12 +295,22 @@ public class CreateTrackActivity extends Activity implements
 			if (latLngTimeData == null) {
 				return;
 			}
+			try {
+				takeSnapshot();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					switch (which) {
 					case DialogInterface.BUTTON_POSITIVE:
-						trackName = nameInput.getText();
+						if (nameInput.getText().length() > 20) {
+							trackName = nameInput.getText().toString()
+									.substring(0, 20);
+						} else {
+							trackName = nameInput.getText().toString();
+						}
 						Toast.makeText(CreateTrackActivity.this,
 								"Track name : " + trackName, Toast.LENGTH_SHORT)
 								.show();
@@ -324,11 +344,15 @@ public class CreateTrackActivity extends Activity implements
 			if (latLngTimeData.size() < 5) {
 				AlertDialog.Builder builder = new AlertDialog.Builder(
 						CreateTrackActivity.this);
-				builder.setMessage("Your track is too short or gps point is less than 5 points. Please continue create track.")
+				builder.setMessage(
+						"Your track is too short or gps point is less than 5 points. Please continue create track.")
 						.show();
 				return;
 			} else {
 				nameInput = new EditText(this);
+				nameInput.setSingleLine(true);
+				nameInput.setSaveEnabled(true);
+				nameInput.setHint("Name not longer than 20 charecters");
 				AlertDialog.Builder builder = new AlertDialog.Builder(
 						CreateTrackActivity.this);
 				builder.setMessage("Name your track !")
@@ -344,12 +368,7 @@ public class CreateTrackActivity extends Activity implements
 			// MainActivity.class);
 			// intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			// startActivity(intent);
-			try {
-				takeSnapshot();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			
+
 			break;
 
 		}
@@ -360,7 +379,6 @@ public class CreateTrackActivity extends Activity implements
 		if (map == null) {
 			return;
 		}
-
 
 		final SnapshotReadyCallback callback = new SnapshotReadyCallback() {
 			@Override
@@ -412,6 +430,35 @@ public class CreateTrackActivity extends Activity implements
 	}
 
 	private void enableGPSListener() {
+		final Criteria criteria = new Criteria();
+
+		criteria.setAccuracy(Criteria.ACCURACY_FINE);
+		criteria.setSpeedRequired(true);
+		criteria.setAltitudeRequired(false);
+		criteria.setBearingRequired(false);
+		criteria.setCostAllowed(true);
+		criteria.setPowerRequirement(Criteria.POWER_LOW);
+
+		final String bestProvider = myLocationManager.getBestProvider(criteria,
+				true);
+
+		if (bestProvider != null && bestProvider.length() > 0) {
+			myLocationManager.requestLocationUpdates(bestProvider, 1000, 10,
+					this);
+		} else {
+			final List<String> providers = myLocationManager.getProviders(true);
+
+			for (final String provider : providers) {
+				myLocationManager.requestLocationUpdates(provider, 1000, 10,
+						this);
+			}
+		}
+
+		myLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+				1000, 10, this);
+		Toast.makeText(getApplicationContext(), "Track data",
+				Toast.LENGTH_SHORT).show();
+
 		if (!isGpsEnable()) {
 			DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 				@Override
@@ -419,50 +466,16 @@ public class CreateTrackActivity extends Activity implements
 					switch (which) {
 					case DialogInterface.BUTTON_POSITIVE:
 						Intent intent = new Intent(
-								Settings.ACTION_SECURITY_SETTINGS);
+								Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 						startActivity(intent);
-						break;
-					case DialogInterface.BUTTON_NEGATIVE:
-						// No button clicked
+
 						break;
 					}
 				}
 			};
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setMessage("Setting GPS?")
-					.setPositiveButton("Yes", dialogClickListener)
-					.setNegativeButton("No", dialogClickListener).show();
-		} else {
-
-			final Criteria criteria = new Criteria();
-
-			criteria.setAccuracy(Criteria.ACCURACY_FINE);
-			criteria.setSpeedRequired(true);
-			criteria.setAltitudeRequired(false);
-			criteria.setBearingRequired(false);
-			criteria.setCostAllowed(true);
-			criteria.setPowerRequirement(Criteria.POWER_LOW);
-
-			final String bestProvider = myLocationManager.getBestProvider(
-					criteria, true);
-
-			if (bestProvider != null && bestProvider.length() > 0) {
-				myLocationManager.requestLocationUpdates(bestProvider, 1000,
-						15, this);
-			} else {
-				final List<String> providers = myLocationManager
-						.getProviders(true);
-
-				for (final String provider : providers) {
-					myLocationManager.requestLocationUpdates(provider, 1000,
-							15, this);
-				}
-			}
-
-			myLocationManager.requestLocationUpdates(
-					LocationManager.GPS_PROVIDER, 1000, 15, this);
-			Toast.makeText(getApplicationContext(), "Track data",
-					Toast.LENGTH_SHORT).show();
+					.setPositiveButton("Yes", dialogClickListener).show();
 		}
 
 	}
@@ -487,33 +500,21 @@ public class CreateTrackActivity extends Activity implements
 			marker.remove();
 		}
 
-		if (roadRunnerSetting.getProfileIcon() == null) {
-			marker = map.addMarker(new MarkerOptions()
-					.position(coord)
-					.icon(BitmapDescriptorFactory
-							.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-					.title("Me"));
-		} else {
-			View customMarker = ((LayoutInflater) this
-					.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
-					.inflate(R.layout.custom_marker_layout, null);
-			ImageView imageView = (ImageView) customMarker
-					.findViewById(R.id.profileIcon);
-			imageView.setImageBitmap(modifyCanvas(roadRunnerSetting
-					.getProfileIcon()));
-			marker = map.addMarker(new MarkerOptions()
-					.position(coord)
-					.icon(BitmapDescriptorFactory
-							.fromBitmap(createDrawableFromView(this,
-									customMarker))).title("Me"));
-			// marker = map.addMarker(new MarkerOptions()
-			// .position(coord)
-			// .icon(BitmapDescriptorFactory.fromBitmap(roadRunnerSetting
-			// .getProfileIcon())).title("Me"));
+		if (roadRunnerSetting.getProfileIcon() != null) {
+			imageView.setImageBitmap(roadRunnerSetting.getProfileIcon());
 		}
-		map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
-		if (recordCheck)
+		marker = map
+				.addMarker(new MarkerOptions()
+						.position(coord)
+						.icon(BitmapDescriptorFactory
+								.fromBitmap(createDrawableFromView(this,
+										customMarker))).title("Me"));
+		map.animateCamera(CameraUpdateFactory.newLatLng(coord));
+		if (recordCheck) {
 			recordTrack(loc);
+		} else {
+			map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
+		}
 
 	}
 
@@ -625,23 +626,6 @@ public class CreateTrackActivity extends Activity implements
 
 	public ArrayList<LatLngTimeData> getLatLngTimeData() {
 		return latLngTimeData;
-	}
-
-	public void setLatLngTimeData(List<LatLngTimeData> latLngTimeData2) {
-		PolylineOptions polylineOptions = new PolylineOptions();
-		for (Iterator<LatLngTimeData> iterator = latLngTimeData2.iterator(); iterator
-				.hasNext();) {
-			LatLngTimeData latLngTimeData = (LatLngTimeData) iterator.next();
-			double lat = latLngTimeData.getCoordinate().getLat();
-			double lng = latLngTimeData.getCoordinate().getLng();
-			LatLng point = new LatLng(lng, lat);
-			polylineOptions.add(point);
-			map.animateCamera(CameraUpdateFactory.newLatLngZoom(point, 15.0f));
-		}
-		polylineOptions.color(Color.YELLOW);
-		polylineOptions.width(5);
-		map.addPolyline(polylineOptions);
-
 	}
 
 	public void cannotConnectToServer() {

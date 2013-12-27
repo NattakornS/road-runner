@@ -38,7 +38,7 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 	private HttpPost httppost;
 	private HttpClient httpclient;
 	private List<NameValuePair> nameValuePairs;
-	private DialogConnect dialogConnect;
+//	private DialogConnect dialogConnect;
 	private Context context;
 	private int requestTag;
 	private int index;
@@ -56,9 +56,9 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 		// Server
 		// à¸¡à¸µà¸?à¸²à¸£à¸ªà¹?à¸? ConnectServer à¹?à¸«à¹?à¸?à¸±à¸? Dialog
 		// à¹€à¸?à¸·à¹?à¸­à¹?à¸?à¹?à¹?à¸?à¸?à¸²à¸£à¸¢à¸?à¹€à¸¥à¸´à¸?
-		dialogConnect = new DialogConnect(this.context, this);
-		dialogConnect.setTitle(this.context.getString(R.string.app_name));
-		dialogConnect.setMessage("Connect to server");
+//		dialogConnect = new DialogConnect(this.context, this);
+//		dialogConnect.setTitle(this.context.getString(R.string.app_name));
+//		dialogConnect.setMessage("Connect to server");
 	}
 
 	// Function
@@ -76,7 +76,8 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 	// à¸?à¹?à¸­à¸?à¸—à¸µà¹?à¸?à¸°à¸—à¸³ doInBackground
 	// à¸?à¸°à¸—à¸³à¸?à¸²à¸?à¸—à¸µà¹? Function à¸?à¸µà¹?à¸?à¹?à¸­à¸?
 	protected void onPreExecute() {
-		dialogConnect.show();
+//		dialogConnect.show();
+		
 	}
 
 	// à¹€à¸£à¸´à¹?à¸¡à¸—à¸³à¸?à¸²à¸?à¹?à¸?à¸? Background
@@ -144,10 +145,10 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 					((RaceTrackSelectorActivity) context).setTrackList(result);
 					break;
 				case 1:
-					((RaceTrackSelectorActivity) context).setTrackPath(result);
+					((RaceTrackSelectorActivity) context).setTrackPath(result,index);
 					break;
 				case 2:
-					((RaceTrackSelectorActivity) context).setTeackMember(result);
+					((RaceTrackSelectorActivity) context).setTeackMember(result,index);
 					break;
 //					default : ((RaceTrackSelectorActivity) context).setTeackMember(result);
 				}
@@ -167,7 +168,7 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 
 		}
 
-		dialogConnect.dismiss();
+//		dialogConnect.dismiss();
 	}
 
 	public void setIndex(int index) {

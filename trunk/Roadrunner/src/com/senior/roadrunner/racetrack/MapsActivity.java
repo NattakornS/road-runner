@@ -176,6 +176,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		}
 	};
 	private String trackName;
+	private View customMarker;
+	private ImageView imageView;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -195,8 +197,9 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		trackName = intent.getStringExtra("TrackName");
 		trackMemberList = (ArrayList<TrackMemberList>) intent
 				.getSerializableExtra("TrackMemberList");
-		trackMemberListTemp = new ArrayList<TrackMemberList>();
-		trackMemberListTemp.addAll(trackMemberList);
+//		trackMemberListTemp = new ArrayList<TrackMemberList>();
+//		if(trackMemberList!=null)
+//		trackMemberListTemp.addAll(trackMemberList);
 		// set current Rid
 		rId = trackMemberList.get(0).getrId();
 		trackPathData = intent.getStringExtra("TrackPathData");
@@ -238,6 +241,10 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		enableGPSListener();
 		createRunningPath();
 		setStartPointTracking(true);
+		customMarker = ((LayoutInflater) this
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(
+				R.layout.custom_marker_layout, null);
+		imageView = (ImageView) customMarker.findViewById(R.id.profileIcon);
 	}
 
 	private void loadFile() {
@@ -503,12 +510,12 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			}
 		};
 		map.snapshot(callback);
-//		map.setOnMapLoadedCallback(new OnMapLoadedCallback() {
-//			@Override
-//			public void onMapLoaded() {
-//				map.snapshot(callback);
-//			}
-//		});
+		// map.setOnMapLoadedCallback(new OnMapLoadedCallback() {
+		// @Override
+		// public void onMapLoaded() {
+		// map.snapshot(callback);
+		// }
+		// });
 
 	}
 
@@ -580,7 +587,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 					switch (which) {
 					case DialogInterface.BUTTON_POSITIVE:
 						Intent intent = new Intent(
-								Settings.ACTION_SECURITY_SETTINGS);
+								Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 						startActivity(intent);
 						break;
 					case DialogInterface.BUTTON_NEGATIVE:
@@ -609,19 +616,19 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 			if (bestProvider != null && bestProvider.length() > 0) {
 				myLocationManager.requestLocationUpdates(bestProvider, 1000,
-						15, this);
+						10, this);
 			} else {
 				final List<String> providers = myLocationManager
 						.getProviders(true);
 
 				for (final String provider : providers) {
 					myLocationManager.requestLocationUpdates(provider, 1000,
-							15, this);
+							10, this);
 				}
 			}
 
 			myLocationManager.requestLocationUpdates(
-					LocationManager.GPS_PROVIDER, 1000, 15, this);
+					LocationManager.GPS_PROVIDER, 1000, 10, this);
 			Toast.makeText(getApplicationContext(), "Track data",
 					Toast.LENGTH_SHORT).show();
 		}
@@ -647,36 +654,23 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			marker.remove();
 		}
 
-		if (roadRunnerSetting.getProfileIcon() == null) {
-			marker = map.addMarker(new MarkerOptions()
-					.position(coord)
-					.icon(BitmapDescriptorFactory
-							.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-					.title("Me"));
-		} else {
-			View customMarker = ((LayoutInflater) this
-					.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
-					.inflate(R.layout.custom_marker_layout, null);
-			ImageView imageView = (ImageView) customMarker
-					.findViewById(R.id.profileIcon);
-			imageView.setImageBitmap(modifyCanvas(roadRunnerSetting
-					.getProfileIcon()));
-			marker = map.addMarker(new MarkerOptions()
-					.position(coord)
-					.icon(BitmapDescriptorFactory
-							.fromBitmap(createDrawableFromView(this,
-									customMarker))).title("Me"));
-			// marker = map.addMarker(new MarkerOptions()
-			// .position(coord)
-			// .icon(BitmapDescriptorFactory.fromBitmap(roadRunnerSetting
-			// .getProfileIcon())).title("Me"));
+		if (roadRunnerSetting.getProfileIcon() != null) {
+			imageView.setImageBitmap(roadRunnerSetting.getProfileIcon());
 		}
-		map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
+		marker = map
+				.addMarker(new MarkerOptions()
+						.position(coord)
+						.icon(BitmapDescriptorFactory
+								.fromBitmap(createDrawableFromView(this,
+										customMarker))).title("Me"));
+		map.animateCamera(CameraUpdateFactory.newLatLng(coord));
 
 		checkisInPath(point);
-		if (recordCheck)
+		if (recordCheck) {
 			recordTrack(loc);
-
+		} else {
+			map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
+		}
 	}
 
 	private Bitmap modifyCanvas(Bitmap bitmap) {
