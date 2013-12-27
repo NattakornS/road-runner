@@ -493,15 +493,15 @@ public class CreateTrackActivity extends Activity implements
 		System.out.println(loc.hasAccuracy());
 		double latitude = loc.getLatitude();
 		double longitude = loc.getLongitude();
-		System.out.println("INCOMMING : " + latitude + "    " + longitude);
 		Point point = new Point(latitude, longitude);
 		LatLng coord = new LatLng(loc.getLatitude(), loc.getLongitude());
 		if (marker != null) {
 			marker.remove();
 		}
-
 		if (roadRunnerSetting.getProfileIcon() != null) {
 			imageView.setImageBitmap(roadRunnerSetting.getProfileIcon());
+		}else{
+			new GetMyProfulePicture();
 		}
 		marker = map
 				.addMarker(new MarkerOptions()

@@ -63,6 +63,7 @@ import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.racetrack.MapsActivity;
 import com.senior.roadrunner.server.ConnectServer;
+import com.senior.roadrunner.server.GetMyProfulePicture;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 
 @SuppressLint("NewApi")
@@ -106,6 +107,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 	private UploadActionBarView mUploadActionView;
 	private ImageView imageView;
 	private View customMarker;
+	private ListView listView;
 	private static final String TAG = "RaceTrackSelectorActivity";
 
 	@SuppressLint("NewApi")
@@ -145,19 +147,18 @@ public class RaceTrackSelectorActivity extends Activity implements
 		// facebookGetData();s
 		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		setListenCurrentLocation();
-		
-		 customMarker = ((LayoutInflater) this
-				.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
-				.inflate(R.layout.custom_marker_layout, null);
-		 imageView = (ImageView) customMarker
-				.findViewById(R.id.profileIcon);
+		listView = (ListView) findViewById(R.id.infoListView);
+		customMarker = ((LayoutInflater) this
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(
+				R.layout.custom_marker_layout, null);
+		imageView = (ImageView) customMarker.findViewById(R.id.profileIcon);
 
 	}
 
 	private void setListenCurrentLocation() {
 		// set request location to refresh track list
 		trackList = new ArrayList<TrackList>();
-		
+
 		final Criteria criteria = new Criteria();
 
 		criteria.setAccuracy(Criteria.ACCURACY_FINE);
@@ -167,27 +168,26 @@ public class RaceTrackSelectorActivity extends Activity implements
 		criteria.setCostAllowed(true);
 		criteria.setPowerRequirement(Criteria.POWER_LOW);
 
-		final String bestProvider = mLocationManager.getBestProvider(
-				criteria, true);
+		final String bestProvider = mLocationManager.getBestProvider(criteria,
+				true);
 
 		if (bestProvider != null && bestProvider.length() > 0) {
-			mLocationManager.requestLocationUpdates(bestProvider, 1000,
-					15, this);
+			mLocationManager.requestLocationUpdates(bestProvider, 1000, 15,
+					this);
 		} else {
-			final List<String> providers = mLocationManager
-					.getProviders(true);
+			final List<String> providers = mLocationManager.getProviders(true);
 
 			for (final String provider : providers) {
-				mLocationManager.requestLocationUpdates(provider, 1000,
-						15, this);
+				mLocationManager.requestLocationUpdates(provider, 1000, 15,
+						this);
 			}
 		}
 
-		mLocationManager.requestLocationUpdates(
-				LocationManager.GPS_PROVIDER, 1000, 15, this);
+		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+				1000, 15, this);
 		Toast.makeText(getApplicationContext(), "Track data",
 				Toast.LENGTH_SHORT).show();
-		
+
 		if (!isGpsEnable()) {
 			DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 				@Override
@@ -197,7 +197,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 						Intent intent = new Intent(
 								Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 						startActivity(intent);
-						
+
 						break;
 					}
 				}
@@ -205,7 +205,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setMessage("Setting GPS?")
 					.setPositiveButton("Yes", dialogClickListener).show();
-		} 
+		}
 
 	}
 
@@ -232,17 +232,17 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.race_sellector_menu, menu);
-//		MenuItem searchItem = menu.findItem(R.id.action_websearch);
-//		mSearchView = (SearchView) searchItem.getActionView();
-//		setupSearchView(searchItem);
+		// MenuItem searchItem = menu.findItem(R.id.action_websearch);
+		// mSearchView = (SearchView) searchItem.getActionView();
+		// setupSearchView(searchItem);
 
 		MenuItem item = menu.findItem(R.id.action_open_close_drawer);
 		mUploadActionView = (UploadActionBarView) item.getActionView();
-
+		mUploadActionView.getAnimateImageView().setImageResource(R.drawable.al);
 		// onOptionsItemSelected will NOT be called for a custom View,
 		// so set a OnClickListener and handle it ourselves.
 		mUploadActionView.setOnClickListener(this);
-		
+
 		this.menu = menu;
 		return true;
 	}
@@ -325,15 +325,22 @@ public class RaceTrackSelectorActivity extends Activity implements
 		connectServer.addValue("Longitude", currentLoc.getLongitude() + "");
 		connectServer.setRequestTag(ConnectServer.TRACK_LIST);
 		connectServer.execute();
-		if(null != mUploadActionView){
+		if (null != mUploadActionView) {
 			mUploadActionView.animateBackground();
 		}
-		
+
 	}
 
 	public void onItemClick(int mPosition) {
 		this.listPosition = mPosition;
+		// set listview hiding when user choose tracklist
+		listView.setVisibility(View.GONE);
+		raceBtn.setVisibility(View.GONE);
 		TrackList tempValues = (TrackList) trackList.get(mPosition);
+		Toast.makeText(
+				this,
+				String.format("Total Distance : %.2f km", tempValues.getDistance()), 3000)
+				.show();
 		// trackDataTxtView.setText("" + tempValues.getRaceTrackName() +
 		// " \nRid:"
 		// + tempValues.getrId() + " \nLatLon:"
@@ -353,11 +360,13 @@ public class RaceTrackSelectorActivity extends Activity implements
 		// get trackpath from server.
 		if (trackList.get(listPosition).getTrackData() != null
 				|| trackList.get(listPosition).getTrackMemberList() != null) {
-			setTrackPath(trackList.get(listPosition).getTrackData(),mPosition);
+			ArrayList<LatLngTimeData> trackPathData = (ArrayList<LatLngTimeData>) TrackDataBase
+					.loadXmlString(trackList.get(listPosition).getTrackData());
+			drawTrackPath(trackPathData);
 			printTrackData(trackList.get(listPosition).getTrackMemberList());
 			return;
 		}
-		
+
 		connectServer = new ConnectServer(this, RoadRunnerSetting.URLServer
 				+ "/getTrackPath.php");
 		connectServer.addValue("Rdir", RoadRunnerSetting.URLServer
@@ -373,7 +382,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 		connectServer.setRequestTag(ConnectServer.TRACK_MEMBER);
 		connectServer.setIndex(mPosition);
 		connectServer.execute();
-		if(null != mUploadActionView){
+		if (null != mUploadActionView) {
 			mUploadActionView.animateBackground();
 		}
 	}
@@ -399,7 +408,6 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	@Override
 	public boolean onQueryTextSubmit(String arg0) {
-		System.out.println("QText : " + arg0);
 		return false;
 	}
 
@@ -422,6 +430,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 				sched.setDoubleLat(jsonObject.getDouble("Latitude"));
 				sched.setDoubleLon(jsonObject.getDouble("Longitude"));
 				sched.setRdir(jsonObject.getString("Rdir"));
+				sched.setDistance(jsonObject.getDouble("Distance"));
 				/******** Take Model Object in ArrayList **********/
 				trackList.add(sched);
 				/**************** Create Custom Adapter *********/
@@ -429,7 +438,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 				// set up the drawer's list view with items and click listener
 				mDrawerList.setAdapter(adapter);
-				if(null != mUploadActionView){
+				if (null != mUploadActionView) {
 					mUploadActionView.stopAnimatingBackground();
 				}
 			}
@@ -440,7 +449,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 		}
 	}
 
-	public synchronized void setTrackPath(String result,int index) {
+	public synchronized void setTrackPath(String result, int index) {
 
 		// Draw track on map from xml string.
 		String xmlTrackData = result;
@@ -448,7 +457,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 				.loadXmlString(result);
 		drawTrackPath(trackPathData);
 		trackList.get(index).setTrackData(xmlTrackData);
-		if(null != mUploadActionView){
+		if (null != mUploadActionView) {
 			mUploadActionView.stopAnimatingBackground();
 		}
 	}
@@ -491,7 +500,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 						.get(0).getCoordinate().getLng()), 15.0f));
 	}
 
-	public synchronized void setTeackMember(String result,int index) {
+	public synchronized void setTeackMember(String result, int index) {
 
 		ArrayList<TrackMemberList> trackMemberList = new ArrayList<TrackMemberList>();
 		try {
@@ -525,29 +534,29 @@ public class RaceTrackSelectorActivity extends Activity implements
 	}
 
 	@SuppressLint("ShowToast")
-	private synchronized void printTrackData(ArrayList<TrackMemberList> trackMemberList) {
+	private synchronized void printTrackData(
+			ArrayList<TrackMemberList> trackMemberList) {
 		String trackMemberString = "";
-		if(trackMemberList==null){
+		if (trackMemberList == null) {
 			return;
 		}
-		for (int i = 0; i < trackMemberList.size(); i++) {
-			trackMemberString = trackMemberString
-					+ trackMemberList.get(i).getRank() + " "
-					+ trackMemberList.get(i).getfName() + " "
-					+ trackMemberList.get(i).getDuration() + "\n";
-
-		}
-
-		Toast.makeText(activity, trackMemberString, 3000).show();
+		// for (int i = 0; i < trackMemberList.size(); i++) {
+		// trackMemberString = trackMemberString
+		// + trackMemberList.get(i).getRank() + " "
+		// + trackMemberList.get(i).getfName() + " "
+		// + trackMemberList.get(i).getDuration() + "\n";
+		//
+		// }
+		//
+		// Toast.makeText(activity, trackMemberString, 3000).show();
 		// View v = getLayoutInflater().inflate(R.layout.info_layout,
 		// null);
 
 		if (trackMemberList != null) {
 			InfoAdaptor aa = new InfoAdaptor(activity, trackMemberList);
-			final ListView ll = (ListView) findViewById(R.id.infoListView);
-			ll.setVisibility(View.VISIBLE);
-			ll.setAdapter(aa);
-			ll.startAnimation(animTranslate);
+			listView.setVisibility(View.VISIBLE);
+			listView.setAdapter(aa);
+			listView.startAnimation(animTranslate);
 			// go button enable
 			raceBtn.setVisibility(View.VISIBLE);
 			raceBtn.startAnimation(animAlpha);
@@ -583,7 +592,6 @@ public class RaceTrackSelectorActivity extends Activity implements
 		// }
 		// });
 
-		
 	}
 
 	public void cannotConnectToServer() {
@@ -596,9 +604,9 @@ public class RaceTrackSelectorActivity extends Activity implements
 	public void onClick(View v) {
 		if (v.equals(raceBtn)) {
 
-//			if (trackMemberList == null || trackPathData == null) {
-//				return;
-//			}
+			// if (trackMemberList == null || trackPathData == null) {
+			// return;
+			// }
 			boolean isGPSEnabled = mLocationManager
 					.isProviderEnabled(LocationManager.GPS_PROVIDER);
 			if (!isGPSEnabled) {
@@ -639,15 +647,15 @@ public class RaceTrackSelectorActivity extends Activity implements
 				// To start the animation
 
 				if (mDrawerLayout.isDrawerOpen(mDrawerList)) {
-//					mUploadActionView.stopAnimatingBackground();
+					// mUploadActionView.stopAnimatingBackground();
 					mDrawerLayout.closeDrawers();
-//					mUploadActionView.animateArrowLeft();
-//					mUploadActionView.animateBackground();
+					// mUploadActionView.animateArrowLeft();
+					// mUploadActionView.animateBackground();
 				} else {
-//					mUploadActionView.stopAnimatingBackground();
+					// mUploadActionView.stopAnimatingBackground();
 					mDrawerLayout.openDrawer(mDrawerList);
-//					mUploadActionView.animateArrowRight();
-//					mUploadActionView.animateBackground();
+					// mUploadActionView.animateArrowRight();
+					// mUploadActionView.animateBackground();
 				}
 				// Or to stop it
 				//
@@ -670,7 +678,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 		// }
 		//
 		// }
-		if(null != mUploadActionView){
+		if (null != mUploadActionView) {
 			mUploadActionView.animateArrowLeft();
 		}
 	}
@@ -689,7 +697,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 		// }
 		//
 		// }
-		if(null != mUploadActionView){
+		if (null != mUploadActionView) {
 			mUploadActionView.animateArrowRight();
 		}
 	}
@@ -736,6 +744,8 @@ public class RaceTrackSelectorActivity extends Activity implements
 		}
 		if (roadRunnerSetting.getProfileIcon() != null) {
 			imageView.setImageBitmap(roadRunnerSetting.getProfileIcon());
+		}else{
+			new GetMyProfulePicture();
 		}
 		marker = map
 				.addMarker(new MarkerOptions()

@@ -1,9 +1,14 @@
 package com.senior.roadrunner.finish;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,12 +18,15 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -47,8 +55,9 @@ import com.senior.roadrunner.server.UploadTask;
 import com.senior.roadrunner.server.UploadTrack;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.trackchooser.TrackMemberList;
+import com.senior.roadrunner.trackchooser.UploadActionBarView;
 
-public class FinishActivity extends FragmentActivity {
+public class FinishActivity extends FragmentActivity implements OnClickListener {
 
 	private ArrayList<TrackMemberList> trackMemberList;
 
@@ -102,6 +111,10 @@ public class FinishActivity extends FragmentActivity {
 	private double lng;
 
 	private double lat;
+
+	private UploadActionBarView mUploadActionView;
+
+	private UploadActionBarView mUploadFBActionView;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -169,6 +182,7 @@ public class FinishActivity extends FragmentActivity {
 		super.onDestroy();
 		uiHelper.onDestroy();
 	}
+
 	@Override
 	public void onBackPressed() {
 		super.onBackPressed();
@@ -297,13 +311,15 @@ public class FinishActivity extends FragmentActivity {
 			}
 			Request request = Request.newMyUploadPhotoRequest(
 					Session.getActiveSession(), image, "Roadrunner @ "
-							+ trackName + " : \n"
-							+ stringPost, "", new Request.Callback() {
+							+ trackName + " : \n" + stringPost, "",
+					new Request.Callback() {
 						@Override
 						public void onCompleted(Response response) {
 							showPublishResult(getString(R.string.photo_post),
 									response.getGraphObject(),
 									response.getError());
+							if (mUploadFBActionView != null)
+								mUploadFBActionView.stopAnimatingBackground();
 						}
 					});
 			Request.executeBatchAsync(request);
@@ -387,10 +403,7 @@ public class FinishActivity extends FragmentActivity {
 		bar.setTitle("Roadrunner");
 		bar.setSubtitle("Race Result");
 
-		System.out.println("Facebook Name : "
-				+ roadRunnerSetting.getFacebookId());
 		for (int i = 0; i < trackMemberList.size(); i++) {
-			System.out.println(trackMemberList.get(i).getfName());
 			if (trackMemberList.get(i).getfId()
 					.equals(roadRunnerSetting.getFacebookId())) {
 				myTrack = trackMemberList.get(i);
@@ -399,7 +412,7 @@ public class FinishActivity extends FragmentActivity {
 		}
 
 		List<LatLngTimeData> trackFile = TrackDataBase
-				.loadXmlFile(roadRunnerSetting.SDPATH
+				.loadXmlFile(RoadRunnerSetting.SDPATH
 						+ roadRunnerSetting.getFacebookId() + ".xml");
 		if (trackFile != null) {
 			lat = trackFile.get(0).getCoordinate().getLat();
@@ -420,6 +433,20 @@ public class FinishActivity extends FragmentActivity {
 		// Inflate the menu items for use in the action bar
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.finish_menu, menu);
+
+		MenuItem item = menu.findItem(R.id.save_finish_menu_btn);
+		mUploadActionView = (UploadActionBarView) item.getActionView();
+		mUploadActionView.getAnimateImageView().setImageResource(
+				R.drawable.upload_t);
+
+		item = menu.findItem(R.id.share_facebook_finish_menu_btn);
+		mUploadFBActionView = (UploadActionBarView) item.getActionView();
+		mUploadFBActionView.getAnimateImageView().setImageResource(
+				R.drawable.facebookshare);
+		// onOptionsItemSelected will NOT be called for a custom View,
+		// so set a OnClickListener and handle it ourselves.
+		mUploadActionView.setOnClickListener(this);
+		mUploadFBActionView.setOnClickListener(this);
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -428,14 +455,14 @@ public class FinishActivity extends FragmentActivity {
 		// Handle presses on the action bar items
 		switch (item.getItemId()) {
 		case R.id.save_finish_menu_btn:
-			submitRaceResult();
+			// submitRaceResult();
 			// backToHome();
 			return true;
 		case android.R.id.home:
 			backToHome();
 			return true;
 		case R.id.share_facebook_finish_menu_btn:
-			onClickPostPhoto();
+			// onClickPostPhoto();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -443,7 +470,7 @@ public class FinishActivity extends FragmentActivity {
 	}
 
 	private void backToHome() {
-		
+
 		Intent intent = new Intent(FinishActivity.this, MainActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		startActivity(intent);
@@ -494,8 +521,8 @@ public class FinishActivity extends FragmentActivity {
 		// .build();
 		// uiHelper.trackPendingDialogCall(shareDialog.present());
 		uploadFile();
-//		onClickPostStatusUpdate(); // Post to facebook
-		
+		// onClickPostStatusUpdate(); // Post to facebook
+
 		// initFragment();
 	}
 
@@ -522,18 +549,39 @@ public class FinishActivity extends FragmentActivity {
 
 	private void uploadFile() {
 		if (parentName.equals("CreateTrackActivity")) {
-			System.out.println("Upload Track");
-			UploadTrack uploadTrack = new UploadTrack(this, lat, lng, trackName);
-			String exString[] = { CreateTrackActivity.savePath };
+			if(myTrack==null){
+				return;
+			}
+			UploadTrack uploadTrack = new UploadTrack(this, lat, lng, trackName,myTrack.getDistance());
+			String exString[] = { RoadRunnerSetting.SDPATH
+					+ roadRunnerSetting.getFacebookId() + ".xml" };
 			uploadTrack.execute(exString);
 
 		} else {
 			updateDataBase();
+
+			File sourceFile = new File(RoadRunnerSetting.SDPATH
+					+ roadRunnerSetting.getFacebookId() + ".xml");
+			File imgFile = new File(Environment.getExternalStorageDirectory()
+					+ "/" + "roadrunner/" + roadRunnerSetting.getFacebookId()
+					+ ".png");
 			UploadTask uploadTask = new UploadTask(this);
-			String exString[] = { MapsActivity.savePath,
-					MapsActivity.mapcapPath, MapsActivity.rId };
-			uploadTask.execute(exString);
-//			onClickPostPhoto();
+
+			uploadTask.addMultipartValue("uploaded_path", new StringBody(
+					"tracker/" + myTrack.getrId() + "/",
+					ContentType.DEFAULT_TEXT));
+			uploadTask.addMultipartValue("uploaded_file", new FileBody(
+					sourceFile));
+			uploadTask.addMultipartValue("uploaded_img", new FileBody(imgFile));
+
+			uploadTask.execute();
+
+			// UploadTask uploadTask = new UploadTask(this);
+			// String exString[] = { MapsActivity.savePath,
+			// MapsActivity.mapcapPath, MapsActivity.rId };
+			// uploadTask.execute(exString);
+			//
+			// // onClickPostPhoto();
 		}
 	}
 
@@ -542,6 +590,8 @@ public class FinishActivity extends FragmentActivity {
 		// DataBase response result
 		Log.d("Response DataBase : ", result);
 		Toast.makeText(this, "Database : " + result, 500).show();
+		if (mUploadActionView != null)
+			mUploadActionView.stopAnimatingBackground();
 
 	}
 
@@ -550,21 +600,54 @@ public class FinishActivity extends FragmentActivity {
 		try {
 			jsonObject = new JSONObject(response);
 			String rid = jsonObject.getString("NumRow");
-			System.out.println(rid);
 			myTrack.setrId(rid);
-
+			// String string[] = { CreateTrackActivity.savePath,
+			// CreateTrackActivity.mapcapPath, rid };
 			// Upload racetrack
+			File sourceFile = new File(RoadRunnerSetting.SDPATH
+					+ roadRunnerSetting.getFacebookId() + ".xml");
+			File imgFile = new File(Environment.getExternalStorageDirectory()
+					+ "/" + "roadrunner/" + roadRunnerSetting.getFacebookId()
+					+ ".png");
 			UploadTask uploadTask = new UploadTask(this);
-			String string[] = { CreateTrackActivity.savePath,
-					CreateTrackActivity.mapcapPath, rid };
-			uploadTask.execute(string);
+
+			uploadTask.addMultipartValue("uploaded_path", new StringBody(
+					"tracker/" + rid + "/", ContentType.DEFAULT_TEXT));
+			uploadTask.addMultipartValue("uploaded_file", new FileBody(
+					sourceFile));
+			uploadTask.addMultipartValue("uploaded_img", new FileBody(imgFile));
+
+			uploadTask.execute();
 
 			updateDataBase();
-//			onClickPostPhoto();
+			// onClickPostPhoto();
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		// updateDataBase();
+	}
+
+	@Override
+	public void onClick(View v) {
+		// actionbar button click
+		if (v == mUploadActionView) {
+			// Action Bar item has been clicked, do something...
+			// When you later want to animate the background, or stop the
+			// animate, just call:
+			if (null != mUploadActionView) {
+				// To start the animation
+				mUploadActionView.animateBackground();
+				submitRaceResult();
+			}
+		}
+		if (v == mUploadFBActionView) {
+			if (null != mUploadFBActionView) {
+				// To start the animation
+				mUploadFBActionView.animateBackground();
+				onClickPostPhoto();
+			}
+		}
+
 	}
 }

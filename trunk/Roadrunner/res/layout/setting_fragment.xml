@@ -268,7 +268,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="0.6"
                     android:gravity="center"
-                    android:text="0.0.1"
+                    android:text="0.0.2"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
         </LinearLayout>

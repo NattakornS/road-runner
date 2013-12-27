@@ -2,10 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item android:id="@+id/save_finish_menu_btn"
           android:icon="@drawable/upload_t"
+          android:actionLayout="@layout/layout_action_upload"
           android:showAsAction="always"
           android:title="Submit score and your data"/>
     <item android:id="@+id/share_facebook_finish_menu_btn"
           android:icon="@drawable/facebookshare"
+          android:actionLayout="@layout/layout_action_upload"
           android:showAsAction="always"
           android:title="Share to facebook"/>
 </menu>

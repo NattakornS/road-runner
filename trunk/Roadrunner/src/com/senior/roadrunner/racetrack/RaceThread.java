@@ -14,10 +14,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -37,7 +36,8 @@ import com.senior.roadrunner.tools.LatLngInterpolator.Spherical;
 import com.senior.roadrunner.tools.MarkerAnimation;
 import com.senior.roadrunner.trackchooser.TrackMemberList;
 
-public class RaceThread extends Thread {
+public class RaceThread implements Runnable {
+	private static final String TAG = "RaceThread";
 	private int i;
 	private Marker marker = null;
 	private SimpleDateFormat sdf;
@@ -50,15 +50,22 @@ public class RaceThread extends Thread {
 	private TrackMemberList listTracker;
 	private Bitmap profileIcon;
 	private Bitmap bmp;
+	private ImageView imageView;
+	private View customMarker;
 
 	@SuppressLint("SimpleDateFormat")
 	public RaceThread(TrackMemberList listTracker, GoogleMap map,
 			Activity activity) {
+        Thread thread = new Thread(this);
+        thread.start();
 		this.listTracker = listTracker;
 		sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 		this.map = map;
 		this.activity = activity;
-
+		customMarker = ((LayoutInflater) activity
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(
+				R.layout.custom_marker_layout, null);
+		imageView = (ImageView) customMarker.findViewById(R.id.profileIcon);
 	}
 
 	@Override
@@ -72,7 +79,6 @@ public class RaceThread extends Thread {
 
 		try {
 			profileIcon = BitmapFactory.decodeStream(new FileInputStream(f));
-			modifyCanvas();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -81,11 +87,7 @@ public class RaceThread extends Thread {
 		data = TrackDataBase.loadXmlFile(RoadRunnerSetting.SDPATH
 				+ listTracker.getTrackerDir());
 		if (data == null) {
-			// Toast.makeText(activity,
-			// "Data is error while loading tracker file from server.",
-			// 1000).show();
-			System.out
-					.println("Data is error while loading tracker file from server");
+			Log.e(TAG, "Data is error while loading tracker file from server");
 			return;
 		}
 		for (i = 0; i < data.size(); i++) {
@@ -119,30 +121,20 @@ public class RaceThread extends Thread {
 						if (marker != null) {
 							marker.remove();
 						}
-						if (profileIcon == null) {
-							marker = map.addMarker(new MarkerOptions()
-									.position(point)
-									.icon(BitmapDescriptorFactory
-											.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
-									.title(listTracker.getfName())
-									.snippet("Speed : " + speed + "KPH"));
-						} else {
-							View customMarker = ((LayoutInflater) activity
-									.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
-									.inflate(R.layout.custom_marker_layout,
-											null);
-							ImageView imageView = (ImageView) customMarker
-									.findViewById(R.id.profileIcon);
+						if (profileIcon != null) {
 							imageView.setImageBitmap(bmp);
-							marker = map.addMarker(new MarkerOptions()
-									.position(point)
-									.icon(BitmapDescriptorFactory
-											.fromBitmap(createDrawableFromView(
-													activity, customMarker)))
-									.title(listTracker.getfName())
-									.snippet("Speed : " + speed + "KPH"));
+						} else {
+
 						}
+						marker = map.addMarker(new MarkerOptions()
+								.position(point)
+								.icon(BitmapDescriptorFactory
+										.fromBitmap(createDrawableFromView(
+												activity, customMarker)))
+								.title(listTracker.getfName())
+								.snippet("Speed : " + speed + "KPH"));
 						marker.showInfoWindow();
+
 						Spherical latLngInterpolator = new Spherical();
 						latLngInterpolator.interpolate(5.0f, point, end);
 						MarkerAnimation.animateMarkerToICS(marker, end,
@@ -160,7 +152,6 @@ public class RaceThread extends Thread {
 				e.printStackTrace();
 			}
 		}
-		super.run();
 	}
 
 	// Convert a view to bitmap
@@ -179,33 +170,16 @@ public class RaceThread extends Thread {
 
 		Canvas canvas = new Canvas(bitmap);
 		view.draw(canvas);
-		
-		return adjustOpacity(bitmap,200);
+
+		return adjustOpacity(bitmap, 200);
 	}
-	public Bitmap adjustOpacity(Bitmap bitmap, int opacity)
-	{
-	    Bitmap mutableBitmap = bitmap.isMutable()
-	                           ? bitmap
-	                           : bitmap.copy(Bitmap.Config.ARGB_8888, true);
-	    Canvas canvas = new Canvas(mutableBitmap);
-	    int colour = (opacity & 0xFF) << 24;
-	    canvas.drawColor(colour, PorterDuff.Mode.DST_IN);
-	    return mutableBitmap;
-	}
-	private void modifyCanvas() {
-		Bitmap.Config conf = Bitmap.Config.ARGB_8888;
-		bmp = Bitmap.createBitmap(65,65,conf);
-		Canvas canvas1 = new Canvas(bmp);
 
-		// paint defines the text color,
-		// stroke width, size
-		Paint color = new Paint();
-		color.setTextSize(35);
-		color.setColor(Color.BLACK);
-
-		// modify canvas
-		canvas1.drawBitmap(profileIcon, 0, 0, color);
-		// canvas1.drawText(listTracker.getfName(), 30, 40, color);
-
+	public Bitmap adjustOpacity(Bitmap bitmap, int opacity) {
+		Bitmap mutableBitmap = bitmap.isMutable() ? bitmap : bitmap.copy(
+				Bitmap.Config.ARGB_8888, true);
+		Canvas canvas = new Canvas(mutableBitmap);
+		int colour = (opacity & 0xFF) << 24;
+		canvas.drawColor(colour, PorterDuff.Mode.DST_IN);
+		return mutableBitmap;
 	}
 }

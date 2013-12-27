@@ -55,7 +55,8 @@ public class UploadActionBarView extends RelativeLayout implements
     	animationImageView.startAnimation(rotateAnimation);
     	animationImageView.setImageResource(R.drawable.ar);
     }
-	private ImageView getAnimateImageView() {
+	
+	public ImageView getAnimateImageView() {
 		return (ImageView) findViewById(R.id.iv_action_upload);
 	}
 

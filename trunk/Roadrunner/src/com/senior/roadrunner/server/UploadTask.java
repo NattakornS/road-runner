@@ -11,6 +11,7 @@ import org.apache.http.ParseException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
@@ -32,7 +33,7 @@ public class UploadTask extends AsyncTask<String, Integer, String> {
 
 	private Context context;
 	int serverResponseCode = 0;
-	DialogUpload dialog;
+//	DialogUpload dialog;
 	String upLoadServerUri = RoadRunnerSetting.URLServer + "UploadToServer.php";
 	// final String uploadFilePath = "/mnt/sdcard/";
 	// final String uploadFileName = "tracker.xml";
@@ -45,37 +46,39 @@ public class UploadTask extends AsyncTask<String, Integer, String> {
 	int bytesRead, bytesAvailable, bufferSize;
 	byte[] buffer;
 	int maxBufferSize = 1 * 1024 * 1024;
+	private MultipartEntity mpEntity;
 
 	public UploadTask(Context context) {
 		this.context = context;
-		dialog = new DialogUpload(this.context, this);
-		dialog.setTitle(this.context.getString(R.string.app_name));
-		dialog.setMessage("Upload result to server");
+//		dialog = new DialogUpload(this.context, this);
+//		dialog.setTitle(this.context.getString(R.string.app_name));
+//		dialog.setMessage("Upload result to server");
+		mpEntity = new MultipartEntity();
 	}
 
 	@Override
 	protected void onPreExecute() {
 		// TODO Auto-generated method stub
 		super.onPreExecute();
-		dialog.show();
+//		dialog.show();
 	}
 
 	@Override
 	protected void onPostExecute(String result) {
 		// TODO Auto-generated method stub
 		super.onPostExecute(result);
-		dialog.dismiss();
+//		dialog.dismiss();
 	}
 
 	@Override
 	protected String doInBackground(String... params) {
 		// take CPU lock to prevent CPU from going off if the user
 		// presses the power button during download
-		String fileUri = params[0];
-		String imgUri = params[1];
-		this.rid = params[2];
-		File sourceFile = new File(fileUri);
-		File imgFile = new File(imgUri);
+//		String fileUri = params[0];
+//		String imgUri = params[1];
+//		this.rid = params[2];
+//		File sourceFile = new File(fileUri);
+//		File imgFile = new File(imgUri);
 		PowerManager pm = (PowerManager) context
 				.getSystemService(Context.POWER_SERVICE);
 		PowerManager.WakeLock wl = pm.newWakeLock(
@@ -261,17 +264,15 @@ public class UploadTask extends AsyncTask<String, Integer, String> {
 			// Url of the server
 			HttpClient client = new DefaultHttpClient();
 			HttpPost post = new HttpPost(upLoadServerUri);
-			MultipartEntity mpEntity = new MultipartEntity();
-			// Path of the file to be uploaded
-			ContentBody cbFile = new FileBody(sourceFile);
-
-			// Add the data to the multipart entity
-			mpEntity.addPart("uploaded_path", new StringBody("tracker/" + rid
-					+ "/", ContentType.DEFAULT_TEXT));
+			
 			// mpEntity.addPart("data", new StringBody("This is test report",
-			// Charset.forName("UTF-8")));
-			mpEntity.addPart("uploaded_file", cbFile);
-			mpEntity.addPart("uploaded_img", new FileBody(imgFile));
+						// Charset.forName("UTF-8")));
+			// Add the data to the multipart entity
+//			mpEntity.addPart("uploaded_path", new StringBody("tracker/" + rid
+//					+ "/", ContentType.DEFAULT_TEXT));
+//			mpEntity.addPart("uploaded_file", new FileBody(sourceFile));
+//			mpEntity.addPart("uploaded_img", new FileBody(imgFile));
+			
 			post.setEntity(mpEntity);
 			// Execute the post request
 			HttpResponse response1 = client.execute(post);
@@ -285,6 +286,7 @@ public class UploadTask extends AsyncTask<String, Integer, String> {
 			// //Get the result variables from response
 			// String result = (jsonobject.getString("result"));
 			// String msg = (jsonobject.getString("msg"));
+
 			// Close the connection
 			client.getConnectionManager().shutdown();
 		} catch (ParseException e) {
@@ -298,7 +300,11 @@ public class UploadTask extends AsyncTask<String, Integer, String> {
 		finally {
 			wl.release();
 		}
-		dialog.dismiss();
+//		dialog.dismiss();
 		return null;
+	}
+
+	public void addMultipartValue(String string, ContentBody contentBody) {
+		mpEntity.addPart(string, contentBody);
 	}
 }
