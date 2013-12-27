@@ -122,10 +122,8 @@ public class RaceThread implements Runnable {
 							marker.remove();
 						}
 						if (profileIcon != null) {
-							imageView.setImageBitmap(bmp);
-						} else {
-
-						}
+							imageView.setImageBitmap(profileIcon);
+						} 
 						marker = map.addMarker(new MarkerOptions()
 								.position(point)
 								.icon(BitmapDescriptorFactory
