@@ -23,6 +23,7 @@ public class TrackList implements Parcelable {
 	private String rDir;
 	private String trackData;
 	private ArrayList<TrackMemberList> trackMemberList;
+	private double distance;
 
 	/*********** Set Methods ******************/
 	public void setRaceTrackName(String raceTrackName) {
@@ -59,25 +60,28 @@ public class TrackList implements Parcelable {
 	}
 
 	public void setDoubleLat(double lat) {
-		this.lat=lat;
-		
+		this.lat = lat;
+
 	}
 
 	public void setDoubleLon(double lon) {
-		this.lon=lon;
-		
+		this.lon = lon;
+
 	}
+
 	public double getDoubleLat() {
 		return lat;
 	}
+
 	public double getDoubleLon() {
 		return lon;
 	}
 
 	public void setRdir(String rDir) {
 		this.rDir = rDir;
-		
+
 	}
+
 	public String getRdir() {
 		return rDir;
 	}
@@ -107,6 +111,15 @@ public class TrackList implements Parcelable {
 	@Override
 	public void writeToParcel(Parcel arg0, int arg1) {
 		// TODO Auto-generated method stub
-		
+
+	}
+
+	public void setDistance(double distace) {
+		this.distance = distace;
+
+	}
+
+	public double getDistance() {
+		return distance;
 	}
 }

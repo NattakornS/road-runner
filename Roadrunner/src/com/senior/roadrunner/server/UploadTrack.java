@@ -36,7 +36,7 @@ public class UploadTrack extends AsyncTask<String, Integer, String> {
 
 	private Context context;
 	int serverResponseCode = 0;
-	DialogUpload dialog;
+	// DialogUpload dialog;
 	String upLoadServerUri = RoadRunnerSetting.URLServer + "uploadTrack.php";
 	// final String uploadFilePath = "/mnt/sdcard/";
 	// final String uploadFileName = "tracker.xml";
@@ -52,31 +52,32 @@ public class UploadTrack extends AsyncTask<String, Integer, String> {
 	private String trackName;
 	private double lng;
 	private double lat;
+	private double distance;
 
-	public UploadTrack(Context context, double lat, double lng, String trackName) {
+	public UploadTrack(Context context, double lat, double lng, String trackName,double distance) {
 
 		this.lat = lat;
 		this.lng = lng;
 		this.trackName = trackName;
-
+		this.distance = distance;
 		this.context = context;
-		dialog = new DialogUpload(this.context, this);
-		dialog.setTitle(this.context.getString(R.string.app_name));
-		dialog.setMessage("Upload result to server");
+		// dialog = new DialogUpload(this.context, this);
+		// dialog.setTitle(this.context.getString(R.string.app_name));
+		// dialog.setMessage("Upload result to server");
 	}
 
 	@Override
 	protected void onPreExecute() {
 		// TODO Auto-generated method stub
 		super.onPreExecute();
-		dialog.show();
+		// dialog.show();
 	}
 
 	@Override
 	protected void onPostExecute(String result) {
 		// TODO Auto-generated method stub
 		super.onPostExecute(result);
-		dialog.dismiss();
+		// dialog.dismiss();
 		((FinishActivity) context).uploadTrackResponse(result);
 	}
 
@@ -96,35 +97,42 @@ public class UploadTrack extends AsyncTask<String, Integer, String> {
 			// Url of the server
 			HttpClient client = new DefaultHttpClient();
 			HttpPost post = new HttpPost(upLoadServerUri);
-//			MultipartEntityBuilder mpEntity = MultipartEntityBuilder.create();
-//			mpEntity.setCharset(Charset.forName("UTF-8"));
-			
+			// MultipartEntityBuilder mpEntity =
+			// MultipartEntityBuilder.create();
+			// mpEntity.setCharset(Charset.forName("UTF-8"));
+
 			MultipartEntity mpEntity = new MultipartEntity();
 			// Path of the file to be uploaded
 			ContentBody cbFile = new FileBody(sourceFile);
 
 			// Add the data to the multipart entity
-//			mpEntity.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-//			mpEntity.addTextBody("uploaded_path", "racetrack/",ContentType.DEFAULT_TEXT);
-//			mpEntity.addTextBody("Latitude", lat + "",ContentType.DEFAULT_TEXT);
-//			mpEntity.addTextBody("Longitude", lng + "",ContentType.DEFAULT_TEXT);
-//			mpEntity.addTextBody("Rname", trackName,ContentType.DEFAULT_TEXT);
-//			mpEntity.addPart("uploaded_file", cbFile);
-//			
+			// mpEntity.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+			// mpEntity.addTextBody("uploaded_path",
+			// "racetrack/",ContentType.DEFAULT_TEXT);
+			// mpEntity.addTextBody("Latitude", lat +
+			// "",ContentType.DEFAULT_TEXT);
+			// mpEntity.addTextBody("Longitude", lng +
+			// "",ContentType.DEFAULT_TEXT);
+			// mpEntity.addTextBody("Rname",
+			// trackName,ContentType.DEFAULT_TEXT);
+			// mpEntity.addPart("uploaded_file", cbFile);
+			//
 			mpEntity.addPart("uploaded_path", new StringBody("racetrack/",
 					Charset.forName("UTF-8")));
-			mpEntity.addPart("Latitude", new StringBody(lat + "",
-					Charset.forName("UTF-8")));
-			mpEntity.addPart("Longitude", new StringBody(lng + "",
-					Charset.forName("UTF-8")));
-			mpEntity.addPart("Rname", new StringBody(trackName,
-					Charset.forName("UTF-8")));
+			mpEntity.addPart("Latitude",
+					new StringBody(lat + "", Charset.forName("UTF-8")));
+			mpEntity.addPart("Longitude",
+					new StringBody(lng + "", Charset.forName("UTF-8")));
+			mpEntity.addPart("Rname",
+					new StringBody(trackName, Charset.forName("UTF-8")));
+			mpEntity.addPart("Distance",
+					new StringBody(distance+"", Charset.forName("UTF-8")));
 			// mpEntity.addPart("data", new StringBody("This is test report",
 			// Charset.forName("UTF-8")));
 			mpEntity.addPart("uploaded_file", cbFile);
-			
-//			HttpEntity mp = mpEntity.build();
-			
+
+			// HttpEntity mp = mpEntity.build();
+
 			post.setEntity(mpEntity);
 			// Execute the post request
 			HttpResponse response1 = client.execute(post);
@@ -152,8 +160,8 @@ public class UploadTrack extends AsyncTask<String, Integer, String> {
 		finally {
 			wl.release();
 		}
-		dialog.dismiss();
-		
+		// dialog.dismiss();
+
 		return response;
 	}
 }

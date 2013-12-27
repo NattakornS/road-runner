@@ -5,7 +5,6 @@
     <string name="action_settings">Settings</string>
 
     <string-array name="menu_drawer_array">
-        <item>Facebook setting</item>
         <item>Race Track</item>
         <item>Create Track</item>
         <item>Setting</item>

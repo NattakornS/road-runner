@@ -197,9 +197,9 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		trackName = intent.getStringExtra("TrackName");
 		trackMemberList = (ArrayList<TrackMemberList>) intent
 				.getSerializableExtra("TrackMemberList");
-//		trackMemberListTemp = new ArrayList<TrackMemberList>();
-//		if(trackMemberList!=null)
-//		trackMemberListTemp.addAll(trackMemberList);
+		// trackMemberListTemp = new ArrayList<TrackMemberList>();
+		// if(trackMemberList!=null)
+		// trackMemberListTemp.addAll(trackMemberList);
 		// set current Rid
 		rId = trackMemberList.get(0).getrId();
 		trackPathData = intent.getStringExtra("TrackPathData");
@@ -297,7 +297,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		}
 
 		Polyline p = map.addPolyline(options);
-		p.setWidth(5);
+		p.setWidth(30);
 		p.setGeodesic(true);
 		p.setVisible(true);
 
@@ -317,24 +317,25 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 		// Path polygon
 		polygonsTrack = PathArea.createPathArea(points);
-		for (int i = 0; i < polygonsTrack.size(); i++) {
-			// System.out.println("getside : "+polygons.get(i).getSides());
-			Polygon polygon = polygonsTrack.get(i);
-			PolygonOptions polygonOptions = new PolygonOptions();
-			for (int j = 0; j < polygon.getSides().size(); j++) {
-				polygonOptions.add(new LatLng(polygon.getSides().get(j)
-						.getStart().x, polygon.getSides().get(j).getStart().y));
-				if (i % 3 == 0)
-					polygonOptions.fillColor(Color.BLUE);
-				if (i % 3 == 1)
-					polygonOptions.fillColor(Color.GREEN);
-				if (i % 3 == 2)
-					polygonOptions.fillColor(Color.RED);
 
-			}
-			// polygonOptions.fillColor(Color.BLUE);
-			map.addPolygon(polygonOptions.strokeWidth(2));
-		}
+		// for (int i = 0; i < polygonsTrack.size(); i++) {
+		// // System.out.println("getside : "+polygons.get(i).getSides());
+		// Polygon polygon = polygonsTrack.get(i);
+		// PolygonOptions polygonOptions = new PolygonOptions();
+		// for (int j = 0; j < polygon.getSides().size(); j++) {
+		// polygonOptions.add(new LatLng(polygon.getSides().get(j)
+		// .getStart().x, polygon.getSides().get(j).getStart().y));
+		// if (i % 3 == 0)
+		// polygonOptions.fillColor(Color.BLUE);
+		// if (i % 3 == 1)
+		// polygonOptions.fillColor(Color.GREEN);
+		// if (i % 3 == 2)
+		// polygonOptions.fillColor(Color.RED);
+		//
+		// }
+		// // polygonOptions.fillColor(Color.BLUE);
+		// map.addPolygon(polygonOptions.strokeWidth(2));
+		// }
 
 		// Finish polygon
 		polygonFinish = PathArea.circleBuffer(points.lastElement());
@@ -572,9 +573,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		for (int i = 0; i < trackMemberList.size(); i++) {
 			// List<LatLngTimeData> data =
 			// trackMemberList.get(i).getTrackData();
-			RaceThread raceThread = new RaceThread(trackMemberList.get(i), map,
-					this);
-			raceThread.start();
+			new RaceThread(trackMemberList.get(i), map, this);
 		}
 
 	}
@@ -728,7 +727,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			poly.remove();
 		}
 		poly = map.addPolyline(track);
-
+		poly.setColor(Color.RED);
 		poly.setWidth(5);
 		poly.setGeodesic(true);
 

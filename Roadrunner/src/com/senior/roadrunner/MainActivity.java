@@ -153,7 +153,7 @@ public class MainActivity extends FragmentActivity {
 							showFragment(SETTING, false);
 						}
 					});
-			selectItem(0);
+			selectItem(2);
 		}
 
 		//
@@ -373,7 +373,7 @@ public class MainActivity extends FragmentActivity {
 
 		// FragmentManager fragmentManager = getFragmentManager();
 		fragmentManager = getSupportFragmentManager();
-		if (position == 0) {
+		//if (position == 0) {
 			// fragmentManager.beginTransaction().replace(R.id.content_frame,
 			// pf)
 			// .commit();
@@ -386,8 +386,9 @@ public class MainActivity extends FragmentActivity {
 			// .beginTransaction()
 			// .replace(R.id.content_frame,
 			// FacebookFragment.createInstacnce()).commit();
-			showFragment(USERSETTINGS, false);
-		} else if (position == 1) {
+//			showFragment(USERSETTINGS, false);
+	//	} else 
+			if (position == 0) {
 			// fragmentManager.beginTransaction()
 			// .replace(R.id.content_frame, raceTrackFragment).commit();
 //			if (!isGpsEnable()) {
@@ -415,11 +416,11 @@ public class MainActivity extends FragmentActivity {
 				startActivity(i);
 //			}
 			
-		} else if (position == 2) {
+		} else if (position == 1) {
 			Intent i = new Intent(this, CreateTrackActivity.class);
 			startActivity(i);
 		
-		} else if (position == 3) {
+		} else if (position == 2) {
 			// Intent i = new Intent(this, FinishActivity.class);
 			// startActivity(i);
 			// fragmentManager
@@ -428,7 +429,7 @@ public class MainActivity extends FragmentActivity {
 			// SettingFragment.createInstacnce()).commit();
 			showFragment(SETTING, false);
 
-		} else if (position == 4) {
+		} else if (position == 3) {
 			exitApp();
 		} else {
 			// fragmentManager.beginTransaction()

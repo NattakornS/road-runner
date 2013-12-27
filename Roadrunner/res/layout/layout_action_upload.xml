@@ -19,7 +19,6 @@
         android:id="@+id/iv_action_upload"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:src="@drawable/al"
         android:paddingLeft="12dp"
         android:paddingRight="12dp" />
 
