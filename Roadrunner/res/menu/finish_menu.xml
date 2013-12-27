@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item android:id="@+id/save_finish_menu_btn"
-          android:icon="@drawable/right_arrow"
+          android:icon="@drawable/upload_t"
           android:showAsAction="always"
-          android:title="Submit"/>
+          android:title="Submit score and your data"/>
     <item android:id="@+id/share_facebook_finish_menu_btn"
-          android:icon="@drawable/com_facebook_logo"
+          android:icon="@drawable/facebookshare"
           android:showAsAction="always"
           android:title="Share to facebook"/>
 </menu>

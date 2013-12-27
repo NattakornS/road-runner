@@ -4,6 +4,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -11,7 +12,9 @@ import org.apache.http.ParseException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
@@ -93,22 +96,35 @@ public class UploadTrack extends AsyncTask<String, Integer, String> {
 			// Url of the server
 			HttpClient client = new DefaultHttpClient();
 			HttpPost post = new HttpPost(upLoadServerUri);
+//			MultipartEntityBuilder mpEntity = MultipartEntityBuilder.create();
+//			mpEntity.setCharset(Charset.forName("UTF-8"));
+			
 			MultipartEntity mpEntity = new MultipartEntity();
 			// Path of the file to be uploaded
 			ContentBody cbFile = new FileBody(sourceFile);
 
 			// Add the data to the multipart entity
+//			mpEntity.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+//			mpEntity.addTextBody("uploaded_path", "racetrack/",ContentType.DEFAULT_TEXT);
+//			mpEntity.addTextBody("Latitude", lat + "",ContentType.DEFAULT_TEXT);
+//			mpEntity.addTextBody("Longitude", lng + "",ContentType.DEFAULT_TEXT);
+//			mpEntity.addTextBody("Rname", trackName,ContentType.DEFAULT_TEXT);
+//			mpEntity.addPart("uploaded_file", cbFile);
+//			
 			mpEntity.addPart("uploaded_path", new StringBody("racetrack/",
-					ContentType.DEFAULT_TEXT));
+					Charset.forName("UTF-8")));
 			mpEntity.addPart("Latitude", new StringBody(lat + "",
-					ContentType.DEFAULT_TEXT));
+					Charset.forName("UTF-8")));
 			mpEntity.addPart("Longitude", new StringBody(lng + "",
-					ContentType.DEFAULT_TEXT));
+					Charset.forName("UTF-8")));
 			mpEntity.addPart("Rname", new StringBody(trackName,
-					ContentType.DEFAULT_TEXT));
+					Charset.forName("UTF-8")));
 			// mpEntity.addPart("data", new StringBody("This is test report",
 			// Charset.forName("UTF-8")));
 			mpEntity.addPart("uploaded_file", cbFile);
+			
+//			HttpEntity mp = mpEntity.build();
+			
 			post.setEntity(mpEntity);
 			// Execute the post request
 			HttpResponse response1 = client.execute(post);

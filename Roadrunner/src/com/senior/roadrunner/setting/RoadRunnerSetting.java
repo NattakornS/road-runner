@@ -25,17 +25,14 @@ public class RoadRunnerSetting {
 	}
 
 	public String getFacebookName() {
-		System.out.println("getFacebookName : "+facebookName);
 		return facebookName;
 	}
 
 	public void setFacebookName(String facebookName) {
-		System.out.println("setFacebookName : "+facebookName);
 		this.facebookName = facebookName;
 	}
 
 	public String getFacebookId() {
-		System.out.println("getFacebookId : "+facebookId);
 		return facebookId;
 	}
 
