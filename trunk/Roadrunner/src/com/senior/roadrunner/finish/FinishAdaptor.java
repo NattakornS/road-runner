@@ -65,6 +65,7 @@ public class FinishAdaptor extends BaseAdapter implements OnClickListener {
 		public TextView durationTxt;
 		public TextView placeTxt;
 		public ImageView image;
+		public ImageView placeImage;
 
 	}
 
@@ -89,7 +90,8 @@ public class FinishAdaptor extends BaseAdapter implements OnClickListener {
 					.findViewById(R.id.finish_place_list_txt);
 			holder.image = (ImageView) vi
 					.findViewById(R.id.finish_pic_list_img);
-
+			holder.placeImage = (ImageView) vi
+					.findViewById(R.id.place_image);
 			/************ Set holder with LayoutInflater ************/
 			vi.setTag(holder);
 		} else
@@ -133,7 +135,26 @@ public class FinishAdaptor extends BaseAdapter implements OnClickListener {
 			holder.durationTxt.setText("" + minutes + ":"
 					+ String.format("%02d", seconds));
 			holder.image.setImageBitmap(bitmap);
-
+			switch (tempValues.getRank()) {
+			case 1:
+				holder.placeImage.setImageResource(R.drawable.first);
+				break;
+			case 2:
+				holder.placeImage.setImageResource(R.drawable.second);
+				break;
+			case 3:
+				holder.placeImage.setImageResource(R.drawable.thirds);
+				break;
+			case 4:
+				holder.placeImage.setImageResource(R.drawable.fourth);
+				break;
+			case 5:
+				holder.placeImage.setImageResource(R.drawable.fifth);
+				break;
+			default:
+				holder.placeImage.setImageResource(R.drawable.award);
+				break;
+			}
 			/******** Set Item Click Listner for LayoutInflater for each row ***********/
 			vi.setOnClickListener(new OnItemClickListener(position));
 		}

@@ -18,6 +18,7 @@ public class FinishMyListViewFragment extends Fragment {
 		FinishMyListViewFragment finishMyListViewFragment = new FinishMyListViewFragment();
 		Bundle bundle = new Bundle();
 		bundle.putString("rank", trackMemberList.getRank()+"");
+		bundle.putDouble("rank", trackMemberList.getRank());
 		bundle.putString("avgkph", String.format("%.2f",trackMemberList.getAVGSpeed()));
 		bundle.putLong("duration", trackMemberList.getDuration());
 //		bundle.putString("calories", trackMemberList.getRank()+"");

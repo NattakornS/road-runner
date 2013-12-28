@@ -27,7 +27,6 @@ public class InfoAdaptor extends BaseAdapter {
 	private LayoutInflater inflater;
 	private TrackMemberList tempValues;
 
-
 	public InfoAdaptor(Activity activity,
 			ArrayList<TrackMemberList> trackMemberList) {
 		this.activity = activity;
@@ -61,8 +60,10 @@ public class InfoAdaptor extends BaseAdapter {
 		public TextView durationTxt;
 		public TextView placeTxt;
 		public ImageView image;
+		public ImageView placeImage;
 
 	}
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View vi = convertView;
@@ -84,6 +85,7 @@ public class InfoAdaptor extends BaseAdapter {
 					.findViewById(R.id.finish_place_list_txt);
 			holder.image = (ImageView) vi
 					.findViewById(R.id.finish_pic_list_img);
+			holder.placeImage = (ImageView) vi.findViewById(R.id.place_image);
 
 			/************ Set holder with LayoutInflater ************/
 			vi.setTag(holder);
@@ -112,7 +114,8 @@ public class InfoAdaptor extends BaseAdapter {
 			// e.printStackTrace();
 			// }
 			Bitmap bitmap = null;
-			File f = new File(RoadRunnerSetting.SDPATH+"img/"+tempValues.getfId()+".png");
+			File f = new File(RoadRunnerSetting.SDPATH + "img/"
+					+ tempValues.getfId() + ".png");
 
 			try {
 				bitmap = BitmapFactory.decodeStream(new FileInputStream(f));
@@ -129,8 +132,30 @@ public class InfoAdaptor extends BaseAdapter {
 					+ String.format("%02d", seconds));
 			holder.image.setImageBitmap(bitmap);
 
+			switch (tempValues.getRank()) {
+			case 1:
+				holder.placeImage.setImageResource(R.drawable.first);
+				break;
+			case 2:
+				holder.placeImage.setImageResource(R.drawable.second);
+				break;
+			case 3:
+				holder.placeImage.setImageResource(R.drawable.thirds);
+				break;
+			case 4:
+				holder.placeImage.setImageResource(R.drawable.fourth);
+				break;
+			case 5:
+				holder.placeImage.setImageResource(R.drawable.fifth);
+				break;
+			default:
+				holder.placeImage.setImageResource(R.drawable.award);
+				break;
+			}
+			
+
 		}
 		return vi;
 	}
-	
+
 }

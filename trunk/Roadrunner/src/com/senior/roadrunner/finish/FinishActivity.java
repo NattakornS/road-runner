@@ -66,6 +66,8 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 	private UiLifecycleHelper uiHelper;
 	private static final String PERMISSION = "publish_actions";
 
+	private static final String tag = "FinishActivity";
+
 	private final String PENDING_ACTION_BUNDLE_KEY = "com.facebook.samples.hellofacebook:PendingAction";
 
 	private PendingAction pendingAction = PendingAction.NONE;
@@ -415,8 +417,12 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 				.loadXmlFile(RoadRunnerSetting.SDPATH
 						+ roadRunnerSetting.getFacebookId() + ".xml");
 		if (trackFile != null) {
-			lat = trackFile.get(0).getCoordinate().getLat();
-			lng = trackFile.get(0).getCoordinate().getLng();
+			if (trackFile.size() > 0) {
+				lat = trackFile.get(0).getCoordinate().getLat();
+				lng = trackFile.get(0).getCoordinate().getLng();
+			} else {
+				Log.e(tag, "track file size is less than zero. can't get first position for send to server.");
+			}
 		}
 
 		mTabsAdapter = new TabsAdapter(this, pager, myTrack);
@@ -549,10 +555,11 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 
 	private void uploadFile() {
 		if (parentName.equals("CreateTrackActivity")) {
-			if(myTrack==null){
+			if (myTrack == null) {
 				return;
 			}
-			UploadTrack uploadTrack = new UploadTrack(this, lat, lng, trackName,myTrack.getDistance());
+			UploadTrack uploadTrack = new UploadTrack(this, lat, lng,
+					trackName, myTrack.getDistance());
 			String exString[] = { RoadRunnerSetting.SDPATH
 					+ roadRunnerSetting.getFacebookId() + ".xml" };
 			uploadTrack.execute(exString);
