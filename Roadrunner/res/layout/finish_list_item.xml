@@ -3,27 +3,42 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="top"
-    android:paddingTop="0dip"
-    android:background="?android:attr/activatedBackgroundIndicator" >
+    android:background="?android:attr/activatedBackgroundIndicator"
+    android:paddingTop="0dip" >
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_margin="5dp"
         android:background="@drawable/com_facebook_list_section_header_background" >
+
+        <ImageView
+            android:id="@+id/place_image"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginTop="10dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/award" />
 
         <ImageView
             android:id="@+id/finish_pic_list_img"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:src="@drawable/com_facebook_profile_picture_blank_square"
-            android:layout_margin="10dp" />
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/com_facebook_profile_picture_blank_square" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_margin="10dp" >
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical" >
 
             <TextView
                 android:id="@+id/finish_name_list_txt"
@@ -51,14 +66,14 @@
                     android:layout_alignBottom="@+id/textView3"
                     android:layout_alignParentRight="true"
                     android:text="10.45"
-                   android:textSize="12dp" />
+                    android:textSize="12dp" />
             </RelativeLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" >
 
-                 <TextView
+                <TextView
                     android:id="@+id/textView4"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -73,7 +88,6 @@
                     android:layout_alignParentTop="true"
                     android:text="1ST"
                     android:textSize="12dp" />
-
             </RelativeLayout>
         </LinearLayout>
     </LinearLayout>
