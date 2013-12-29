@@ -289,7 +289,7 @@ public class PickupFragment extends Fragment implements OnClickListener {
 								latLngInterpolator
 										.interpolate(5.0f, point, end);
 								MarkerAnimation.animateMarkerToICS(marker, end,
-										latLngInterpolator);
+										latLngInterpolator,3000);
 								map.animateCamera(CameraUpdateFactory
 										.newLatLngZoom(end, 17.0f));
 

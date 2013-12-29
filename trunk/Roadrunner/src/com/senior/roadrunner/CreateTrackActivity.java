@@ -141,6 +141,7 @@ public class CreateTrackActivity extends Activity implements
 	protected String trackName;
 	private View customMarker;
 	private ImageView imageView;
+	private TextView txt_acuracy;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -225,6 +226,8 @@ public class CreateTrackActivity extends Activity implements
 		txt_current_speed.setText("0");
 		txt_current_distace.setText("0");
 		txt_current_time.setText("00:00");
+
+		txt_acuracy = (TextView) findViewById(R.id.txt_acuracy);
 
 		progress_out_time = (ProgressBar) findViewById(R.id.progressBar);
 		progress_out_time.setMax(100);
@@ -430,32 +433,32 @@ public class CreateTrackActivity extends Activity implements
 	}
 
 	private void enableGPSListener() {
-		final Criteria criteria = new Criteria();
-
-		criteria.setAccuracy(Criteria.ACCURACY_FINE);
-		criteria.setSpeedRequired(true);
-		criteria.setAltitudeRequired(false);
-		criteria.setBearingRequired(false);
-		criteria.setCostAllowed(true);
-		criteria.setPowerRequirement(Criteria.POWER_LOW);
-
-		final String bestProvider = myLocationManager.getBestProvider(criteria,
-				true);
-
-		if (bestProvider != null && bestProvider.length() > 0) {
-			myLocationManager.requestLocationUpdates(bestProvider, 1000, 10,
-					this);
-		} else {
-			final List<String> providers = myLocationManager.getProviders(true);
-
-			for (final String provider : providers) {
-				myLocationManager.requestLocationUpdates(provider, 1000, 10,
-						this);
-			}
-		}
+//		final Criteria criteria = new Criteria();
+//
+//		criteria.setAccuracy(Criteria.ACCURACY_FINE);
+//		criteria.setSpeedRequired(true);
+//		criteria.setAltitudeRequired(false);
+//		criteria.setBearingRequired(false);
+//		criteria.setCostAllowed(true);
+//		criteria.setPowerRequirement(Criteria.POWER_LOW);
+//
+//		final String bestProvider = myLocationManager.getBestProvider(criteria,
+//				true);
+//
+//		if (bestProvider != null && bestProvider.length() > 0) {
+//			myLocationManager.requestLocationUpdates(bestProvider, 1000, 10,
+//					this);
+//		} else {
+//			final List<String> providers = myLocationManager.getProviders(true);
+//
+//			for (final String provider : providers) {
+//				myLocationManager.requestLocationUpdates(provider, 1000, 10,
+//						this);
+//			}
+//		}
 
 		myLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-				1000, 10, this);
+				1500, 10, this);
 		Toast.makeText(getApplicationContext(), "Track data",
 				Toast.LENGTH_SHORT).show();
 
@@ -490,17 +493,14 @@ public class CreateTrackActivity extends Activity implements
 		if (!loc.hasAccuracy()) {
 			return;
 		}
-		System.out.println(loc.hasAccuracy());
-		double latitude = loc.getLatitude();
-		double longitude = loc.getLongitude();
-		Point point = new Point(latitude, longitude);
+		txt_acuracy.setText("Acuracy : " + loc.getAccuracy()+" m");
 		LatLng coord = new LatLng(loc.getLatitude(), loc.getLongitude());
 		if (marker != null) {
 			marker.remove();
 		}
 		if (roadRunnerSetting.getProfileIcon() != null) {
 			imageView.setImageBitmap(roadRunnerSetting.getProfileIcon());
-		}else{
+		} else {
 			new GetMyProfulePicture();
 		}
 		marker = map
@@ -510,12 +510,14 @@ public class CreateTrackActivity extends Activity implements
 								.fromBitmap(createDrawableFromView(this,
 										customMarker))).title("Me"));
 		map.animateCamera(CameraUpdateFactory.newLatLng(coord));
-		if (recordCheck) {
-			recordTrack(loc);
-		} else {
-			map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
+		if (loc.getAccuracy() < 40.0) {
+			if (recordCheck) {
+				recordTrack(loc);
+			} else {
+				map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord,
+						15.0f));
+			}
 		}
-
 	}
 
 	private Bitmap modifyCanvas(Bitmap bitmap) {
@@ -584,7 +586,7 @@ public class CreateTrackActivity extends Activity implements
 		Coordinate coordinate = new Coordinate(coord.latitude, coord.longitude);
 		latLngTimeData.add(new LatLngTimeData(coordinate, timeStamp));
 
-		// dstace update
+		// dstance update
 		if (latLngTimeData.size() >= 2) {
 			Coordinate startCoord = latLngTimeData.get(
 					latLngTimeData.size() - 2).getCoordinate();

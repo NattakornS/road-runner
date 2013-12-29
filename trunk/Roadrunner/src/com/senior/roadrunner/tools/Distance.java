@@ -3,6 +3,7 @@ package com.senior.roadrunner.tools;
 
 import android.location.Address;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.senior.roadrunner.data.Coordinate;
 
 /**
@@ -87,5 +88,11 @@ public class Distance
                 pointB.getLat(),
                 pointB.getLng(),units); 
 	}
-	
+	public static double calculateDistanceLatLng(LatLng pointA, LatLng pointB, int units)
+	{
+		return calclateArc(pointA.latitude,
+                pointA.longitude,
+                pointB.latitude,
+                pointB.longitude,units); 
+	}
 }

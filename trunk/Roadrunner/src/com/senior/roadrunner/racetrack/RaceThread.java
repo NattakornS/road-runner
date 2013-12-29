@@ -52,12 +52,13 @@ public class RaceThread implements Runnable {
 	private Bitmap bmp;
 	private ImageView imageView;
 	private View customMarker;
+	private long timeSpeek;
 
 	@SuppressLint("SimpleDateFormat")
 	public RaceThread(TrackMemberList listTracker, GoogleMap map,
 			Activity activity) {
-        Thread thread = new Thread(this);
-        thread.start();
+		Thread thread = new Thread(this);
+		thread.start();
 		this.listTracker = listTracker;
 		sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 		this.map = map;
@@ -90,8 +91,11 @@ public class RaceThread implements Runnable {
 			Log.e(TAG, "Data is error while loading tracker file from server");
 			return;
 		}
-		for (i = 0; i < data.size(); i++) {
-			try {
+		try {
+			Date startDate = sdf.parse(data.get(0).getWhen());
+
+			for (i = 0; i < data.size(); i++) {
+
 				Date recentDate = sdf.parse(data.get(i).getWhen());
 
 				double lat = data.get(i).getCoordinate().getLat();
@@ -103,13 +107,18 @@ public class RaceThread implements Runnable {
 					break;
 				}
 				Date futureDate = sdf.parse(data.get(i + 1).getWhen());
-
+				timeSpeek=futureDate.getTime()-startDate.getTime();
 				waitingTime = futureDate.getTime() - recentDate.getTime();
 				System.out.println("wait : " + waitingTime);
 
 				double elat = data.get(i + 1).getCoordinate().getLat();
 				double elng = data.get(i + 1).getCoordinate().getLng();
 				end = new LatLng(elat, elng);
+				if((timeSpeek%300000)<1000){
+					if(activity instanceof MapsActivity){
+						((MapsActivity)activity).setThreadLocation(listTracker.getfName(),end);
+					}
+				}
 				// System.out.println("Speed m/s : "+GPSSpeed.SpeedFrom2PointTime(point,
 				// end, futureDate.getTime(), recentDate.getTime()));
 				final long speed = GPSSpeed.SpeedFrom2PointTime(point, end,
@@ -123,7 +132,7 @@ public class RaceThread implements Runnable {
 						}
 						if (profileIcon != null) {
 							imageView.setImageBitmap(profileIcon);
-						} 
+						}
 						marker = map.addMarker(new MarkerOptions()
 								.position(point)
 								.icon(BitmapDescriptorFactory
@@ -136,7 +145,7 @@ public class RaceThread implements Runnable {
 						Spherical latLngInterpolator = new Spherical();
 						latLngInterpolator.interpolate(5.0f, point, end);
 						MarkerAnimation.animateMarkerToICS(marker, end,
-								latLngInterpolator);
+								latLngInterpolator, waitingTime);
 						// map.animateCamera(CameraUpdateFactory.newLatLngZoom(
 						// end, 17.0f));
 
@@ -144,11 +153,11 @@ public class RaceThread implements Runnable {
 				});
 				Thread.sleep(waitingTime);
 
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (ParseException e) {
-				e.printStackTrace();
 			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
 		}
 	}
 
