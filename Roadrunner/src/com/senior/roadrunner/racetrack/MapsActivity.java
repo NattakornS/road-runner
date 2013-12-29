@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
 
 import android.R.drawable;
@@ -22,7 +23,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -31,7 +31,9 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.speech.tts.TextToSpeech;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -43,7 +45,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMap.OnMapLoadedCallback;
 import com.google.android.gms.maps.GoogleMap.SnapshotReadyCallback;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -62,6 +63,8 @@ import com.senior.roadrunner.finish.FinishActivity;
 import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.tools.Distance;
+import com.senior.roadrunner.tools.LatLngInterpolator.Spherical;
+import com.senior.roadrunner.tools.MarkerAnimation;
 import com.senior.roadrunner.tools.PathArea;
 import com.senior.roadrunner.tools.Point;
 import com.senior.roadrunner.tools.Polygon;
@@ -70,7 +73,7 @@ import com.senior.roadrunner.trackchooser.TrackMemberList;
 
 @SuppressLint("NewApi")
 public class MapsActivity extends Activity implements View.OnClickListener,
-		LocationListener
+		LocationListener,TextToSpeech.OnInitListener
 // OnLocationChangedListener
 {
 	public static String rId = "";
@@ -119,6 +122,9 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private long timeOutInMillies;
 	public static String mapcapPath = "";
 	private ProgressBar progress_out_time;
+
+	private TextToSpeech mTts;
+	
 	// Timer Thread
 	private Runnable updateTimerMethod = new Runnable() {
 
@@ -135,14 +141,14 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			if (countOut) {
 				timeOutInMillies = SystemClock.uptimeMillis() - startOutTime;
 				int sec = (int) (timeOutInMillies / 1000);
-				if (sec > 5 && sec <= 15) {
+				if (sec > 5 && sec <= 25) {
 					// Toast.makeText(
 					// MapsActivity.this,
 					// "Out of track  count "
 					// + (sec-5) + " s",
 					// 50).show();
 
-					progress_out_time.setProgress((sec - 5) * 10);
+					progress_out_time.setProgress((sec - 5) * 5);
 				} else if (sec > 15) {
 					DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 						@Override
@@ -178,13 +184,20 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private String trackName;
 	private View customMarker;
 	private ImageView imageView;
+	private TextView txt_acuracy;
+	private int arrivePolygon = 0;
+	
+	private TextToSpeech tts;
+	private LatLng currentLocation;
+	
 
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map_layout);
-
+		tts = new TextToSpeech(this, this);
+		speakOut("Please walk to start point. If you are ready press start");
 		// get setting instance
 		roadRunnerSetting = RoadRunnerSetting.getInstance();
 		mapcapPath = Environment.getExternalStorageDirectory() + "/"
@@ -247,6 +260,42 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		imageView = (ImageView) customMarker.findViewById(R.id.profileIcon);
 	}
 
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (!isGpsEnable())
+			enableGPSListener();
+	}
+
+	@Override
+	protected void onDestroy() {
+		if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
+		if (recordCheck) {
+			recordCheck = false;
+			myLocationManager.removeUpdates(this);
+			timeSwap += timeInMillies;
+			myHandler.removeCallbacks(updateTimerMethod);
+		}
+		super.onDestroy();
+		
+		
+	}
+
+	@Override
+	public void onBackPressed() {
+		// TODO Auto-generated method stub
+		super.onBackPressed();
+		if (recordCheck) {
+			recordCheck = false;
+			myLocationManager.removeUpdates(this);
+			timeSwap += timeInMillies;
+			myHandler.removeCallbacks(updateTimerMethod);
+		}
+	}
+
 	private void loadFile() {
 
 		for (int i = 0; i < trackMemberList.size(); i++) {
@@ -270,14 +319,53 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	}
 
+	private PolylineOptions bspline(Vector<LatLng> vectorPoints) {
+		double ax, ay, bx, by, cx, cy, dx, dy, lat, lon;
+		PolylineOptions options = new PolylineOptions();
+		// For every point
+		for (int i = 2; i < vectorPoints.size() - 2; i++) {
+			for (int t = 0; t < 1; t += 0.2) {
+				ax = (-vectorPoints.get(i - 2).latitude + 3
+						* vectorPoints.get(i - 1).latitude - 3
+						* vectorPoints.get(i).latitude + vectorPoints
+						.get(i + 1).latitude) / 6;
+				ay = (-vectorPoints.get(i - 2).longitude + 3
+						* vectorPoints.get(i - 1).longitude - 3
+						* vectorPoints.get(i).longitude + vectorPoints
+						.get(i + 1).longitude) / 6;
+				bx = (vectorPoints.get(i - 2).latitude - 2
+						* vectorPoints.get(i - 1).latitude + vectorPoints
+						.get(i).latitude) / 2;
+				by = (vectorPoints.get(i - 2).longitude - 2
+						* vectorPoints.get(i - 1).longitude + vectorPoints
+						.get(i).longitude) / 2;
+				cx = (-vectorPoints.get(i - 2).latitude + vectorPoints.get(i).latitude) / 2;
+				cy = (-vectorPoints.get(i - 2).longitude + vectorPoints.get(i).longitude) / 2;
+				dx = (vectorPoints.get(i - 2).latitude + 4
+						* vectorPoints.get(i - 1).latitude + vectorPoints
+						.get(i).latitude) / 6;
+				dy = (vectorPoints.get(i - 2).longitude + 4
+						* vectorPoints.get(i - 1).longitude + vectorPoints
+						.get(i).longitude) / 6;
+				lat = ax * Math.pow(t + 0.1, 3) + bx * Math.pow(t + 0.1, 2)
+						+ cx * (t + 0.1) + dx;
+				lon = ay * Math.pow(t + 0.1, 3) + by * Math.pow(t + 0.1, 2)
+						+ cy * (t + 0.1) + dy;
+				options.add(new LatLng(lat, lon));
+			}
+		}
+		return options;
+	}
+
 	public void createRunningPath() {
 		PolylineOptions options = new PolylineOptions();
 		Vector<Point> points = new Vector<Point>();
 		List<LatLngTimeData> data = TrackDataBase.loadXmlString(trackPathData);
-
+		// Vector<LatLng> pointsVector= new Vector<LatLng>();
 		for (int i = 0; i < data.size(); i++) {
 			double lat = data.get(i).getCoordinate().getLat();
 			double lng = data.get(i).getCoordinate().getLng();
+			// pointsVector.add(new LatLng(lat, lng));
 			options.add(new LatLng(lat, lng));
 			points.add(new Point(lat, lng));
 			if (i == 0) {
@@ -296,8 +384,9 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			}
 		}
 
+		// Polyline p = map.addPolyline(bspline(pointsVector));
 		Polyline p = map.addPolyline(options);
-		p.setWidth(30);
+		p.setWidth(5);
 		p.setGeodesic(true);
 		p.setVisible(true);
 
@@ -318,24 +407,24 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		// Path polygon
 		polygonsTrack = PathArea.createPathArea(points);
 
-		// for (int i = 0; i < polygonsTrack.size(); i++) {
-		// // System.out.println("getside : "+polygons.get(i).getSides());
-		// Polygon polygon = polygonsTrack.get(i);
-		// PolygonOptions polygonOptions = new PolygonOptions();
-		// for (int j = 0; j < polygon.getSides().size(); j++) {
-		// polygonOptions.add(new LatLng(polygon.getSides().get(j)
-		// .getStart().x, polygon.getSides().get(j).getStart().y));
-		// if (i % 3 == 0)
-		// polygonOptions.fillColor(Color.BLUE);
-		// if (i % 3 == 1)
-		// polygonOptions.fillColor(Color.GREEN);
-		// if (i % 3 == 2)
-		// polygonOptions.fillColor(Color.RED);
-		//
-		// }
-		// // polygonOptions.fillColor(Color.BLUE);
-		// map.addPolygon(polygonOptions.strokeWidth(2));
-		// }
+		for (int i = 0; i < polygonsTrack.size(); i++) {
+			// System.out.println("getside : "+polygons.get(i).getSides());
+			Polygon polygon = polygonsTrack.get(i);
+			PolygonOptions polygonOptions = new PolygonOptions();
+			for (int j = 0; j < polygon.getSides().size(); j++) {
+				polygonOptions.add(new LatLng(polygon.getSides().get(j)
+						.getStart().x, polygon.getSides().get(j).getStart().y));
+				if (i % 3 == 0)
+					polygonOptions.fillColor(Color.BLUE);
+				if (i % 3 == 1)
+					polygonOptions.fillColor(Color.GREEN);
+				if (i % 3 == 2)
+					polygonOptions.fillColor(Color.RED);
+
+			}
+			// polygonOptions.fillColor(Color.BLUE);
+			map.addPolygon(polygonOptions.strokeWidth(2));
+		}
 
 		// Finish polygon
 		polygonFinish = PathArea.circleBuffer(points.lastElement());
@@ -360,15 +449,17 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			if (polygonStart.contains(point)) {
 				Toast.makeText(this, "Start point : IN TRACK",
 						Toast.LENGTH_SHORT).show();
+				speakOut("Ready to start");
 				btn_track.setEnabled(true);
 			} else {
 				Toast.makeText(this, "Start point : OUT TRACK",
 						Toast.LENGTH_SHORT).show();
+				speakOut("out of start point");
 				btn_track.setEnabled(false);
 			}
 		}
 		if (polygonsTrack != null && pathCheck) {
-			for (int i = 0; i < polygonsTrack.size(); i++) {
+			for (int i = arrivePolygon; i < polygonsTrack.size(); i++) {
 				Polygon polygon = polygonsTrack.get(i);
 				if (polygon.contains(point)) {
 					// Toast.makeText(this, "IN TRACK",
@@ -380,6 +471,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 				if (i == polygonsTrack.size() - 1) {
 					Toast.makeText(this, "Path : OUT TRACK", Toast.LENGTH_SHORT)
 							.show();
+					speakOut("out of track");
 					if (!countOut) {
 						startOutTime = SystemClock.uptimeMillis();
 					}
@@ -433,10 +525,11 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		txt_current_distace.setText("0");
 		txt_current_time.setText("00:00");
 
+		txt_acuracy = (TextView) findViewById(R.id.txt_acuracy);
+
 		progress_out_time = (ProgressBar) findViewById(R.id.progressBar);
 		progress_out_time.setMax(100);
 		progress_out_time.setBackgroundResource(drawable.alert_dark_frame);
-		progress_out_time.setDrawingCacheBackgroundColor(Color.YELLOW);
 	}
 
 	public boolean isGpsEnable() {
@@ -466,7 +559,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			// startTimer
 			startTime = SystemClock.uptimeMillis();
 			myHandler.postDelayed(updateTimerMethod, 0);
-
+			speakOut("Go");
 			break;
 		case R.id.btn_stop_track:
 			// leave race
@@ -477,7 +570,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			Intent intent = new Intent(MapsActivity.this, MainActivity.class);
 			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
-
+			speakOut("Finish");
 			// exitActivity();
 			break;
 
@@ -601,33 +694,32 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 					.setNegativeButton("No", dialogClickListener).show();
 		} else {
 
-			final Criteria criteria = new Criteria();
-
-			criteria.setAccuracy(Criteria.ACCURACY_FINE);
-			criteria.setSpeedRequired(true);
-			criteria.setAltitudeRequired(false);
-			criteria.setBearingRequired(false);
-			criteria.setCostAllowed(true);
-			criteria.setPowerRequirement(Criteria.POWER_LOW);
-
-			final String bestProvider = myLocationManager.getBestProvider(
-					criteria, true);
-
-			if (bestProvider != null && bestProvider.length() > 0) {
-				myLocationManager.requestLocationUpdates(bestProvider, 1000,
-						10, this);
-			} else {
-				final List<String> providers = myLocationManager
-						.getProviders(true);
-
-				for (final String provider : providers) {
-					myLocationManager.requestLocationUpdates(provider, 1000,
-							10, this);
-				}
-			}
+			// final Criteria criteria = new Criteria();
+			// criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
+			// criteria.setSpeedRequired(true);
+			// criteria.setAltitudeRequired(false);
+			// criteria.setBearingRequired(true);
+			// criteria.setCostAllowed(true);
+			// criteria.setPowerRequirement(Criteria.POWER_HIGH);
+			//
+			// final String bestProvider = myLocationManager.getBestProvider(
+			// criteria, true);
+			//
+			// if (bestProvider != null && bestProvider.length() > 0) {
+			// myLocationManager.requestLocationUpdates(bestProvider, 100,
+			// 10, this);
+			// } else {
+			// final List<String> providers = myLocationManager
+			// .getProviders(true);
+			//
+			// for (final String provider : providers) {
+			// myLocationManager.requestLocationUpdates(provider, 1500,
+			// 10, this);
+			// }
+			// }
 
 			myLocationManager.requestLocationUpdates(
-					LocationManager.GPS_PROVIDER, 1000, 10, this);
+					LocationManager.GPS_PROVIDER, 1500, 10, this);
 			Toast.makeText(getApplicationContext(), "Track data",
 					Toast.LENGTH_SHORT).show();
 		}
@@ -644,7 +736,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		if (!loc.hasAccuracy()) {
 			return;
 		}
-		System.out.println("Acuracy : " + loc.hasAccuracy());
+		txt_acuracy.setText("Acuracy : " + loc.getAccuracy() + " m");
 		double latitude = loc.getLatitude();
 		double longitude = loc.getLongitude();
 		Point point = new Point(latitude, longitude);
@@ -656,19 +748,23 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		if (roadRunnerSetting.getProfileIcon() != null) {
 			imageView.setImageBitmap(roadRunnerSetting.getProfileIcon());
 		}
-		marker = map
-				.addMarker(new MarkerOptions()
-						.position(coord)
-						.icon(BitmapDescriptorFactory
-								.fromBitmap(createDrawableFromView(this,
-										customMarker))).title("Me"));
-		map.animateCamera(CameraUpdateFactory.newLatLng(coord));
+		if (!recordCheck) {
+			marker = map.addMarker(new MarkerOptions()
+					.position(coord)
+					.icon(BitmapDescriptorFactory
+							.fromBitmap(createDrawableFromView(this,
+									customMarker))).title("Me"));
 
-		checkisInPath(point);
-		if (recordCheck) {
-			recordTrack(loc);
-		} else {
-			map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
+			map.animateCamera(CameraUpdateFactory.newLatLng(coord));
+		}
+		if (loc.getAccuracy() < 40.0) {
+			checkisInPath(point);
+			if (recordCheck) {
+				recordTrack(loc);
+			} else {
+				map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord,
+						15.0f));
+			}
 		}
 	}
 
@@ -720,9 +816,9 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			txt_current_speed.setText(gpsSpeed);
 		}
 
-		LatLng coord = new LatLng(loc.getLatitude(), loc.getLongitude());
+		 currentLocation = new LatLng(loc.getLatitude(), loc.getLongitude());
 
-		track.add(coord);
+		track.add(currentLocation);
 		if (poly != null) {
 			poly.remove();
 		}
@@ -735,10 +831,10 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		SimpleDateFormat sdf = new SimpleDateFormat(
 				"yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 		String timeStamp = sdf.format(new Date(loc.getTime()));
-		Coordinate coordinate = new Coordinate(coord.latitude, coord.longitude);
+		Coordinate coordinate = new Coordinate(currentLocation.latitude, currentLocation.longitude);
 		latLngTimeData.add(new LatLngTimeData(coordinate, timeStamp));
 
-		// dstace update
+		// distance update
 		if (latLngTimeData.size() >= 2) {
 			Coordinate startCoord = latLngTimeData.get(
 					latLngTimeData.size() - 2).getCoordinate();
@@ -748,7 +844,27 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 					recentCoord, Distance.KILOMETERS);
 			totalDistance += distance;
 			txt_current_distace.setText(df.format(totalDistance));
+
+			// animate interpolation
+			marker = map
+					.addMarker(new MarkerOptions()
+							.position(
+									new LatLng(startCoord.getLat(), startCoord
+											.getLng()))
+							.icon(BitmapDescriptorFactory
+									.fromBitmap(createDrawableFromView(this,
+											customMarker))).title("Me"));
+
+			Spherical latLngInterpolator = new Spherical();
+			latLngInterpolator.interpolate(5.0f, new LatLng(
+					startCoord.getLat(), startCoord.getLng()), new LatLng(
+					recentCoord.getLat(), recentCoord.getLng()));
+			MarkerAnimation.animateMarkerToICS(marker,
+					new LatLng(recentCoord.getLat(), recentCoord.getLng()),
+					latLngInterpolator, 3000);
+
 		}
+
 	}
 
 	public void setTrackingPath(boolean b) {
@@ -859,5 +975,36 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		finish();
 		super.onDestroy();
 
+	}
+
+	@Override
+	public void onInit(int status) {
+		if (status == TextToSpeech.SUCCESS) {
+			 
+            int result = tts.setLanguage(Locale.US);
+ 
+            if (result == TextToSpeech.LANG_MISSING_DATA
+                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS", "This Language is not supported");
+            } else {
+//                speakOut();
+            }
+ 
+        } else {
+            Log.e("TTS", "Initilization Failed!");
+        }
+		
+	}
+	private void speakOut(String text) {
+        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+    }
+
+	public synchronized void setThreadLocation(String fName, LatLng currentThreadLoc) {
+		// recieve location every 5 miniute from race thread.
+		if(currentLocation==null)
+			return;
+		double distance = Distance.calculateDistanceLatLng(currentLocation, currentThreadLoc, Distance.KILOMETERS);
+		speakOut(fName + " far from you "+String.format("%.2f", distance)+" meter.");
+		
 	}
 }

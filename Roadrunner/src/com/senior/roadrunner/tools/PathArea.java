@@ -262,7 +262,7 @@ public class PathArea {
 			Point point1 = pointsSegment.get(i - 1);
 			Point point2 = pointsSegment.get(i);
 			Line ln = new Line(point1, point2);
-			double indent = 0.00016531116145; // distance from central line
+			double indent = 0.00025931116145; // distance from central line 0.00016531116145
 			double length = Point.Distance(ln.getStart(), ln.getEnd());
 
 			double dx_li = (ln.getEnd().x - ln.getStart().x) / length * indent;
@@ -349,7 +349,7 @@ public class PathArea {
 	public static Polygon circleBuffer(Point point) {
 		if (point == null)
 			return null;
-		double bufferRadius = 0.00016531116145;
+		double bufferRadius = 0.00028931116145;
 		double a = point.x;
 		double b = point.y;
 		int n = 8;

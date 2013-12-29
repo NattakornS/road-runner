@@ -146,13 +146,34 @@ public class RaceTrackSelectorActivity extends Activity implements
 		trackDataTxtView = (TextView) findViewById(R.id.track_data_txtview);
 		// facebookGetData();s
 		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		setListenCurrentLocation();
+		currentLoc = mLocationManager
+				.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		if (currentLoc == null) {
+			currentLoc = mLocationManager
+					.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		}
+		trackList = new ArrayList<TrackList>();
+		setListData();
 		listView = (ListView) findViewById(R.id.infoListView);
 		customMarker = ((LayoutInflater) this
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(
 				R.layout.custom_marker_layout, null);
 		imageView = (ImageView) customMarker.findViewById(R.id.profileIcon);
 
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (mLocationManager != null)
+			mLocationManager.removeUpdates(this);
+	}
+
+	@Override
+	public void onBackPressed() {
+		super.onBackPressed();
+		if (mLocationManager != null)
+			mLocationManager.removeUpdates(this);
 	}
 
 	private void setListenCurrentLocation() {
@@ -182,11 +203,6 @@ public class RaceTrackSelectorActivity extends Activity implements
 						this);
 			}
 		}
-
-		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-				1000, 15, this);
-		Toast.makeText(getApplicationContext(), "Track data",
-				Toast.LENGTH_SHORT).show();
 
 		if (!isGpsEnable()) {
 			DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -319,6 +335,8 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	/****** Function to set data in ArrayList *************/
 	public void setListData() {
+		if (currentLoc == null)
+			return;
 		connectServer = new ConnectServer(this, RoadRunnerSetting.URLServer
 				+ "/racetracklist.php");
 		connectServer.addValue("Latitude", currentLoc.getLatitude() + "");
@@ -339,8 +357,8 @@ public class RaceTrackSelectorActivity extends Activity implements
 		TrackList tempValues = (TrackList) trackList.get(mPosition);
 		Toast.makeText(
 				this,
-				String.format("Total Distance : %.2f km", tempValues.getDistance()), 3000)
-				.show();
+				String.format("Total Distance : %.2f km",
+						tempValues.getDistance()), 3000).show();
 		// trackDataTxtView.setText("" + tempValues.getRaceTrackName() +
 		// " \nRid:"
 		// + tempValues.getrId() + " \nLatLon:"
@@ -744,7 +762,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 		}
 		if (roadRunnerSetting.getProfileIcon() != null) {
 			imageView.setImageBitmap(roadRunnerSetting.getProfileIcon());
-		}else{
+		} else {
 			new GetMyProfulePicture();
 		}
 		marker = map
