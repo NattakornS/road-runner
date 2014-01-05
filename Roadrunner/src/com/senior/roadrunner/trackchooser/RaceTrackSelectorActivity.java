@@ -63,6 +63,7 @@ import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.racetrack.MapsActivity;
 import com.senior.roadrunner.server.ConnectServer;
+import com.senior.roadrunner.server.DownloadTask;
 import com.senior.roadrunner.server.GetMyProfulePicture;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 
@@ -378,24 +379,31 @@ public class RaceTrackSelectorActivity extends Activity implements
 		// get trackpath from server.
 		if (trackList.get(listPosition).getTrackData() != null
 				|| trackList.get(listPosition).getTrackMemberList() != null) {
+//			System.out.println(trackList.get(listPosition).getTrackData());
 			ArrayList<LatLngTimeData> trackPathData = (ArrayList<LatLngTimeData>) TrackDataBase
-					.loadXmlString(trackList.get(listPosition).getTrackData());
+					.loadXmlFile(trackList.get(listPosition).getTrackData());
+			
 			drawTrackPath(trackPathData);
 			printTrackData(trackList.get(listPosition).getTrackMemberList());
 			return;
 		}
 
-		connectServer = new ConnectServer(this, RoadRunnerSetting.URLServer
-				+ "/getTrackPath.php");
-		connectServer.addValue("Rdir", RoadRunnerSetting.URLServer
-				+ "/racetrack/" + tempValues.getrId() + ".xml");
-		connectServer.setRequestTag(ConnectServer.TRACK_PATH);
-		connectServer.setIndex(mPosition);
-		connectServer.execute();
+		DownloadTask downloadTrackPath = new DownloadTask(this);
+		downloadTrackPath.setIndex(mPosition);
+		String params[]={RoadRunnerSetting.URLServer,"racetrack/" + tempValues.getrId() + ".xml"};
+		downloadTrackPath.execute(params);
+		
+//		connectServer = new ConnectServer(this, RoadRunnerSetting.URLServer
+//				+ "getTrackPath.php");
+//		connectServer.addValue("Rdir", RoadRunnerSetting.URLServer
+//				+ "racetrack/" + tempValues.getrId() + ".xml");
+//		connectServer.setRequestTag(ConnectServer.TRACK_PATH);
+//		connectServer.setIndex(mPosition);
+//		connectServer.execute();
 
 		// getMember of mPosition Race Track.
 		connectServer = new ConnectServer(this, RoadRunnerSetting.URLServer
-				+ "/getTrackMember.php");
+				+ "getTrackMember.php");
 		connectServer.addValue("Rid", tempValues.getrId());
 		connectServer.setRequestTag(ConnectServer.TRACK_MEMBER);
 		connectServer.setIndex(mPosition);
@@ -471,8 +479,9 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 		// Draw track on map from xml string.
 		String xmlTrackData = result;
+		System.out.println(result);
 		ArrayList<LatLngTimeData> trackPathData = (ArrayList<LatLngTimeData>) TrackDataBase
-				.loadXmlString(result);
+				.loadXmlFile(result);
 		drawTrackPath(trackPathData);
 		trackList.get(index).setTrackData(xmlTrackData);
 		if (null != mUploadActionView) {

@@ -83,8 +83,8 @@ public class RaceThread implements Runnable {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		System.out.println("THREAD : " + RoadRunnerSetting.SDPATH
-				+ listTracker.getTrackerDir());
+//		System.out.println("THREAD : " + RoadRunnerSetting.SDPATH
+//				+ listTracker.getTrackerDir());
 		data = TrackDataBase.loadXmlFile(RoadRunnerSetting.SDPATH
 				+ listTracker.getTrackerDir());
 		if (data == null) {
@@ -109,7 +109,7 @@ public class RaceThread implements Runnable {
 				Date futureDate = sdf.parse(data.get(i + 1).getWhen());
 				timeSpeek=futureDate.getTime()-startDate.getTime();
 				waitingTime = futureDate.getTime() - recentDate.getTime();
-				System.out.println("wait : " + waitingTime);
+//				System.out.println("wait : " + waitingTime);
 
 				double elat = data.get(i + 1).getCoordinate().getLat();
 				double elng = data.get(i + 1).getCoordinate().getLng();

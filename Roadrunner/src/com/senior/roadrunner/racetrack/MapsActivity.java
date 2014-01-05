@@ -360,7 +360,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	public void createRunningPath() {
 		PolylineOptions options = new PolylineOptions();
 		Vector<Point> points = new Vector<Point>();
-		List<LatLngTimeData> data = TrackDataBase.loadXmlString(trackPathData);
+		List<LatLngTimeData> data = TrackDataBase.loadXmlFile(trackPathData);
 		// Vector<LatLng> pointsVector= new Vector<LatLng>();
 		for (int i = 0; i < data.size(); i++) {
 			double lat = data.get(i).getCoordinate().getLat();
@@ -655,7 +655,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		});
 		// Set rank
 		for (int i = 0; i < trackMemberList.size(); i++) {
-			System.out.println(trackMemberList.get(i).getDuration());
+//			System.out.println(trackMemberList.get(i).getDuration());
 			trackMemberList.get(i).setRank(i + 1);
 		}
 	}
