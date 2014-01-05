@@ -23,6 +23,12 @@ public class DownloadTask extends AsyncTask<String, Integer, String> {
 	private Context context;
 	private String path;
 	private int index;
+	private int requestTag;
+	public static int DATA_UPDATE = 4;
+	public static int TRACK_LIST = 0;
+	public static int TRACK_PATH = 1;
+	public static int TRACK_MEMBER = 2;
+	public static int TRACK_MEMBER_PATH = 3;
 
 	public DownloadTask(Context context) {
 		this.context = context;
@@ -116,14 +122,25 @@ public class DownloadTask extends AsyncTask<String, Integer, String> {
 		//
 		super.onPostExecute(path);
 		if (path != null) {
-			if (context instanceof RaceTrackSelectorActivity) {
-				((RaceTrackSelectorActivity) context).setTrackPath(path,index);
+			if (context instanceof MapsActivity) {
+				switch (requestTag) {
+				case 3:
+					((MapsActivity) context).setMemberTrack(path, index);
+					break;
+				}
+			}else if (context instanceof RaceTrackSelectorActivity) {
+				((RaceTrackSelectorActivity) context).setTrackPath(path, index);
 			}
 		}
 	}
 
 	public void setIndex(int index) {
 		this.index = index;
-		
+
+	}
+
+	public void setRequestTag(int requestTag ) {
+		this.requestTag = requestTag;
+
 	}
 }

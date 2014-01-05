@@ -61,6 +61,8 @@ import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.finish.FinishActivity;
 import com.senior.roadrunner.server.ConnectServer;
+import com.senior.roadrunner.server.DialogConnect;
+import com.senior.roadrunner.server.DownloadTask;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.tools.Distance;
 import com.senior.roadrunner.tools.LatLngInterpolator.Spherical;
@@ -189,6 +191,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	
 	private TextToSpeech tts;
 	private LatLng currentLocation;
+	private DialogConnect dialogConnect;
 	
 
 	@SuppressWarnings("unchecked")
@@ -297,25 +300,30 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	}
 
 	private void loadFile() {
-
+		dialogConnect = new DialogConnect(this);
+		dialogConnect.setTitle(this.getString(R.string.app_name));
+		dialogConnect.setMessage("Download Data");
+		dialogConnect.show();
 		for (int i = 0; i < trackMemberList.size(); i++) {
-			// System.out.println("TrackerDir : "
-			// + trackMemberList.get(i).getTrackerDir());
-			ConnectServer connectServerTrackMemberData = new ConnectServer(
-					this, RoadRunnerSetting.URLServer + "/getTrackPath.php");
-			connectServerTrackMemberData.addValue("Rdir",
-					RoadRunnerSetting.URLServer
-							+ trackMemberList.get(i).getTrackerDir());
-			// setIndex when xml return from server
-			connectServerTrackMemberData.setIndex(i);
-			connectServerTrackMemberData
-					.setRequestTag(ConnectServer.TRACK_MEMBER_PATH);
-			connectServerTrackMemberData.execute();
+
+			DownloadTask downloadTrackMemberData = new DownloadTask(this);
+			downloadTrackMemberData.setRequestTag(DownloadTask.TRACK_MEMBER_PATH);
+			downloadTrackMemberData.setIndex(i);
+			String params[]={RoadRunnerSetting.URLServer,trackMemberList.get(i).getTrackerDir()};
+			downloadTrackMemberData.execute(params);
+
+//			ConnectServer connectServerTrackMemberData = new ConnectServer(
+//					this, RoadRunnerSetting.URLServer + "getTrackPath.php");
+//			connectServerTrackMemberData.addValue("Rdir",
+//					RoadRunnerSetting.URLServer
+//							+ trackMemberList.get(i).getTrackerDir());
+//			// setIndex when xml return from server
+//			connectServerTrackMemberData.setIndex(i);
+//			connectServerTrackMemberData
+//					.setRequestTag(ConnectServer.TRACK_MEMBER_PATH);
+//			connectServerTrackMemberData.execute();
 		}
 
-		// DownloadTask downloadTask = new DownloadTask(this);
-		// downloadTask
-		// .execute("http://192.168.1.121/uploads/mahidol/tracker.xml");
 
 	}
 
@@ -929,9 +937,17 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	// Return track.xml from dataBase server
 	public synchronized void setMemberTrack(String result, int index) {
-		String path = RoadRunnerSetting.SDPATH
-				+ trackMemberList.get(index).getTrackerDir();
-		RoadrunnerTools.writeStringToFile(path, result);
+		System.out.println("track index : "+index);
+		if(trackMemberList==null)
+			return;
+		if(trackMemberList.size()-1== index){
+			dialogConnect.dismiss();
+		}
+//		String path = RoadRunnerSetting.SDPATH
+//				+ trackMemberList.get(index).getTrackerDir();
+//		RoadrunnerTools.writeStringToFile(path, result);
+		
+		
 		// try {
 		// String s = RoadRunnerSetting.SDPATH
 		// + trackMemberList.get(index).getTrackerDir();

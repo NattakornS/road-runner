@@ -390,6 +390,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 		DownloadTask downloadTrackPath = new DownloadTask(this);
 		downloadTrackPath.setIndex(mPosition);
+		downloadTrackPath.setRequestTag(ConnectServer.TRACK_PATH);
 		String params[]={RoadRunnerSetting.URLServer,"racetrack/" + tempValues.getrId() + ".xml"};
 		downloadTrackPath.execute(params);
 		
