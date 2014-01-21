@@ -3,19 +3,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-
-
-<!--     <FrameLayout
+  
+         <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent" /> -->
+        android:layout_height="fill_parent" />
 
-    <fragment
+
+<!--     <fragment
         android:id="@+id/settingFragment"
         android:name="com.senior.roadrunner.SettingFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
+ 
     <fragment
         android:id="@+id/splashFragment"
         android:name="com.senior.roadrunner.SplashFragment"
@@ -26,18 +26,15 @@
         android:id="@+id/userSettingsFragment"
         android:name="com.facebook.widget.UserSettingsFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-    <!--
-          <fragment
+        android:layout_height="match_parent" /> -->
+
+
+
+    <!--<fragment
         android:id="@+id/login_fragment"
         android:name="com.facebook.widget.UserSettingsFragment"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
-    -->
-
-
-
-
+        android:layout_height="fill_parent" />-->
     <ListView
         android:id="@+id/left_drawer"
         android:layout_width="240dp"

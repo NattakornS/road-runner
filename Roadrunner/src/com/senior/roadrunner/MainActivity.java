@@ -1,16 +1,10 @@
 package com.senior.roadrunner;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
 import android.annotation.SuppressLint;
 import android.app.SearchManager;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.pm.Signature;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -21,8 +15,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Base64;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -40,10 +32,12 @@ import com.facebook.AppEventsLogger;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
+import com.facebook.widget.UserSettingsFragment;
+import com.senior.roadrunner.MyActivityFragment.OnFragmentInteractionListener;
 import com.senior.roadrunner.trackchooser.RaceTrackSelectorActivity;
 
 @SuppressLint("NewApi")
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends FragmentActivity implements OnFragmentInteractionListener{
 
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerList;
@@ -63,7 +57,8 @@ public class MainActivity extends FragmentActivity {
 	private static final int SPLASH = 0;
 	private static final int SETTING = 1;
 	private static final int USERSETTINGS = 2;
-	private static final int FRAGMENT_COUNT = USERSETTINGS + 1;
+	private static final int MYACTIVITY = 3;
+	private static final int FRAGMENT_COUNT = MYACTIVITY + 1;
 
 	private Fragment[] fragments = new Fragment[FRAGMENT_COUNT];
 	private MenuItem settings;
@@ -88,6 +83,7 @@ public class MainActivity extends FragmentActivity {
 		}
 		uiHelper = new UiLifecycleHelper(this, callback);
 		uiHelper.onCreate(savedInstanceState);
+		
 		// Navigation Drawer
 		mTitle = mDrawerTitle = getTitle();
 		mPlanetTitles = getResources()
@@ -132,15 +128,17 @@ public class MainActivity extends FragmentActivity {
 
 		if (savedInstanceState == null) {
 			FragmentManager fm = getSupportFragmentManager();
-			SplashFragment splashFragment = (SplashFragment) fm
-					.findFragmentById(R.id.splashFragment);
+			SplashFragment splashFragment = new SplashFragment();
+			SettingFragment settingFragment = new SettingFragment();
+			UserSettingsFragment userSettingsFragment = new UserSettingsFragment();
 			fragments[SPLASH] = splashFragment;
-			fragments[SETTING] = fm.findFragmentById(R.id.settingFragment);
-			fragments[USERSETTINGS] = fm
-					.findFragmentById(R.id.userSettingsFragment);
-
+			fragments[SETTING] = settingFragment;
+			fragments[USERSETTINGS] = userSettingsFragment;
+			fragments[MYACTIVITY] = new MyActivityFragment();
+			
 			FragmentTransaction transaction = fm.beginTransaction();
 			for (int i = 0; i < fragments.length; i++) {
+				transaction.add(R.id.content_frame, fragments[i]);
 				transaction.hide(fragments[i]);
 			}
 			transaction.commit();
@@ -166,18 +164,19 @@ public class MainActivity extends FragmentActivity {
 		//
 		// }
 		// });
-		try {
-			PackageInfo info = getPackageManager().getPackageInfo("com.senior.roadrunner", PackageManager.GET_SIGNATURES);
-			for (Signature signature : info.signatures) {
-			    MessageDigest md = MessageDigest.getInstance("SHA");
-			    md.update(signature.toByteArray());
-			    Log.e("MY KEY HASH:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
-			}
-			} catch (NameNotFoundException e) {
-
-			} catch (NoSuchAlgorithmException e) {
-
-			}
+		//Android facebook get keyhash
+//		try {
+//			PackageInfo info = getPackageManager().getPackageInfo("com.senior.roadrunner", PackageManager.GET_SIGNATURES);
+//			for (Signature signature : info.signatures) {
+//			    MessageDigest md = MessageDigest.getInstance("SHA");
+//			    md.update(signature.toByteArray());
+//			    Log.e("MY KEY HASH:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+//			}
+//			} catch (NameNotFoundException e) {
+//
+//			} catch (NoSuchAlgorithmException e) {
+//
+//			}
 
 	}
 
@@ -431,9 +430,8 @@ public class MainActivity extends FragmentActivity {
 
 		} else if (position == 3) {
 			exitApp();
-		} else {
-			// fragmentManager.beginTransaction()
-			// .replace(R.id.content_frame, fragment).commit();
+		}else if (position == 4) {
+			showFragment(MYACTIVITY, false);
 		}
 
 		// update selected item and title, then close the drawer
@@ -573,5 +571,11 @@ public class MainActivity extends FragmentActivity {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public void onFragmentInteraction(String id) {
+		// TODO Auto-generated method stub
+		
 	}
 }

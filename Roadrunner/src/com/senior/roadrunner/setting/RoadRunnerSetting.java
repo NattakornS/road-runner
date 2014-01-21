@@ -2,6 +2,11 @@ package com.senior.roadrunner.setting;
 
 import java.io.File;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.senior.roadrunner.tools.RoadrunnerTools;
+
 import android.graphics.Bitmap;
 import android.os.Environment;
 
@@ -16,14 +21,34 @@ public class RoadRunnerSetting {
 	private String raceTrackName;
 	public static String URLServer = "http://roadrunner-5313180.dx.am/";
 	private static RoadRunnerSetting instance;
-
+	private static final String WEIGHT = "weight";
+	private static final String LANGUAGE = "language";
+	private static final String FNAME = "fname";
+	private static final String FID = "fid";
 	public static synchronized RoadRunnerSetting getInstance() {
 		if (instance == null) {
 			instance = new RoadRunnerSetting();
+			
 		}
 		return instance;
 	}
+	private void readSetting() {
+		String str = RoadrunnerTools
+				.readStringFromFile(RoadRunnerSetting.SDPATH + "setting.ini");
+		if (str == null || str == "") {
+			RoadrunnerTools.writeStringToFile(RoadRunnerSetting.SDPATH
+					+ "setting.ini", "");
+		} else {
+			try {
+				JSONObject settingjsonObject = new JSONObject(str);
 
+				instance.setFacebookId(settingjsonObject.getString(FID));
+				instance.setFacebookName(settingjsonObject.getString(FNAME));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	public String getFacebookName() {
 		return facebookName;
 	}

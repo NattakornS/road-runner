@@ -9,6 +9,7 @@
         <item>Create Track</item>
         <item>Setting</item>
         <item>Exit</item>
+        <item>My activity</item>
     </string-array>
 
     <string name="drawer_open">Open navigation drawer</string>
