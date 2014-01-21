@@ -142,6 +142,8 @@ public class CreateTrackActivity extends Activity implements
 	private View customMarker;
 	private ImageView imageView;
 	private TextView txt_acuracy;
+	private Bitmap profileBitmap;
+	private String myProfilePath;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -154,7 +156,8 @@ public class CreateTrackActivity extends Activity implements
 		roadRunnerSetting = RoadRunnerSetting.getInstance();
 		mapcapPath = Environment.getExternalStorageDirectory() + "/"
 				+ "roadrunner/" + roadRunnerSetting.getFacebookId() + ".png";// set
-																				// mapcap
+		myProfilePath = Environment.getExternalStorageDirectory() + "/"
+				+ "roadrunner/img/" + roadRunnerSetting.getFacebookId() + ".png";																		// mapcap
 																				// path
 		fId = roadRunnerSetting.getFacebookId();
 		initwidget();
@@ -174,6 +177,14 @@ public class CreateTrackActivity extends Activity implements
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(
 				R.layout.custom_marker_layout, null);
 		imageView = (ImageView) customMarker.findViewById(R.id.profileIcon);
+		profileBitmap = BitmapFactory.decodeFile(myProfilePath);
+		if(profileBitmap==null){
+//			new GetMyProfulePicture(profileBitmap).start();
+			
+		}else{
+			
+		}
+		imageView.setImageBitmap(profileBitmap);
 	}
 
 	@Override

@@ -23,6 +23,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Bitmap.CompressFormat;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -54,6 +55,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.senior.roadrunner.MainActivity;
 import com.senior.roadrunner.R;
 import com.senior.roadrunner.data.Coordinate;
@@ -75,7 +82,7 @@ import com.senior.roadrunner.trackchooser.TrackMemberList;
 
 @SuppressLint("NewApi")
 public class MapsActivity extends Activity implements View.OnClickListener,
-		LocationListener,TextToSpeech.OnInitListener
+		LocationListener, TextToSpeech.OnInitListener
 // OnLocationChangedListener
 {
 	public static String rId = "";
@@ -126,7 +133,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private ProgressBar progress_out_time;
 
 	private TextToSpeech mTts;
-	
+
 	// Timer Thread
 	private Runnable updateTimerMethod = new Runnable() {
 
@@ -188,11 +195,13 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private ImageView imageView;
 	private TextView txt_acuracy;
 	private int arrivePolygon = 0;
-	
+
 	private TextToSpeech tts;
 	private LatLng currentLocation;
 	private DialogConnect dialogConnect;
-	
+	private ImageLoader imageLoader;
+	private DisplayImageOptions options;
+	protected Bitmap profileIcon = null;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -261,6 +270,41 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(
 				R.layout.custom_marker_layout, null);
 		imageView = (ImageView) customMarker.findViewById(R.id.profileIcon);
+		options = new DisplayImageOptions.Builder()
+				.showImageOnLoading(
+						R.drawable.com_facebook_profile_picture_blank_square)
+				.showImageForEmptyUri(
+						R.drawable.com_facebook_profile_picture_blank_square)
+				.showImageOnFail(R.drawable.ic_error).cacheInMemory(true)
+				.cacheOnDisc(true).considerExifParams(true)
+				.displayer(new RoundedBitmapDisplayer(20)).build();
+		// File cacheDir = StorageUtils.getCacheDirectory(activity);
+		ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(
+				this)
+				.memoryCacheExtraOptions(480, 800)
+				// default = device screen dimensions
+				.discCacheExtraOptions(480, 800, CompressFormat.JPEG, 75, null)
+				.denyCacheImageMultipleSizesInMemory()
+				.memoryCache(new LruMemoryCache(2 * 1024 * 1024))
+				.memoryCacheSize(2 * 1024 * 1024)
+				.discCacheSize(50 * 1024 * 1024).discCacheFileCount(100)
+				.writeDebugLogs()
+				// .discCache(new UnlimitedDiscCache(cacheDir)) // default
+				.build();
+		imageLoader = ImageLoader.getInstance();
+		imageLoader.init(config);
+		String name = "https://graph.facebook.com/" + roadRunnerSetting.getFacebookId()
+				+ "/picture?width=75&height=75";
+		imageLoader.loadImage(name, new SimpleImageLoadingListener() {
+			@Override
+			public void onLoadingComplete(String imageUri, View view,
+					Bitmap loadedImage) {
+				// Do whatever you want with Bitmap
+				imageView.setImageBitmap(loadedImage);
+				profileIcon = createDrawableFromView(MapsActivity.this, customMarker);
+			}
+		});
+
 	}
 
 	@Override
@@ -273,9 +317,9 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	@Override
 	protected void onDestroy() {
 		if (tts != null) {
-            tts.stop();
-            tts.shutdown();
-        }
+			tts.stop();
+			tts.shutdown();
+		}
 		if (recordCheck) {
 			recordCheck = false;
 			myLocationManager.removeUpdates(this);
@@ -283,8 +327,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			myHandler.removeCallbacks(updateTimerMethod);
 		}
 		super.onDestroy();
-		
-		
+
 	}
 
 	@Override
@@ -307,23 +350,24 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		for (int i = 0; i < trackMemberList.size(); i++) {
 
 			DownloadTask downloadTrackMemberData = new DownloadTask(this);
-			downloadTrackMemberData.setRequestTag(DownloadTask.TRACK_MEMBER_PATH);
+			downloadTrackMemberData
+					.setRequestTag(DownloadTask.TRACK_MEMBER_PATH);
 			downloadTrackMemberData.setIndex(i);
-			String params[]={RoadRunnerSetting.URLServer,trackMemberList.get(i).getTrackerDir()};
+			String params[] = { RoadRunnerSetting.URLServer,
+					trackMemberList.get(i).getTrackerDir() };
 			downloadTrackMemberData.execute(params);
 
-//			ConnectServer connectServerTrackMemberData = new ConnectServer(
-//					this, RoadRunnerSetting.URLServer + "getTrackPath.php");
-//			connectServerTrackMemberData.addValue("Rdir",
-//					RoadRunnerSetting.URLServer
-//							+ trackMemberList.get(i).getTrackerDir());
-//			// setIndex when xml return from server
-//			connectServerTrackMemberData.setIndex(i);
-//			connectServerTrackMemberData
-//					.setRequestTag(ConnectServer.TRACK_MEMBER_PATH);
-//			connectServerTrackMemberData.execute();
+			// ConnectServer connectServerTrackMemberData = new ConnectServer(
+			// this, RoadRunnerSetting.URLServer + "getTrackPath.php");
+			// connectServerTrackMemberData.addValue("Rdir",
+			// RoadRunnerSetting.URLServer
+			// + trackMemberList.get(i).getTrackerDir());
+			// // setIndex when xml return from server
+			// connectServerTrackMemberData.setIndex(i);
+			// connectServerTrackMemberData
+			// .setRequestTag(ConnectServer.TRACK_MEMBER_PATH);
+			// connectServerTrackMemberData.execute();
 		}
-
 
 	}
 
@@ -663,7 +707,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		});
 		// Set rank
 		for (int i = 0; i < trackMemberList.size(); i++) {
-//			System.out.println(trackMemberList.get(i).getDuration());
+			// System.out.println(trackMemberList.get(i).getDuration());
 			trackMemberList.get(i).setRank(i + 1);
 		}
 	}
@@ -753,25 +797,31 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			marker.remove();
 		}
 
-		if (roadRunnerSetting.getProfileIcon() != null) {
-			imageView.setImageBitmap(roadRunnerSetting.getProfileIcon());
-		}
+//		if (roadRunnerSetting.getProfileIcon() != null) {
+//			imageView.setImageBitmap(roadRunnerSetting.getProfileIcon());
+//		}
 		if (!recordCheck) {
-			marker = map.addMarker(new MarkerOptions()
-					.position(coord)
-					.icon(BitmapDescriptorFactory
-							.fromBitmap(createDrawableFromView(this,
-									customMarker))).title("Me"));
+			if(profileIcon == null){
+				marker = map.addMarker(new MarkerOptions()
+				.position(coord)
+				.icon(BitmapDescriptorFactory
+						.fromBitmap(createDrawableFromView(this,
+								customMarker))).title("Me"));
+			}else{
+				marker = map.addMarker(new MarkerOptions()
+				.position(coord)
+				.icon(BitmapDescriptorFactory
+						.fromBitmap(profileIcon)).title("Me"));
+			}
+			
+			map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
 
-			map.animateCamera(CameraUpdateFactory.newLatLng(coord));
 		}
 		if (loc.getAccuracy() < 40.0) {
 			checkisInPath(point);
 			if (recordCheck) {
+				map.animateCamera(CameraUpdateFactory.newLatLng(coord));
 				recordTrack(loc);
-			} else {
-				map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord,
-						15.0f));
 			}
 		}
 	}
@@ -824,7 +874,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			txt_current_speed.setText(gpsSpeed);
 		}
 
-		 currentLocation = new LatLng(loc.getLatitude(), loc.getLongitude());
+		currentLocation = new LatLng(loc.getLatitude(), loc.getLongitude());
 
 		track.add(currentLocation);
 		if (poly != null) {
@@ -839,7 +889,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		SimpleDateFormat sdf = new SimpleDateFormat(
 				"yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 		String timeStamp = sdf.format(new Date(loc.getTime()));
-		Coordinate coordinate = new Coordinate(currentLocation.latitude, currentLocation.longitude);
+		Coordinate coordinate = new Coordinate(currentLocation.latitude,
+				currentLocation.longitude);
 		latLngTimeData.add(new LatLngTimeData(coordinate, timeStamp));
 
 		// distance update
@@ -937,17 +988,16 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	// Return track.xml from dataBase server
 	public synchronized void setMemberTrack(String result, int index) {
-		System.out.println("track index : "+index);
-		if(trackMemberList==null)
+		System.out.println("track index : " + index);
+		if (trackMemberList == null)
 			return;
-		if(trackMemberList.size()-1== index){
+		if (trackMemberList.size() - 1 == index) {
 			dialogConnect.dismiss();
 		}
-//		String path = RoadRunnerSetting.SDPATH
-//				+ trackMemberList.get(index).getTrackerDir();
-//		RoadrunnerTools.writeStringToFile(path, result);
-		
-		
+		// String path = RoadRunnerSetting.SDPATH
+		// + trackMemberList.get(index).getTrackerDir();
+		// RoadrunnerTools.writeStringToFile(path, result);
+
 		// try {
 		// String s = RoadRunnerSetting.SDPATH
 		// + trackMemberList.get(index).getTrackerDir();
@@ -996,31 +1046,35 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	@Override
 	public void onInit(int status) {
 		if (status == TextToSpeech.SUCCESS) {
-			 
-            int result = tts.setLanguage(Locale.US);
- 
-            if (result == TextToSpeech.LANG_MISSING_DATA
-                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                Log.e("TTS", "This Language is not supported");
-            } else {
-//                speakOut();
-            }
- 
-        } else {
-            Log.e("TTS", "Initilization Failed!");
-        }
-		
-	}
-	private void speakOut(String text) {
-        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-    }
 
-	public synchronized void setThreadLocation(String fName, LatLng currentThreadLoc) {
+			int result = tts.setLanguage(Locale.US);
+
+			if (result == TextToSpeech.LANG_MISSING_DATA
+					|| result == TextToSpeech.LANG_NOT_SUPPORTED) {
+				Log.e("TTS", "This Language is not supported");
+			} else {
+				// speakOut();
+			}
+
+		} else {
+			Log.e("TTS", "Initilization Failed!");
+		}
+
+	}
+
+	private void speakOut(String text) {
+		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+	}
+
+	public synchronized void setThreadLocation(String fName,
+			LatLng currentThreadLoc) {
 		// recieve location every 5 miniute from race thread.
-		if(currentLocation==null)
+		if (currentLocation == null)
 			return;
-		double distance = Distance.calculateDistanceLatLng(currentLocation, currentThreadLoc, Distance.KILOMETERS);
-		speakOut(fName + " far from you "+String.format("%.2f", distance)+" meter.");
-		
+		double distance = Distance.calculateDistanceLatLng(currentLocation,
+				currentThreadLoc, Distance.KILOMETERS);
+		speakOut(fName + " far from you " + String.format("%.2f", distance)
+				+ " meter.");
+
 	}
 }

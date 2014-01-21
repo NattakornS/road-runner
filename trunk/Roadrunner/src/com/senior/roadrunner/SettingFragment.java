@@ -34,6 +34,8 @@ import com.senior.roadrunner.tools.RoadrunnerTools;
 public class SettingFragment extends Fragment implements OnClickListener {
 	private static final String WEIGHT = "weight";
 	private static final String LANGUAGE = "language";
+	private static final String FNAME = "fname";
+	private static final String FID = "fid";
 	private static final String URL_PREFIX_FRIENDS = "https://graph.facebook.com/me/profile?access_token=";
 	private static Fragment fragment;
 	// private String TAG = "SettingActivity";
@@ -68,6 +70,8 @@ public class SettingFragment extends Fragment implements OnClickListener {
 	private TextView weightTxtView;
 	private View weightLayout;
 	private EditText nameInput;
+	protected String fName;
+	protected String fId;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -179,6 +183,8 @@ public class SettingFragment extends Fragment implements OnClickListener {
 		try {
 			settingJsonObject.put(LANGUAGE, language_txt.getText());
 			settingJsonObject.put(WEIGHT, weight_txt.getText());
+			settingJsonObject.put(FID, fId);
+			settingJsonObject.put(FNAME, fName);
 			String jsonString = settingJsonObject.toString();
 			RoadrunnerTools.writeStringToFile(RoadRunnerSetting.SDPATH
 					+ "setting.ini", jsonString);
@@ -274,6 +280,9 @@ public class SettingFragment extends Fragment implements OnClickListener {
 								roadRunnerSetting.setProfileImg(profilePictureView.getDrawingCache());
 								facebookName.setText(user.getName());
 								System.out.println("name : " + user.getName());
+								fName=user.getName();
+								fId=user.getId();
+								saveSetting();
 								roadRunnerSetting.setFacebookId(user.getId());
 								roadRunnerSetting.setFacebookName(user
 										.getName());
