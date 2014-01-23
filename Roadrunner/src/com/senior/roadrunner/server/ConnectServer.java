@@ -22,27 +22,32 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.senior.roadrunner.R;
 import com.senior.roadrunner.finish.FinishActivity;
 import com.senior.roadrunner.racetrack.MapsActivity;
 import com.senior.roadrunner.trackchooser.RaceTrackSelectorActivity;
 
 public class ConnectServer extends AsyncTask<String, Integer, String> {
-	
+	public static int MY_ACTIVITY = 5;
 	public static int DATA_UPDATE = 4;
 	public static int TRACK_LIST = 0;
 	public static int TRACK_PATH = 1;
 	public static int TRACK_MEMBER = 2;
 	public static int TRACK_MEMBER_PATH = 3;
-	
+
 	private HttpPost httppost;
 	private HttpClient httpclient;
 	private List<NameValuePair> nameValuePairs;
-//	private DialogConnect dialogConnect;
+	// private DialogConnect dialogConnect;
 	private Context context;
 	private int requestTag;
 	private int index;
-	
+	private OnServerResponseListener responseCallback;
+
+	public interface OnServerResponseListener {
+		/** Called by HeadlinesFragment when a list item is selected */
+		public void onResponse(String result);
+	}
+
 	public ConnectServer(Context context, String URL) {
 		this.context = context;
 
@@ -56,9 +61,9 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 		// Server
 		// à¸¡à¸µà¸?à¸²à¸£à¸ªà¹?à¸? ConnectServer à¹?à¸«à¹?à¸?à¸±à¸? Dialog
 		// à¹€à¸?à¸·à¹?à¸­à¹?à¸?à¹?à¹?à¸?à¸?à¸²à¸£à¸¢à¸?à¹€à¸¥à¸´à¸?
-//		dialogConnect = new DialogConnect(this.context, this);
-//		dialogConnect.setTitle(this.context.getString(R.string.app_name));
-//		dialogConnect.setMessage("Connect to server");
+		// dialogConnect = new DialogConnect(this.context, this);
+		// dialogConnect.setTitle(this.context.getString(R.string.app_name));
+		// dialogConnect.setMessage("Connect to server");
 	}
 
 	// Function
@@ -71,13 +76,12 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 	public void setRequestTag(int requestTag) {
 		this.requestTag = requestTag;
 	}
-	
 
 	// à¸?à¹?à¸­à¸?à¸—à¸µà¹?à¸?à¸°à¸—à¸³ doInBackground
 	// à¸?à¸°à¸—à¸³à¸?à¸²à¸?à¸—à¸µà¹? Function à¸?à¸µà¹?à¸?à¹?à¸­à¸?
 	protected void onPreExecute() {
-//		dialogConnect.show();
-		
+		// dialogConnect.show();
+
 	}
 
 	// à¹€à¸£à¸´à¹?à¸¡à¸—à¸³à¸?à¸²à¸?à¹?à¸?à¸? Background
@@ -115,6 +119,16 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 		} catch (IOException e) {
 			Log.e("ConnectServer", e.toString());
 		}
+		if (requestTag == MY_ACTIVITY) {
+			try {
+				responseCallback = (OnServerResponseListener) context;
+				responseCallback.onResponse(result);
+			} catch (ClassCastException e) {
+				throw new ClassCastException(context.toString()
+						+ " must implement OnServerResponseListener");
+			}
+			
+		}
 
 		return result;
 	}
@@ -134,45 +148,47 @@ public class ConnectServer extends AsyncTask<String, Integer, String> {
 			// à¹€à¸£à¸´à¹?à¸¡à¸?à¸²à¸£à¹?à¸?à¸¥à¸? JSON
 			// à¹€à¸?à¹?à¸?à¸?à¹?à¸­à¸¡à¸¹à¸¥
 			if (context instanceof MapsActivity) {
-				
-				switch(requestTag){
-				case 4:((MapsActivity) context).setList(result);break;
-				case 3:((MapsActivity) context).setMemberTrack(result,index);break;
+
+				switch (requestTag) {
+				case 4:
+					((MapsActivity) context).setList(result);
+					break;
+				case 3:
+					((MapsActivity) context).setMemberTrack(result, index);
+					break;
 				}
-			}else if (context instanceof RaceTrackSelectorActivity) {
+			} else if (context instanceof RaceTrackSelectorActivity) {
 				switch (requestTag) {
 				case 0:
 					((RaceTrackSelectorActivity) context).setTrackList(result);
 					break;
 				case 1:
-					((RaceTrackSelectorActivity) context).setTrackPath(result,index);
+					((RaceTrackSelectorActivity) context).setTrackPath(result,
+							index);
 					break;
 				case 2:
-					((RaceTrackSelectorActivity) context).setTeackMember(result,index);
+					((RaceTrackSelectorActivity) context).setTeackMember(
+							result, index);
 					break;
-//					default : ((RaceTrackSelectorActivity) context).setTeackMember(result);
+				// default : ((RaceTrackSelectorActivity)
+				// context).setTeackMember(result);
 				}
-			}else if (context instanceof FinishActivity) {
-				((FinishActivity)context).setDataBaseServerResponse(result);
-			}
-
-			// à¸–à¹?à¸²à¹€à¸?à¸·à¹?à¸­à¸¡à¸•à¹?à¸­à¸?à¸±à¸? server
-			// à¹?à¸¡à¹?à¹?à¸”à¹?à¸?à¸°à¸—à¸³à¸?à¸²à¸?à¸•à¹?à¸­à¹?à¸?à¸?à¸µà¹?
-		} else {
-			if (context instanceof MapsActivity) {
+			} else if (context instanceof FinishActivity) {
+				((FinishActivity) context).setDataBaseServerResponse(result);
+			} else if (context instanceof MapsActivity) {
 				((MapsActivity) context).cannotConnectToServer();
-			}
-			if (context instanceof RaceTrackSelectorActivity) {
+			} else if (context instanceof RaceTrackSelectorActivity) {
 				((RaceTrackSelectorActivity) context).cannotConnectToServer();
 			}
-
+			// à¸–à¹?à¸²à¹€à¸?à¸·à¹?à¸­à¸¡à¸•à¹?à¸­à¸?à¸±à¸? server
+			// à¹?à¸¡à¹?à¹?à¸”à¹?à¸?à¸°à¸—à¸³à¸?à¸²à¸?à¸•à¹?à¸­à¹?à¸?à¸?à¸µà¹?
 		}
 
-//		dialogConnect.dismiss();
+		// dialogConnect.dismiss();
 	}
 
 	public void setIndex(int index) {
 		this.index = index;
-		
+
 	}
 }

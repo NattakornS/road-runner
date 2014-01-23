@@ -19,20 +19,23 @@ public class RoadRunnerSetting {
 			+ File.separator + "roadrunner" + File.separator;
 	private String city;
 	private String raceTrackName;
+	private double weight;
 	public static String URLServer = "http://roadrunner-5313180.dx.am/";
 	private static RoadRunnerSetting instance;
 	private static final String WEIGHT = "weight";
 	private static final String LANGUAGE = "language";
 	private static final String FNAME = "fname";
 	private static final String FID = "fid";
+
 	public static synchronized RoadRunnerSetting getInstance() {
 		if (instance == null) {
 			instance = new RoadRunnerSetting();
-			
+			readSetting();
 		}
 		return instance;
 	}
-	private void readSetting() {
+
+	private static void readSetting() {
 		String str = RoadrunnerTools
 				.readStringFromFile(RoadRunnerSetting.SDPATH + "setting.ini");
 		if (str == null || str == "") {
@@ -44,11 +47,22 @@ public class RoadRunnerSetting {
 
 				instance.setFacebookId(settingjsonObject.getString(FID));
 				instance.setFacebookName(settingjsonObject.getString(FNAME));
+				instance.setWeight(settingjsonObject.getDouble(WEIGHT));
+
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 		}
 	}
+
+	private void setWeight(double weight) {
+		this.weight = weight;
+	}
+
+	public double getWeight() {
+		return weight;
+	}
+
 	public String getFacebookName() {
 		return facebookName;
 	}
@@ -62,7 +76,6 @@ public class RoadRunnerSetting {
 	}
 
 	public void setFacebookId(String facebookId) {
-		System.out.println("setFacebookId : "+facebookId);
 		this.facebookId = facebookId;
 	}
 

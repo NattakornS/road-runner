@@ -1,42 +1,35 @@
 package com.senior.roadrunner.myactivity;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.senior.roadrunner.R;
-import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.trackchooser.TrackMemberList;
 
 public class MyActivityList extends BaseAdapter implements OnClickListener {
 
 	private Activity activity;
-	private ArrayList<TrackMemberList> data;
+	private ArrayList<MyActivityListData> data;
 	private LayoutInflater inflater;
 	private TrackMemberList tempValues;
 	@SuppressWarnings("unused")
 	private Bitmap profileIcon;
 
 	public MyActivityList(Activity finishActivity,
-			ArrayList<TrackMemberList> trackMemberList) {
+			ArrayList<MyActivityListData> activityListDatas) {
 		activity = finishActivity;
-		data = trackMemberList;
+		data = activityListDatas;
 
 		/*********** Layout inflator to call external xml layout () **********************/
 		inflater = (LayoutInflater) activity
@@ -61,11 +54,11 @@ public class MyActivityList extends BaseAdapter implements OnClickListener {
 
 	public static class ViewHolder {
 
-		public TextView nameTxt;
-		public TextView durationTxt;
-		public TextView placeTxt;
-		public ImageView image;
-		public ImageView placeImage;
+		public TextView rank;
+		public TextView duration;
+		public TextView trackName;
+		public TextView date;
+		public TextView detail;
 
 	}
 
@@ -78,86 +71,45 @@ public class MyActivityList extends BaseAdapter implements OnClickListener {
 
 			/********** Inflate tabitem.xml file for each row ( Defined below ) ************/
 			vi = inflater.inflate(R.layout.myactivity_listview, null);
-//			vi.setBackgroundColor(Color.alpha(R.color.blue_gradientE));
+			// vi.setBackgroundColor(Color.alpha(R.color.blue_gradientE));
 			// vi.setBackgroundResource(R.drawable.rounded_corners);
 			/******** View Holder Object to contain tabitem.xml file elements ************/
-//			holder = new ViewHolder();
-//			holder.nameTxt = (TextView) vi
-//					.findViewById(R.id.finish_name_list_txt);
-//			holder.durationTxt = (TextView) vi
-//					.findViewById(R.id.finish_duration_list_txt);
-//			holder.placeTxt = (TextView) vi
-//					.findViewById(R.id.finish_place_list_txt);
-//			holder.image = (ImageView) vi
-//					.findViewById(R.id.finish_pic_list_img);
-//			holder.placeImage = (ImageView) vi
-//					.findViewById(R.id.place_image);
+			holder = new ViewHolder();
+			holder.rank = (TextView) vi.findViewById(R.id.rank);
+			holder.duration = (TextView) vi.findViewById(R.id.duration);
+			holder.trackName = (TextView) vi.findViewById(R.id.trackName);
+			holder.date = (TextView) vi.findViewById(R.id.date);
+			holder.detail = (TextView) vi.findViewById(R.id.detail);
 			/************ Set holder with LayoutInflater ************/
-//			vi.setTag(holder);
+			 vi.setTag(holder);
 		} else
 			holder = (ViewHolder) vi.getTag();
 
 		if (data.size() <= 0) {
-//			holder.nameTxt.setText("No Data");
+			// holder.nameTxt.setText("No Data");
 
 		} else {
-			/***** Get each Model object from Arraylist ********/
-			tempValues = null;
-			tempValues = data.get(position);
-			// String name =
-			// "https://graph.facebook.com/"+tempValues.getfId()+"/picture?75=&height=75";
-			// URL url_value;
-			// try {
-			// url_value = new URL(name);
-			// profileIcon =
-			// BitmapFactory.decodeStream(url_value.openConnection().getInputStream());
-			// } catch (MalformedURLException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// } catch (IOException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// }
-			Bitmap bitmap = null;
-			File f = new File(RoadRunnerSetting.SDPATH+"img/"+tempValues.getfId()+".png");
-
-			try {
-				bitmap = BitmapFactory.decodeStream(new FileInputStream(f));
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+			MyActivityListData temp = data.get(position);
+			if (temp != null) {
+				holder.date.setText(temp.getDate());
+				holder.detail.setText(temp.getDetail());
+				int seconds = (int) (temp.getDuration() / 1000);
+				int minutes = seconds / 60;
+				seconds = seconds % 60;
+				
+				holder.duration.setText("" + minutes + ":"
+						+ String.format("%02d", seconds));
+				holder.rank.setText(temp.getRank());
+				holder.trackName.setText(temp.getTrackName());
+//				System.out.println(temp.getDate());
+//				System.out.println(temp.getDetail());
+//				System.out.println(temp.getDuration());
+//				System.out.println(temp.getRank());
+//				System.out.println(temp.getTrackName());
 			}
-			int seconds = (int) (tempValues.getDuration() / 1000);
-			int minutes = seconds / 60;
-			seconds = seconds % 60;
-			/************ Set Model values in Holder elements ***********/
-//			holder.nameTxt.setText(tempValues.getfName());
-//			holder.placeTxt.setText(tempValues.getRank() + "");
-//			holder.durationTxt.setText("" + minutes + ":"
-//					+ String.format("%02d", seconds));
-//			holder.image.setImageBitmap(bitmap);
-//			switch (tempValues.getRank()) {
-//			case 1:
-//				holder.placeImage.setImageResource(R.drawable.first);
-//				break;
-//			case 2:
-//				holder.placeImage.setImageResource(R.drawable.second);
-//				break;
-//			case 3:
-//				holder.placeImage.setImageResource(R.drawable.thirds);
-//				break;
-//			case 4:
-//				holder.placeImage.setImageResource(R.drawable.fourth);
-//				break;
-//			case 5:
-//				holder.placeImage.setImageResource(R.drawable.fifth);
-//				break;
-//			default:
-//				holder.placeImage.setImageResource(R.drawable.award);
-//				break;
-//			}
-			/******** Set Item Click Listner for LayoutInflater for each row ***********/
-			vi.setOnClickListener(new OnItemClickListener(position));
 		}
+		/******** Set Item Click Listner for LayoutInflater for each row ***********/
+		vi.setOnClickListener(new OnItemClickListener(position));
 		return vi;
 	}
 
@@ -179,8 +131,8 @@ public class MyActivityList extends BaseAdapter implements OnClickListener {
 
 		@Override
 		public void onClick(View arg0) {
-//			MyActivityList sct = (MyActivityList) activity;
-//			sct.onItemClick(mPosition);
+			// MyActivityList sct = (MyActivityList) activity;
+			// sct.onItemClick(mPosition);
 			Toast.makeText(activity, "click : " + mPosition, 1000).show();
 		}
 	}

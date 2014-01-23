@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
-        android:background="@drawable/post_background_style" >
+        android:background="@drawable/post_border_style" >
 
         <ImageView
             android:id="@+id/place_image"
