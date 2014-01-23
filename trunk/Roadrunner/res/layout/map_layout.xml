@@ -217,12 +217,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true" >
+        android:layout_alignParentLeft="true"
+        android:background="@drawable/post_background_style" >
 
         <Button
             android:id="@+id/btn_track"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="10dp"
             android:layout_weight="0.5"
             android:background="@drawable/blue_menu_btn"
             android:text="START"
@@ -233,7 +235,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="0.5"
-            android:background="@drawable/blue_menu_btn"
+            android:layout_margin="10dp"
+            android:background="@drawable/red_menu_btn"
             android:text="Leave"
             android:textColor="@color/white" />
     </LinearLayout>

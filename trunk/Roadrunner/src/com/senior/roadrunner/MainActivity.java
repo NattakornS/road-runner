@@ -33,11 +33,14 @@ import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
 import com.facebook.widget.UserSettingsFragment;
-import com.senior.roadrunner.MyActivityFragment.OnFragmentInteractionListener;
+import com.senior.roadrunner.myactivity.MyActivityFragment;
+import com.senior.roadrunner.server.ConnectServer;
+import com.senior.roadrunner.setting.SettingFragment;
 import com.senior.roadrunner.trackchooser.RaceTrackSelectorActivity;
 
 @SuppressLint("NewApi")
-public class MainActivity extends FragmentActivity implements OnFragmentInteractionListener{
+public class MainActivity extends FragmentActivity implements
+		ConnectServer.OnServerResponseListener {
 
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerList;
@@ -72,6 +75,7 @@ public class MainActivity extends FragmentActivity implements OnFragmentInteract
 			onSessionStateChange(session, state, exception);
 		}
 	};
+	private MyActivityFragment myActivityFragment;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +87,7 @@ public class MainActivity extends FragmentActivity implements OnFragmentInteract
 		}
 		uiHelper = new UiLifecycleHelper(this, callback);
 		uiHelper.onCreate(savedInstanceState);
-		
+
 		// Navigation Drawer
 		mTitle = mDrawerTitle = getTitle();
 		mPlanetTitles = getResources()
@@ -131,11 +135,12 @@ public class MainActivity extends FragmentActivity implements OnFragmentInteract
 			SplashFragment splashFragment = new SplashFragment();
 			SettingFragment settingFragment = new SettingFragment();
 			UserSettingsFragment userSettingsFragment = new UserSettingsFragment();
+			myActivityFragment = new MyActivityFragment();
 			fragments[SPLASH] = splashFragment;
 			fragments[SETTING] = settingFragment;
 			fragments[USERSETTINGS] = userSettingsFragment;
-			fragments[MYACTIVITY] = new MyActivityFragment();
-			
+			fragments[MYACTIVITY] = myActivityFragment;
+
 			FragmentTransaction transaction = fm.beginTransaction();
 			for (int i = 0; i < fragments.length; i++) {
 				transaction.add(R.id.content_frame, fragments[i]);
@@ -164,19 +169,22 @@ public class MainActivity extends FragmentActivity implements OnFragmentInteract
 		//
 		// }
 		// });
-		//Android facebook get keyhash
-//		try {
-//			PackageInfo info = getPackageManager().getPackageInfo("com.senior.roadrunner", PackageManager.GET_SIGNATURES);
-//			for (Signature signature : info.signatures) {
-//			    MessageDigest md = MessageDigest.getInstance("SHA");
-//			    md.update(signature.toByteArray());
-//			    Log.e("MY KEY HASH:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
-//			}
-//			} catch (NameNotFoundException e) {
-//
-//			} catch (NoSuchAlgorithmException e) {
-//
-//			}
+		// Android facebook get keyhash
+		// try {
+		// PackageInfo info =
+		// getPackageManager().getPackageInfo("com.senior.roadrunner",
+		// PackageManager.GET_SIGNATURES);
+		// for (Signature signature : info.signatures) {
+		// MessageDigest md = MessageDigest.getInstance("SHA");
+		// md.update(signature.toByteArray());
+		// Log.e("MY KEY HASH:", Base64.encodeToString(md.digest(),
+		// Base64.DEFAULT));
+		// }
+		// } catch (NameNotFoundException e) {
+		//
+		// } catch (NoSuchAlgorithmException e) {
+		//
+		// }
 
 	}
 
@@ -210,7 +218,7 @@ public class MainActivity extends FragmentActivity implements OnFragmentInteract
 	public void onDestroy() {
 		super.onDestroy();
 		uiHelper.onDestroy();
-		
+
 	}
 
 	@Override
@@ -348,6 +356,7 @@ public class MainActivity extends FragmentActivity implements OnFragmentInteract
 			selectItem(position);
 		}
 	}
+
 	public boolean isGpsEnable() {
 		boolean isgpsenable = false;
 		String provider = Settings.Secure.getString(this.getContentResolver(),
@@ -357,68 +366,70 @@ public class MainActivity extends FragmentActivity implements OnFragmentInteract
 		}
 		return isgpsenable;
 	}
+
 	@SuppressLint("NewApi")
 	private void selectItem(int position) {
 		// update the main content by replacing fragments
-		Fragment fragment = new PlanetFragment();
+//		Fragment fragment = new PlanetFragment();
 		// Fragment pf = new PickupFragment();
 		// RaceTrackFragment raceTrackFragment = RaceTrackFragment
 		// .createInstacnce();
 		// SettingFragment settingFragment = SettingFragment.createInstacnce();
 
-		Bundle args = new Bundle();
-		args.putInt(PlanetFragment.ARG_PLANET_NUMBER, position);
-		fragment.setArguments(args);
+//		Bundle args = new Bundle();
+//		args.putInt(PlanetFragment.ARG_PLANET_NUMBER, position);
+//		fragment.setArguments(args);
 
 		// FragmentManager fragmentManager = getFragmentManager();
 		fragmentManager = getSupportFragmentManager();
-		//if (position == 0) {
-			// fragmentManager.beginTransaction().replace(R.id.content_frame,
-			// pf)
-			// .commit();
-			// fragmentManager.beginTransaction()
-			// .replace(R.id.content_frame, settingFragment).commit();
-			// Intent i = new Intent(this, LoginActivity.class);
-			// startActivity(i);
-			// settingFragment();
-			// fragmentManager
-			// .beginTransaction()
-			// .replace(R.id.content_frame,
-			// FacebookFragment.createInstacnce()).commit();
-//			showFragment(USERSETTINGS, false);
-	//	} else 
-			if (position == 0) {
+		// if (position == 0) {
+		// fragmentManager.beginTransaction().replace(R.id.content_frame,
+		// pf)
+		// .commit();
+		// fragmentManager.beginTransaction()
+		// .replace(R.id.content_frame, settingFragment).commit();
+		// Intent i = new Intent(this, LoginActivity.class);
+		// startActivity(i);
+		// settingFragment();
+		// fragmentManager
+		// .beginTransaction()
+		// .replace(R.id.content_frame,
+		// FacebookFragment.createInstacnce()).commit();
+		// showFragment(USERSETTINGS, false);
+		// } else
+		if (position == 0) {
 			// fragmentManager.beginTransaction()
 			// .replace(R.id.content_frame, raceTrackFragment).commit();
-//			if (!isGpsEnable()) {
-//				DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-//					@Override
-//					public void onClick(DialogInterface dialog, int which) {
-//						switch (which) {
-//						case DialogInterface.BUTTON_POSITIVE:
-//							Intent intent = new Intent(
-//									Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-//							startActivity(intent);
-//							break;
-//						case DialogInterface.BUTTON_NEGATIVE:
-//							// No button clicked
-//							break;
-//						}
-//					}
-//				};
-//				AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//				builder.setMessage("Setting GPS?")
-//						.setPositiveButton("Yes", dialogClickListener).show();
-//			} else {
-				Intent i = new Intent(this, RaceTrackSelectorActivity.class);
-				// i.putExtra(name, value)
-				startActivity(i);
-//			}
-			
+			// if (!isGpsEnable()) {
+			// DialogInterface.OnClickListener dialogClickListener = new
+			// DialogInterface.OnClickListener() {
+			// @Override
+			// public void onClick(DialogInterface dialog, int which) {
+			// switch (which) {
+			// case DialogInterface.BUTTON_POSITIVE:
+			// Intent intent = new Intent(
+			// Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+			// startActivity(intent);
+			// break;
+			// case DialogInterface.BUTTON_NEGATIVE:
+			// // No button clicked
+			// break;
+			// }
+			// }
+			// };
+			// AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			// builder.setMessage("Setting GPS?")
+			// .setPositiveButton("Yes", dialogClickListener).show();
+			// } else {
+			Intent i = new Intent(this, RaceTrackSelectorActivity.class);
+			// i.putExtra(name, value)
+			startActivity(i);
+			// }
+
 		} else if (position == 1) {
 			Intent i = new Intent(this, CreateTrackActivity.class);
 			startActivity(i);
-		
+
 		} else if (position == 2) {
 			// Intent i = new Intent(this, FinishActivity.class);
 			// startActivity(i);
@@ -426,12 +437,13 @@ public class MainActivity extends FragmentActivity implements OnFragmentInteract
 			// .beginTransaction()
 			// .replace(R.id.content_frame,
 			// SettingFragment.createInstacnce()).commit();
-			showFragment(SETTING, false);
+			showFragment(MYACTIVITY, false);
 
 		} else if (position == 3) {
+			showFragment(SETTING, false);
+
+		} else if (position == 4) {
 			exitApp();
-		}else if (position == 4) {
-			showFragment(MYACTIVITY, false);
 		}
 
 		// update selected item and title, then close the drawer
@@ -495,7 +507,6 @@ public class MainActivity extends FragmentActivity implements OnFragmentInteract
 		finish();
 		android.os.Process.killProcess(android.os.Process.myPid());
 		super.onDestroy();
-		
 
 	}
 
@@ -574,8 +585,13 @@ public class MainActivity extends FragmentActivity implements OnFragmentInteract
 	}
 
 	@Override
-	public void onFragmentInteraction(String id) {
-		// TODO Auto-generated method stub
-		
+	public synchronized void onResponse(String result) {
+		if (result == null)
+			return;
+		if (myActivityFragment == null) {
+			return;
+		}
+		myActivityFragment.setServerResponseResult(result);
+
 	}
 }

@@ -54,6 +54,9 @@ public class FinishMyListViewFragment extends Fragment {
 				.findViewById(R.id.finish_my_name_txt);
 		finishCaloriesTxtView = (TextView) rootView
 				.findViewById(R.id.finish_my_calories_txt);
+		//calories
+		
+		//duration
 		long mils = getArguments().getLong("duration");
         int seconds = (int) (mils / 1000);
 		int minutes = seconds / 60;

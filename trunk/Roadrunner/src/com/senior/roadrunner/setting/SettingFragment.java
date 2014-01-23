@@ -1,4 +1,4 @@
-package com.senior.roadrunner;
+package com.senior.roadrunner.setting;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,8 +27,11 @@ import com.facebook.Settings;
 import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.ProfilePictureView;
+import com.senior.roadrunner.R;
+import com.senior.roadrunner.R.id;
+import com.senior.roadrunner.R.layout;
+import com.senior.roadrunner.R.string;
 import com.senior.roadrunner.server.GetMyProfulePicture;
-import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.tools.RoadrunnerTools;
 
 public class SettingFragment extends Fragment implements OnClickListener {
