@@ -1,23 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout 
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/post_background_style" >
 
-        <android.support.v4.view.ViewPager
-            android:id="@+id/finishPager"
-            android:layout_width="match_parent"
-            android:layout_height="250dp" />
+    <!--
+         <android.support.v4.view.ViewPager
+        android:id="@+id/finishPager"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/progressbar"
+        android:layout_marginTop="-6dp"
+        android:layout_height="250dp" />
+    -->
 
-        <ListView
-            android:id="@+id/finishListView"
+    <LinearLayout
+        android:id="@+id/finishDetail"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_below="@+id/progressbar"
+        android:layout_marginTop="-6dp"
+        android:background="@drawable/com_facebook_usersettingsfragment_background_gradient"
+        android:orientation="vertical" >
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/finishPager"
-            android:background="@drawable/post_background_style"
-            android:divider="@color/white_gage" >
-        </ListView>
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/finish_my_place_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/finish_my_name_txt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:gravity="center_horizontal"
+                android:scrollHorizontally="true"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="Duration  :"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/finish_my_duration_txt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:gravity="center"
+                android:text="0"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="AVG KPH :"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/finish_my_avgkph_txt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:gravity="center"
+                android:text="0"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="Calories   :"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/finish_my_calories_txt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:gravity="center"
+                android:text="0"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/white" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/finishListView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/finishDetail"
+        android:background="@drawable/post_background_style"
+        android:divider="@color/white_gage" >
+    </ListView>
+
+    <fr.castorflex.android.smoothprogressbar.SmoothProgressBar
+        android:id="@+id/progressbar"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="-6dp"
+        android:indeterminate="true"
+        android:indeterminateOnly="false" >
+    </fr.castorflex.android.smoothprogressbar.SmoothProgressBar>
 
 </RelativeLayout>

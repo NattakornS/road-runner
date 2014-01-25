@@ -41,6 +41,20 @@ public class RoadrunnerTools {
 		}
 	}
 
+	public static boolean fileIsExists(String path) {
+		File f = new File(path);
+		File pf = f.getParentFile();
+		if (pf != null) {
+			pf.mkdirs();
+		}
+		if ((pf.exists()) && (pf.isDirectory())) {
+			if ((f.exists()) || (f.isFile())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static String readStringFromFile(String path) {
 		String str = null;
 		try {
@@ -71,4 +85,21 @@ public class RoadrunnerTools {
 		return str;
 	}
 
+	public static void deleteDirectory(File dir) {
+		if (dir.isDirectory()) {
+			String[] children = dir.list();
+			for (int i = 0; i < children.length; i++) {
+				File child = new File(dir, children[i]);
+				if (child.isDirectory()) {
+					deleteDirectory(child);
+					child.delete();
+				} else {
+					child.delete();
+
+				}
+			}
+			dir.delete();
+			System.out.println("DIR DELETED");
+		}
+	}
 }

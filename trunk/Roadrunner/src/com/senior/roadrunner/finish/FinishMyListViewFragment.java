@@ -13,16 +13,14 @@ import com.senior.roadrunner.trackchooser.TrackMemberList;
 
 public class FinishMyListViewFragment extends Fragment {
 
-	public static FinishMyListViewFragment newInstance(TrackMemberList trackMemberList) {
+	private static FinishMyListViewFragment finishMyListViewFragment;
 
-		FinishMyListViewFragment finishMyListViewFragment = new FinishMyListViewFragment();
-		Bundle bundle = new Bundle();
-		bundle.putString("rank", trackMemberList.getRank()+"");
-		bundle.putDouble("rank", trackMemberList.getRank());
-		bundle.putString("avgkph", String.format("%.2f",trackMemberList.getAVGSpeed()));
-		bundle.putLong("duration", trackMemberList.getDuration());
-//		bundle.putString("calories", trackMemberList.getRank()+"");
-		finishMyListViewFragment.setArguments(bundle);
+	public static FinishMyListViewFragment getInstance(
+			TrackMemberList trackMemberList) {
+		if (finishMyListViewFragment == null) {
+			finishMyListViewFragment = new FinishMyListViewFragment();
+		}
+
 		return finishMyListViewFragment;
 	}
 
@@ -43,48 +41,38 @@ public class FinishMyListViewFragment extends Fragment {
 			Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.finish_my_listview,
 				container, false);
-		roadRunnerSetting = RoadRunnerSetting.getInstance();
-		finishDurationTxtView = (TextView) rootView
-				.findViewById(R.id.finish_my_duration_txt);
-		finishPlaceTxtView = (TextView) rootView
-				.findViewById(R.id.finish_my_place_txt);
-		finishAvgkphTxtView = (TextView) rootView
-				.findViewById(R.id.finish_my_avgkph_txt);
-		finishNameTxtView = (TextView) rootView
-				.findViewById(R.id.finish_my_name_txt);
-		finishCaloriesTxtView = (TextView) rootView
-				.findViewById(R.id.finish_my_calories_txt);
-		//calories
 		
-		//duration
-		long mils = getArguments().getLong("duration");
-        int seconds = (int) (mils / 1000);
-		int minutes = seconds / 60;
-		seconds = seconds % 60;
-		finishPlaceTxtView.setText(getArguments().getString("rank"));
-		finishAvgkphTxtView.setText(getArguments().getString("avgkph"));
-		finishCaloriesTxtView.setText("300");
-		finishNameTxtView.setText(roadRunnerSetting.getFacebookName());
-		finishDurationTxtView.setText("" + minutes + ":"
-				+ String.format("%02d", seconds));
-
 		return rootView;
 	}
 
-	public void setPlace(String place){
+	public void setPlace(String place) {
+		finishPlaceTxtView = (TextView) getView().findViewById(
+				R.id.finish_my_place_txt);
 		finishPlaceTxtView.setText(place);
 	}
-	public void setAvgKph(String speed){
+
+	public void setAvgKph(String speed) {
+		finishAvgkphTxtView = (TextView) getView().findViewById(
+				R.id.finish_my_avgkph_txt);
 		finishAvgkphTxtView.setText(speed);
 	}
-	public void setName(String name){
+
+	public void setName(String name) {
+		finishNameTxtView = (TextView) getView().findViewById(
+				R.id.finish_my_name_txt);
 		finishNameTxtView.setText(name);
 	}
-	public void setDuration(String duration){
+
+	public void setDuration(String duration) {
+		finishDurationTxtView = (TextView) getView().findViewById(
+				R.id.finish_my_duration_txt);
 		finishDurationTxtView.setText(duration);
 	}
-	public void setCalories(String calories){
+
+	public void setCalories(String calories) {
+		finishCaloriesTxtView = (TextView) getView().findViewById(
+				R.id.finish_my_calories_txt);
 		finishCaloriesTxtView.setText(calories);
 	}
-	
+
 }

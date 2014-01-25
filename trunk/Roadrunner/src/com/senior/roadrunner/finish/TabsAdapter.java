@@ -109,13 +109,13 @@ public class TabsAdapter extends FragmentPagerAdapter implements TabListener, On
 		TabInfo info = mTabs.get(position);
 //		return Fragment.instantiate(mContext, info.clss.getName(), info.args);
 		if(info.clss.getName().equals(FinishMyListViewFragment.class.getName())){
-			return FinishMyListViewFragment.newInstance(trackMemberList);
+			return FinishMyListViewFragment.getInstance(trackMemberList);
 			
-		}if(info.clss.getName().equals(FinishMapFragment.class.getName())){
-			return FinishMapFragment.newInstance();
 		}
-	
-		return FinishMyListViewFragment.newInstance(trackMemberList);
+		//if(info.clss.getName().equals(FinishMapFragment.class.getName())){
+			return FinishMapFragment.newInstance();
+		//}
+
 	}
 
 

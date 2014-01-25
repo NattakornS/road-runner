@@ -9,6 +9,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,6 +29,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.AppEventsLogger;
@@ -54,8 +57,11 @@ import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.server.UploadTask;
 import com.senior.roadrunner.server.UploadTrack;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
+import com.senior.roadrunner.tools.RoadrunnerTools;
 import com.senior.roadrunner.trackchooser.TrackMemberList;
 import com.senior.roadrunner.trackchooser.UploadActionBarView;
+
+import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 
 public class FinishActivity extends FragmentActivity implements OnClickListener {
 
@@ -68,7 +74,7 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 
 	private static final String tag = "FinishActivity";
 
-	private final String PENDING_ACTION_BUNDLE_KEY = "com.facebook.samples.hellofacebook:PendingAction";
+	private final String PENDING_ACTION_BUNDLE_KEY = "com.senior.roadrunner.FinishActivity:PendingAction";
 
 	private PendingAction pendingAction = PendingAction.NONE;
 	private GraphUser user;
@@ -114,9 +120,23 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 
 	private double lat;
 
-	private UploadActionBarView mUploadActionView;
+	// private UploadActionBarView mUploadActionView;
 
 	private UploadActionBarView mUploadFBActionView;
+
+	private SmoothProgressBar mProgressBar;
+
+	private ListView finishListView;
+
+	private TextView finishPlaceTxtView;
+
+	private TextView finishAvgkphTxtView;
+
+	private TextView finishNameTxtView;
+
+	private TextView finishDurationTxtView;
+
+	private TextView finishCaloriesTxtView;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -133,16 +153,60 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 		trackName = intent.getStringExtra("TrackName");
 		trackMemberList = (ArrayList<TrackMemberList>) intent
 				.getSerializableExtra("TrackMemberList");
-		// trackMemberList = MapsActivity.getTrackMemberList();
-		if (trackMemberList != null) {
-			FinishAdaptor aa = new FinishAdaptor(this, trackMemberList);
-			final ListView ll = (ListView) findViewById(R.id.finishListView);
-			ll.setAdapter(aa);
+		List<LatLngTimeData> trackFile = TrackDataBase
+				.loadXmlFile(RoadRunnerSetting.SDPATH
+						+ roadRunnerSetting.getFacebookId() + ".xml");
+		if (trackFile != null) {
+			if (trackFile.size() > 0) {
+				lat = trackFile.get(0).getCoordinate().getLat();
+				lng = trackFile.get(0).getCoordinate().getLng();
+			} else {
+				Log.e(tag,
+						"track file size is less than zero. can't get first position for send to server.");
+			}
 		}
 
-		initialisePaging();
+		for (int i = 0; i < trackMemberList.size(); i++) {
+			if (trackMemberList.get(i).getfId()
+					.equals(roadRunnerSetting.getFacebookId())) {
+				myTrack = trackMemberList.get(i);
+				break;
+			}
+		}
+		initLayout();
+		// initialisePaging();
 		canPresentShareDialog = FacebookDialog.canPresentShareDialog(this,
 				FacebookDialog.ShareDialogFeature.SHARE_DIALOG);
+		// upload result
+		mProgressBar.setVisibility(SmoothProgressBar.VISIBLE);
+		submitRaceResult();
+		// Delete file in tracker directory
+		RoadrunnerTools.deleteDirectory(new File(RoadRunnerSetting.SDPATH
+				+ "tracker"));
+
+	}
+
+	private void initLayout() {
+		getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		getActionBar().setDisplayHomeAsUpEnabled(true);
+		invalidateOptionsMenu();
+		if (trackMemberList != null) {
+			// FinishAdaptor aa = new FinishAdaptor(this, trackMemberList);
+			finishListView = (ListView) findViewById(R.id.finishListView);
+			// finishListView.setAdapter(aa);
+		}
+		mProgressBar = (SmoothProgressBar) findViewById(R.id.progressbar);
+		mProgressBar.setVisibility(SmoothProgressBar.GONE);
+
+		finishPlaceTxtView = (TextView) findViewById(R.id.finish_my_place_txt);
+
+		finishAvgkphTxtView = (TextView) findViewById(R.id.finish_my_avgkph_txt);
+
+		finishNameTxtView = (TextView) findViewById(R.id.finish_my_name_txt);
+
+		finishDurationTxtView = (TextView) findViewById(R.id.finish_my_duration_txt);
+		finishCaloriesTxtView = (TextView) findViewById(R.id.finish_my_calories_txt);
+		
 	}
 
 	@Override
@@ -320,6 +384,7 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 							showPublishResult(getString(R.string.photo_post),
 									response.getGraphObject(),
 									response.getError());
+							mProgressBar.setVisibility(SmoothProgressBar.GONE);
 							if (mUploadFBActionView != null)
 								mUploadFBActionView.stopAnimatingBackground();
 						}
@@ -397,42 +462,37 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 		}
 	}
 
-	private void initialisePaging() {
-
-		ViewPager pager = (ViewPager) super.findViewById(R.id.finishPager);
-		ActionBar bar = getActionBar();
-		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-		bar.setTitle("Roadrunner");
-		bar.setSubtitle("Race Result");
-
-		for (int i = 0; i < trackMemberList.size(); i++) {
-			if (trackMemberList.get(i).getfId()
-					.equals(roadRunnerSetting.getFacebookId())) {
-				myTrack = trackMemberList.get(i);
-				break;
-			}
-		}
-
-		List<LatLngTimeData> trackFile = TrackDataBase
-				.loadXmlFile(RoadRunnerSetting.SDPATH
-						+ roadRunnerSetting.getFacebookId() + ".xml");
-		if (trackFile != null) {
-			if (trackFile.size() > 0) {
-				lat = trackFile.get(0).getCoordinate().getLat();
-				lng = trackFile.get(0).getCoordinate().getLng();
-			} else {
-				Log.e(tag, "track file size is less than zero. can't get first position for send to server.");
-			}
-		}
-
-		mTabsAdapter = new TabsAdapter(this, pager, myTrack);
-		mTabsAdapter.addTab(bar.newTab().setText("Result"),
-				FinishMyListViewFragment.class, null);
-		mTabsAdapter.addTab(bar.newTab().setText("Maps"),
-				FinishMapFragment.class, null);
-		bar.setDisplayHomeAsUpEnabled(true);
-		invalidateOptionsMenu();
-	}
+	// private void initialisePaging() {
+	//
+	// ViewPager pager = (ViewPager) super.findViewById(R.id.finishPager);
+	// ActionBar bar = getActionBar();
+	// bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+	// bar.setTitle("Roadrunner");
+	// bar.setSubtitle("Race Result");
+	//
+	//
+	//
+	// List<LatLngTimeData> trackFile = TrackDataBase
+	// .loadXmlFile(RoadRunnerSetting.SDPATH
+	// + roadRunnerSetting.getFacebookId() + ".xml");
+	// if (trackFile != null) {
+	// if (trackFile.size() > 0) {
+	// lat = trackFile.get(0).getCoordinate().getLat();
+	// lng = trackFile.get(0).getCoordinate().getLng();
+	// } else {
+	// Log.e(tag,
+	// "track file size is less than zero. can't get first position for send to server.");
+	// }
+	// }
+	//
+	// mTabsAdapter = new TabsAdapter(this, pager, myTrack);
+	// mTabsAdapter.addTab(bar.newTab().setText("Result"),
+	// FinishMyListViewFragment.class, null);
+	// mTabsAdapter.addTab(bar.newTab().setText("Maps"),
+	// FinishMapFragment.class, null);
+	// bar.setDisplayHomeAsUpEnabled(true);
+	// invalidateOptionsMenu();
+	// }
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -440,18 +500,18 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.finish_menu, menu);
 
-		MenuItem item = menu.findItem(R.id.save_finish_menu_btn);
-		mUploadActionView = (UploadActionBarView) item.getActionView();
-		mUploadActionView.getAnimateImageView().setImageResource(
-				R.drawable.upload_t);
+		// MenuItem item = menu.findItem(R.id.save_finish_menu_btn);
+		// mUploadActionView = (UploadActionBarView) item.getActionView();
+		// mUploadActionView.getAnimateImageView().setImageResource(
+		// R.drawable.upload_t);
 
-		item = menu.findItem(R.id.share_facebook_finish_menu_btn);
+		MenuItem item = menu.findItem(R.id.share_facebook_finish_menu_btn);
 		mUploadFBActionView = (UploadActionBarView) item.getActionView();
 		mUploadFBActionView.getAnimateImageView().setImageResource(
 				R.drawable.facebookshare);
 		// onOptionsItemSelected will NOT be called for a custom View,
 		// so set a OnClickListener and handle it ourselves.
-		mUploadActionView.setOnClickListener(this);
+		// mUploadActionView.setOnClickListener(this);
 		mUploadFBActionView.setOnClickListener(this);
 		return super.onCreateOptionsMenu(menu);
 	}
@@ -595,10 +655,64 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 	@SuppressLint("ShowToast")
 	public void setDataBaseServerResponse(String result) {
 		// DataBase response result
-		Log.d("Response DataBase : ", result);
-		Toast.makeText(this, "Database : " + result, 500).show();
-		if (mUploadActionView != null)
-			mUploadActionView.stopAnimatingBackground();
+		System.out.println("Response DataBase : " + result);
+		Toast.makeText(this, "Database : " + result, 2000).show();
+		mProgressBar.setVisibility(SmoothProgressBar.GONE);
+		// clear Track memberlist for add a new rerank data from server.
+		trackMemberList.clear();
+		trackMemberList = new ArrayList<TrackMemberList>();
+		try {
+			// get race track data from database server to set ListAdapter.
+			JSONArray jsonArr = new JSONArray(result);
+
+			for (int i = 0; i < jsonArr.length(); i++) {
+				final TrackMemberList sched = new TrackMemberList();
+				JSONObject jsonObject = new JSONObject(jsonArr.getString(i));
+
+				/******* Firstly take data in model object ******/
+				sched.setfId(jsonObject.getString("Fid"));
+				sched.setfName(jsonObject.getString("fName"));
+				sched.setrId(jsonObject.getString("Rid"));
+				sched.setRank(jsonObject.getInt("Rank"));
+				sched.setTrackerDir(jsonObject.getString("Trackerdir"));
+				sched.setDuration(Integer.parseInt(jsonObject.getString("Time")));
+				/******** Take Model Object in ArrayList **********/
+				trackMemberList.add(sched);
+				if (roadRunnerSetting.getFacebookId().equals(sched.getfId())) {
+					// FinishMyListViewFragment fin = FinishMyListViewFragment
+					// .getInstance(sched);
+					long mils = sched.getDuration();
+					int seconds = (int) (mils / 1000);
+					int minutes = seconds / 60;
+					seconds = seconds % 60;
+					// fin.setPlace(sched.getRank() + "");
+					// fin.setAvgKph(sched.getAVGSpeed() + "");
+					// fin.setCalories("300");
+					// fin.setName(sched.getfName());
+					// fin.setDuration("" + minutes + ":"
+					// + String.format("%02d", seconds));
+					finishPlaceTxtView.setText(sched.getRank() + "");
+					finishAvgkphTxtView.setText(sched.getAVGSpeed() + "");
+					finishNameTxtView.setText(sched.getfName());
+					finishDurationTxtView.setText("" + minutes + ":"
+							+ String.format("%02d", seconds));
+					finishCaloriesTxtView.setText("300");
+				}
+			}
+
+			// load profile picture to sd card
+			// RaceTrackBitmapProfile getBitmapProfile = new
+			// RaceTrackBitmapProfile(
+			// trackMemberList);
+			// getBitmapProfile.start();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		FinishAdaptor aa = new FinishAdaptor(this, trackMemberList);
+		finishListView.setAdapter(aa);
+		// if (mUploadActionView != null)
+		// mUploadActionView.stopAnimatingBackground();
 
 	}
 
@@ -638,17 +752,18 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 	@Override
 	public void onClick(View v) {
 		// actionbar button click
-		if (v == mUploadActionView) {
-			// Action Bar item has been clicked, do something...
-			// When you later want to animate the background, or stop the
-			// animate, just call:
-			if (null != mUploadActionView) {
-				// To start the animation
-				mUploadActionView.animateBackground();
-				submitRaceResult();
-			}
-		}
+		// if (v == mUploadActionView) {
+		// // Action Bar item has been clicked, do something...
+		// // When you later want to animate the background, or stop the
+		// // animate, just call:
+		// if (null != mUploadActionView) {
+		// // To start the animation
+		// mUploadActionView.animateBackground();
+		// submitRaceResult();
+		// }
+		// }
 		if (v == mUploadFBActionView) {
+			mProgressBar.setVisibility(SmoothProgressBar.VISIBLE);
 			if (null != mUploadFBActionView) {
 				// To start the animation
 				mUploadFBActionView.animateBackground();

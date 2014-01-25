@@ -156,7 +156,7 @@ public class MainActivity extends FragmentActivity implements
 							showFragment(SETTING, false);
 						}
 					});
-			selectItem(2);
+			selectItem(3);
 		}
 
 		//
