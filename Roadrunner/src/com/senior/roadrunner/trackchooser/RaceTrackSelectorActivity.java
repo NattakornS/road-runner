@@ -66,6 +66,7 @@ import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.server.DownloadTask;
 import com.senior.roadrunner.server.GetMyProfulePicture;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
+import com.senior.roadrunner.tools.RoadrunnerTools;
 
 @SuppressLint("NewApi")
 public class RaceTrackSelectorActivity extends Activity implements
@@ -352,6 +353,9 @@ public class RaceTrackSelectorActivity extends Activity implements
 
 	public void onItemClick(int mPosition) {
 		this.listPosition = mPosition;
+		if (null != mUploadActionView) {
+			mUploadActionView.animateBackground();
+		}
 		// set listview hiding when user choose tracklist
 		listView.setVisibility(View.GONE);
 		raceBtn.setVisibility(View.GONE);
@@ -376,42 +380,52 @@ public class RaceTrackSelectorActivity extends Activity implements
 		mDrawerLayout.closeDrawer(mDrawerList);
 		// set track name in Roadrunner setting.
 		roadRunnerSetting.setRaceTrackName(tempValues.getRaceTrackName());
+
+		String trackDir = RoadRunnerSetting.SDPATH + "racetrack/"
+				+ tempValues.getrId() + ".xml";
+		System.out.println("file is exist : "
+				+ RoadrunnerTools.fileIsExists(trackDir));
+		if (RoadrunnerTools.fileIsExists(trackDir)) {
+			setTrackPath(trackDir, mPosition);
+		} else {
+
+			DownloadTask downloadTrackPath = new DownloadTask(this);
+			downloadTrackPath.setIndex(mPosition);
+			downloadTrackPath.setRequestTag(ConnectServer.TRACK_PATH);
+			String params[] = { RoadRunnerSetting.URLServer,
+					"racetrack/" + tempValues.getrId() + ".xml" };
+			downloadTrackPath.execute(params);
+		}
+
 		// get trackpath from server.
-		if (trackList.get(listPosition).getTrackData() != null
-				|| trackList.get(listPosition).getTrackMemberList() != null) {
-//			System.out.println(trackList.get(listPosition).getTrackData());
+		if (trackList.get(listPosition).getTrackMemberList() != null) {
+			// System.out.println(trackList.get(listPosition).getTrackData());
 			ArrayList<LatLngTimeData> trackPathData = (ArrayList<LatLngTimeData>) TrackDataBase
 					.loadXmlFile(trackList.get(listPosition).getTrackData());
-			
-			drawTrackPath(trackPathData);
+
+			// drawTrackPath(trackPathData);
 			printTrackData(trackList.get(listPosition).getTrackMemberList());
-			return;
-		}
+		} else {
 
-		DownloadTask downloadTrackPath = new DownloadTask(this);
-		downloadTrackPath.setIndex(mPosition);
-		downloadTrackPath.setRequestTag(ConnectServer.TRACK_PATH);
-		String params[]={RoadRunnerSetting.URLServer,"racetrack/" + tempValues.getrId() + ".xml"};
-		downloadTrackPath.execute(params);
+			// connectServer = new ConnectServer(this,
+			// RoadRunnerSetting.URLServer
+			// + "getTrackPath.php");
+			// connectServer.addValue("Rdir", RoadRunnerSetting.URLServer
+			// + "racetrack/" + tempValues.getrId() + ".xml");
+			// connectServer.setRequestTag(ConnectServer.TRACK_PATH);
+			// connectServer.setIndex(mPosition);
+			// connectServer.execute();
+
+			// getMember of mPosition Race Track.
+			connectServer = new ConnectServer(this, RoadRunnerSetting.URLServer
+					+ "getTrackMember.php");
+			connectServer.addValue("Rid", tempValues.getrId());
+			connectServer.setRequestTag(ConnectServer.TRACK_MEMBER);
+			connectServer.setIndex(mPosition);
+			connectServer.execute();
+
+		}
 		
-//		connectServer = new ConnectServer(this, RoadRunnerSetting.URLServer
-//				+ "getTrackPath.php");
-//		connectServer.addValue("Rdir", RoadRunnerSetting.URLServer
-//				+ "racetrack/" + tempValues.getrId() + ".xml");
-//		connectServer.setRequestTag(ConnectServer.TRACK_PATH);
-//		connectServer.setIndex(mPosition);
-//		connectServer.execute();
-
-		// getMember of mPosition Race Track.
-		connectServer = new ConnectServer(this, RoadRunnerSetting.URLServer
-				+ "getTrackMember.php");
-		connectServer.addValue("Rid", tempValues.getrId());
-		connectServer.setRequestTag(ConnectServer.TRACK_MEMBER);
-		connectServer.setIndex(mPosition);
-		connectServer.execute();
-		if (null != mUploadActionView) {
-			mUploadActionView.animateBackground();
-		}
 	}
 
 	@Override
@@ -476,18 +490,14 @@ public class RaceTrackSelectorActivity extends Activity implements
 		}
 	}
 
-	public synchronized void setTrackPath(String result, int index) {
+	public synchronized void setTrackPath(String trackDir, int index) {
 
 		// Draw track on map from xml string.
-		String xmlTrackData = result;
-		System.out.println(result);
 		ArrayList<LatLngTimeData> trackPathData = (ArrayList<LatLngTimeData>) TrackDataBase
-				.loadXmlFile(result);
+				.loadXmlFile(trackDir);
 		drawTrackPath(trackPathData);
-		trackList.get(index).setTrackData(xmlTrackData);
-		if (null != mUploadActionView) {
-			mUploadActionView.stopAnimatingBackground();
-		}
+		trackList.get(index).setTrackData(trackDir);
+
 	}
 
 	// Drawing on map function.
@@ -529,7 +539,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 	}
 
 	public synchronized void setTeackMember(String result, int index) {
-
+System.out.println(result);
 		ArrayList<TrackMemberList> trackMemberList = new ArrayList<TrackMemberList>();
 		try {
 			// get race track data from database server to set ListAdapter.
@@ -543,17 +553,19 @@ public class RaceTrackSelectorActivity extends Activity implements
 				sched.setfId(jsonObject.getString("Fid"));
 				sched.setfName(jsonObject.getString("fName"));
 				sched.setrId(jsonObject.getString("Rid"));
-				sched.setRank(i + 1);// rank has been query by duration.
+				sched.setRank(jsonObject.getInt("Rank"));// rank has been query by duration.
 				sched.setTrackerDir(jsonObject.getString("Trackerdir"));
 				sched.setDuration(Integer.parseInt(jsonObject.getString("Time")));
 				/******** Take Model Object in ArrayList **********/
 				trackMemberList.add(sched);
 
 			}
+
 			// load profile picture to sd card
-			RaceTrackBitmapProfile getBitmapProfile = new RaceTrackBitmapProfile(
-					trackMemberList);
-			getBitmapProfile.start();
+			// RaceTrackBitmapProfile getBitmapProfile = new
+			// RaceTrackBitmapProfile(
+			// trackMemberList);
+			// getBitmapProfile.start();
 		} catch (JSONException e) {
 
 		}
@@ -588,6 +600,9 @@ public class RaceTrackSelectorActivity extends Activity implements
 			// go button enable
 			raceBtn.setVisibility(View.VISIBLE);
 			raceBtn.startAnimation(animAlpha);
+		}
+		if (null != mUploadActionView) {
+			mUploadActionView.stopAnimatingBackground();
 		}
 		// map.setInfoWindowAdapter(new InfoWindowAdapter() {
 		//

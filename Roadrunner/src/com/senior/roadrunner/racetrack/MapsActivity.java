@@ -38,6 +38,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -202,6 +204,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private ImageLoader imageLoader;
 	private DisplayImageOptions options;
 	protected Bitmap profileIcon = null;
+	private boolean readyStart=false;
+	private Animation shakeAnimation;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -498,16 +502,17 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private void checkisInPath(Point point) {
 		if (polygonStart != null && startCheck) {
 
-			if (polygonStart.contains(point)) {
+			if (readyStart=polygonStart.contains(point)) {
 				Toast.makeText(this, "Start point : IN TRACK",
 						Toast.LENGTH_SHORT).show();
 				speakOut("Ready to start");
-				btn_track.setEnabled(true);
+				btn_track.startAnimation(shakeAnimation);
+//				btn_track.setEnabled(true);
 			} else {
 				Toast.makeText(this, "Start point : OUT TRACK",
 						Toast.LENGTH_SHORT).show();
 				speakOut("out of start point");
-				btn_track.setEnabled(false);
+//				btn_track.setEnabled(false);
 			}
 		}
 		if (polygonsTrack != null && pathCheck) {
@@ -563,7 +568,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	}
 
 	private void initwidget() {
-
+		shakeAnimation  = AnimationUtils.loadAnimation(this, R.anim.shake);
 		btn_track = (Button) findViewById(R.id.btn_track);
 		btn_track.setOnClickListener(this);
 		btn_stop_track = (Button) findViewById(R.id.btn_stop_track);
@@ -603,15 +608,20 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.btn_track:
-			setTrackingPath(true);
-			setStartPointTracking(false);
-			recordCheck = true;
-			btn_track.setEnabled(false);
-			raceThread();
-			// startTimer
-			startTime = SystemClock.uptimeMillis();
-			myHandler.postDelayed(updateTimerMethod, 0);
-			speakOut("Go");
+			if(readyStart){
+				setTrackingPath(true);
+				setStartPointTracking(false);
+				recordCheck = true;
+//				btn_track.setEnabled(false);
+				raceThread();
+				// startTimer
+				startTime = SystemClock.uptimeMillis();
+				myHandler.postDelayed(updateTimerMethod, 0);
+				speakOut("Go");
+			}else{
+				Toast.makeText(this, "Please stand inside start point", Toast.LENGTH_LONG).show();
+			}
+			
 			break;
 		case R.id.btn_stop_track:
 			// leave race
@@ -818,11 +828,12 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 		}
 		if (loc.getAccuracy() < 40.0) {
-			checkisInPath(point);
 			if (recordCheck) {
 				map.animateCamera(CameraUpdateFactory.newLatLng(coord));
 				recordTrack(loc);
 			}
+			checkisInPath(point);
+			
 		}
 	}
 

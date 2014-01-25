@@ -12,16 +12,36 @@
         android:layout_margin="5dp"
         android:background="@drawable/post_border_style" >
 
-        <ImageView
-            android:id="@+id/place_image"
+        <RelativeLayout
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:layout_gravity="center_vertical"
             android:layout_marginBottom="10dp"
             android:layout_marginLeft="2dp"
             android:layout_marginTop="10dp"
             android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
-            android:src="@drawable/award" />
+            android:scaleType="fitCenter" >
+
+            <ImageView
+                android:id="@+id/place_image"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:scaleType="fitCenter"
+                android:src="@drawable/award" >
+            </ImageView>
+
+            <TextView
+                android:id="@+id/finish_rank"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="19dp"
+                android:layout_marginTop="7dp"
+                android:textColor="@color/white"
+                android:textSize="10dp"
+                android:textStyle="bold" />
+        </RelativeLayout>
 
         <ImageView
             android:id="@+id/finish_pic_list_img"
