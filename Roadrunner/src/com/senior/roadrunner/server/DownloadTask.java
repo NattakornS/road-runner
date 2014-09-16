@@ -8,14 +8,14 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import com.senior.roadrunner.racetrack.MapsActivity;
-import com.senior.roadrunner.setting.RoadRunnerSetting;
-import com.senior.roadrunner.trackchooser.RaceTrackSelectorActivity;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.PowerManager;
+
+import com.senior.roadrunner.racetrack.MapsActivity;
+import com.senior.roadrunner.setting.RoadRunnerSetting;
+import com.senior.roadrunner.trackchooser.RaceTrackSelectorActivity;
 
 @SuppressLint({ "SdCardPath", "Wakelock" })
 public class DownloadTask extends AsyncTask<String, Integer, String> {

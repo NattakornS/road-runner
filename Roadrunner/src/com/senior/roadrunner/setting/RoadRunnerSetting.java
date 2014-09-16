@@ -5,10 +5,10 @@ import java.io.File;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.senior.roadrunner.tools.RoadrunnerTools;
-
 import android.graphics.Bitmap;
 import android.os.Environment;
+
+import com.senior.roadrunner.tools.RoadrunnerTools;
 
 public class RoadRunnerSetting {
 	private String facebookName;

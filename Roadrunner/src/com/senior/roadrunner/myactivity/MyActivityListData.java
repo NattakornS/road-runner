@@ -6,12 +6,12 @@ public class MyActivityListData {
 	private double duration;
 	private String trackName;
 	private String date;
-	private String detail;
-	public String getDetail() {
-		return detail;
+	private double distance;
+	public double getDistance() {
+		return distance;
 	}
-	public void setDetail(String detail) {
-		this.detail = detail;
+	public void setDetail(double distance) {
+		this.distance = distance;
 	}
 	public String getDate() {
 		return date;

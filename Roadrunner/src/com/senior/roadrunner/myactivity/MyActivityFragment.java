@@ -157,7 +157,7 @@ public class MyActivityFragment extends ListFragment implements
 				JSONObject jsonObject = new JSONObject(jsonArray.getString(i));
 				MyActivityListData activityListData = new MyActivityListData();
 				activityListData.setDate(jsonObject.getString("TimeStamp"));
-				activityListData.setDetail(jsonObject.getString("Distance"));
+				activityListData.setDetail(jsonObject.getDouble("Distance"));
 				activityListData.setDuration(jsonObject.getDouble("Time"));
 				activityListData.setRank(jsonObject.getString("Rank"));
 				activityListData.setTrackName(jsonObject.getString("Rname"));

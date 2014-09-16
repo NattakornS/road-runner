@@ -23,6 +23,7 @@ public class MyActivityArrayAdapter extends ArrayAdapter<MyActivityListData> {
 		this.values = activityListDatas;
 
 	}
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		LayoutInflater inflater = (LayoutInflater) context
@@ -43,7 +44,8 @@ public class MyActivityArrayAdapter extends ArrayAdapter<MyActivityListData> {
 				+ String.format("%02d", seconds));
 		holdertrackName.setText(values.get(position).getTrackName());
 		holderdate.setText(values.get(position).getDate());
-		holderdetail.setText(values.get(position).getDetail());
+		holderdetail.setText(String.format("%.2f km", values.get(position)
+				.getDistance()));
 		return vi;
 	}
 

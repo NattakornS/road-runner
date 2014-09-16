@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.senior.roadrunner.setting.RoadRunnerSetting;
-
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+
+import com.senior.roadrunner.setting.RoadRunnerSetting;
 
 public class GetMyProfulePicture extends Thread {
 	private RoadRunnerSetting roadRunnerSetting;

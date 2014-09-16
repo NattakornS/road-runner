@@ -1,15 +1,10 @@
 package com.senior.roadrunner;
 
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Vector;
 
 import android.R.drawable;
@@ -20,21 +15,18 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
-import android.text.Editable;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -50,7 +42,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMap.OnMapLoadedCallback;
 import com.google.android.gms.maps.GoogleMap.SnapshotReadyCallback;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -59,14 +50,16 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.senior.roadrunner.data.Coordinate;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.finish.FinishActivity;
-import com.senior.roadrunner.server.GetMyProfulePicture;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.tools.Distance;
-import com.senior.roadrunner.tools.Point;
 import com.senior.roadrunner.tools.Polygon;
 import com.senior.roadrunner.trackchooser.TrackMemberList;
 
@@ -144,6 +137,7 @@ public class CreateTrackActivity extends Activity implements
 	private TextView txt_acuracy;
 	private Bitmap profileBitmap;
 	private String myProfilePath;
+	protected Bitmap profileIcon;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -177,14 +171,31 @@ public class CreateTrackActivity extends Activity implements
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(
 				R.layout.custom_marker_layout, null);
 		imageView = (ImageView) customMarker.findViewById(R.id.profileIcon);
-		profileBitmap = BitmapFactory.decodeFile(myProfilePath);
-		if(profileBitmap==null){
-//			new GetMyProfulePicture(profileBitmap).start();
-			
-		}else{
-			
-		}
-		imageView.setImageBitmap(profileBitmap);
+		ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(
+				this)
+				.memoryCacheExtraOptions(480, 800)
+				// default = device screen dimensions
+				.discCacheExtraOptions(480, 800, CompressFormat.JPEG, 75, null)
+				.denyCacheImageMultipleSizesInMemory()
+				.memoryCache(new LruMemoryCache(2 * 1024 * 1024))
+				.memoryCacheSize(2 * 1024 * 1024)
+				.discCacheSize(50 * 1024 * 1024).discCacheFileCount(100)
+				.writeDebugLogs()
+				// .discCache(new UnlimitedDiscCache(cacheDir)) // default
+				.build();
+		ImageLoader imageLoader = ImageLoader.getInstance();
+		imageLoader.init(config);
+		String name = "https://graph.facebook.com/" + roadRunnerSetting.getFacebookId()
+				+ "/picture?width=75&height=75";
+		imageLoader.loadImage(name, new SimpleImageLoadingListener() {
+			@Override
+			public void onLoadingComplete(String imageUri, View view,
+					Bitmap loadedImage) {
+				// Do whatever you want with Bitmap
+				imageView.setImageBitmap(loadedImage);
+				profileIcon = createDrawableFromView(CreateTrackActivity.this, customMarker);
+			}
+		});
 	}
 
 	@Override
@@ -509,18 +520,20 @@ public class CreateTrackActivity extends Activity implements
 		if (marker != null) {
 			marker.remove();
 		}
-		if (roadRunnerSetting.getProfileIcon() != null) {
-			imageView.setImageBitmap(roadRunnerSetting.getProfileIcon());
-		} else {
-			new GetMyProfulePicture();
+		if(profileIcon == null){
+			marker = map.addMarker(new MarkerOptions()
+			.position(coord)
+			.icon(BitmapDescriptorFactory
+					.fromBitmap(createDrawableFromView(this,
+							customMarker))).title("Me"));
+		}else{
+			marker = map.addMarker(new MarkerOptions()
+			.position(coord)
+			.icon(BitmapDescriptorFactory
+					.fromBitmap(profileIcon)).title("Me"));
 		}
-		marker = map
-				.addMarker(new MarkerOptions()
-						.position(coord)
-						.icon(BitmapDescriptorFactory
-								.fromBitmap(createDrawableFromView(this,
-										customMarker))).title("Me"));
-		map.animateCamera(CameraUpdateFactory.newLatLng(coord));
+		
+		map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
 		if (loc.getAccuracy() < 40.0) {
 			if (recordCheck) {
 				recordTrack(loc);
@@ -570,7 +583,7 @@ public class CreateTrackActivity extends Activity implements
 
 	@SuppressLint("SimpleDateFormat")
 	private void recordTrack(Location loc) {
-		DecimalFormat df = new DecimalFormat("0.00");
+		DecimalFormat df = new DecimalFormat("0.0");
 		if (loc.hasSpeed()) {
 			// Toast.makeText(this, "Speed : " + loc.getSpeed() + " KPH",
 			// Toast.LENGTH_SHORT).show();

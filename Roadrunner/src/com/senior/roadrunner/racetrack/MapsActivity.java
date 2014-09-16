@@ -20,10 +20,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Bitmap.CompressFormat;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -58,10 +58,8 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.senior.roadrunner.MainActivity;
 import com.senior.roadrunner.R;
@@ -69,17 +67,13 @@ import com.senior.roadrunner.data.Coordinate;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.finish.FinishActivity;
-import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.server.DialogConnect;
 import com.senior.roadrunner.server.DownloadTask;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.tools.Distance;
-import com.senior.roadrunner.tools.LatLngInterpolator.Spherical;
-import com.senior.roadrunner.tools.MarkerAnimation;
 import com.senior.roadrunner.tools.PathArea;
 import com.senior.roadrunner.tools.Point;
 import com.senior.roadrunner.tools.Polygon;
-import com.senior.roadrunner.tools.RoadrunnerTools;
 import com.senior.roadrunner.trackchooser.TrackMemberList;
 
 @SuppressLint("NewApi")
@@ -118,7 +112,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private TextView txt_current_speed;
 	private TextView txt_current_time;
 
-	private Handler myHandler = new Handler();;
+	private Handler myHandler = new Handler();
 	// private ArrayList<LatLngTimeData> latLngTimeData;
 	// private static final String SDCARD_TRACKER_XML = "/sdcard/tracker.xml";
 	private long startTime = 0L;
@@ -201,11 +195,12 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 	private TextToSpeech tts;
 	private LatLng currentLocation;
 	private DialogConnect dialogConnect;
-	private ImageLoader imageLoader;
-	private DisplayImageOptions options;
+//	private DisplayImageOptions options;
 	protected Bitmap profileIcon = null;
 	private boolean readyStart=false;
 	private Animation shakeAnimation;
+	private Point lastPoint;
+	private Point startPoint;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -274,14 +269,14 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(
 				R.layout.custom_marker_layout, null);
 		imageView = (ImageView) customMarker.findViewById(R.id.profileIcon);
-		options = new DisplayImageOptions.Builder()
-				.showImageOnLoading(
-						R.drawable.com_facebook_profile_picture_blank_square)
-				.showImageForEmptyUri(
-						R.drawable.com_facebook_profile_picture_blank_square)
-				.showImageOnFail(R.drawable.ic_error).cacheInMemory(true)
-				.cacheOnDisc(true).considerExifParams(true)
-				.displayer(new RoundedBitmapDisplayer(20)).build();
+//		options = new DisplayImageOptions.Builder()
+//				.showImageOnLoading(
+//						R.drawable.com_facebook_profile_picture_blank_square)
+//				.showImageForEmptyUri(
+//						R.drawable.com_facebook_profile_picture_blank_square)
+//				.showImageOnFail(R.drawable.ic_error).cacheInMemory(true)
+//				.cacheOnDisc(true).considerExifParams(true)
+//				.displayer(new RoundedBitmapDisplayer(20)).build();
 		// File cacheDir = StorageUtils.getCacheDirectory(activity);
 		ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(
 				this)
@@ -295,7 +290,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 				.writeDebugLogs()
 				// .discCache(new UnlimitedDiscCache(cacheDir)) // default
 				.build();
-		imageLoader = ImageLoader.getInstance();
+		ImageLoader imageLoader = ImageLoader.getInstance();
 		imageLoader.init(config);
 		String name = "https://graph.facebook.com/" + roadRunnerSetting.getFacebookId()
 				+ "/picture?width=75&height=75";
@@ -447,7 +442,8 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		p.setVisible(true);
 
 		// Start polygon
-		polygonStart = PathArea.circleBuffer(points.get(0));
+		startPoint = points.get(0);
+		polygonStart = PathArea.circleBuffer(startPoint);
 		PolygonOptions polygonStartOptions = new PolygonOptions();
 		for (int i = 0; i < polygonStart.getSides().size(); i++) {
 			// System.out.println(polygonStart.getSides().get(i).getStart().x
@@ -462,28 +458,29 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 		// Path polygon
 		polygonsTrack = PathArea.createPathArea(points);
-
-		for (int i = 0; i < polygonsTrack.size(); i++) {
-			// System.out.println("getside : "+polygons.get(i).getSides());
-			Polygon polygon = polygonsTrack.get(i);
-			PolygonOptions polygonOptions = new PolygonOptions();
-			for (int j = 0; j < polygon.getSides().size(); j++) {
-				polygonOptions.add(new LatLng(polygon.getSides().get(j)
-						.getStart().x, polygon.getSides().get(j).getStart().y));
-				if (i % 3 == 0)
-					polygonOptions.fillColor(Color.BLUE);
-				if (i % 3 == 1)
-					polygonOptions.fillColor(Color.GREEN);
-				if (i % 3 == 2)
-					polygonOptions.fillColor(Color.RED);
-
-			}
-			// polygonOptions.fillColor(Color.BLUE);
-			map.addPolygon(polygonOptions.strokeWidth(2));
-		}
+//Create polygon on google map.
+//		for (int i = 0; i < polygonsTrack.size(); i++) {
+//			// System.out.println("getside : "+polygons.get(i).getSides());
+//			Polygon polygon = polygonsTrack.get(i);
+//			PolygonOptions polygonOptions = new PolygonOptions();
+//			for (int j = 0; j < polygon.getSides().size(); j++) {
+//				polygonOptions.add(new LatLng(polygon.getSides().get(j)
+//						.getStart().x, polygon.getSides().get(j).getStart().y));
+//				if (i % 3 == 0)
+//					polygonOptions.fillColor(Color.BLUE);
+//				if (i % 3 == 1)
+//					polygonOptions.fillColor(Color.GREEN);
+//				if (i % 3 == 2)
+//					polygonOptions.fillColor(Color.RED);
+//
+//			}
+//			// polygonOptions.fillColor(Color.BLUE);
+//			map.addPolygon(polygonOptions.strokeWidth(2));
+//		}
 
 		// Finish polygon
-		polygonFinish = PathArea.circleBuffer(points.lastElement());
+		lastPoint = points.lastElement();
+		polygonFinish = PathArea.circleBuffer(lastPoint);
 		PolygonOptions polygonFinishOptions = new PolygonOptions();
 		for (int i = 0; i < polygonFinish.getSides().size(); i++) {
 			polygonFinishOptions
@@ -494,7 +491,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		polygonFinishOptions.fillColor(Color.BLACK);
 		map.addPolygon(polygonFinishOptions);
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(
-				new LatLng(points.get(0).x, points.get(0).y), 15.0f));
+				new LatLng(startPoint.x, startPoint.y), 15.0f));
 
 	}
 
@@ -537,6 +534,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			}
 		}
 		if (polygonFinish != null && pathCheck) {
+//			map.animateCamera(CameraUpdateFactory.newLatLngBounds(new LatLngBounds(new LatLng(startPoint.x, startPoint.y), new LatLng(lastPoint.x, lastPoint.y)), 10));
 			if (polygonFinish.contains(point)) {
 				try {
 					takeSnapshot();
@@ -827,7 +825,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			map.animateCamera(CameraUpdateFactory.newLatLngZoom(coord, 15.0f));
 
 		}
-		if (loc.getAccuracy() < 40.0) {
+		if (loc.getAccuracy() < 50.0) {
 			if (recordCheck) {
 				map.animateCamera(CameraUpdateFactory.newLatLng(coord));
 				recordTrack(loc);
@@ -876,7 +874,7 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 
 	@SuppressLint("SimpleDateFormat")
 	private void recordTrack(Location loc) {
-		DecimalFormat df = new DecimalFormat("0.00");
+		DecimalFormat df = new DecimalFormat("0.0");
 		if (loc.hasSpeed()) {
 			// Toast.makeText(this, "Speed : " + loc.getSpeed() + " KPH",
 			// Toast.LENGTH_SHORT).show();
@@ -903,7 +901,14 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 		Coordinate coordinate = new Coordinate(currentLocation.latitude,
 				currentLocation.longitude);
 		latLngTimeData.add(new LatLngTimeData(coordinate, timeStamp));
-
+		marker = map
+				.addMarker(new MarkerOptions()
+						.position(
+								new LatLng(coordinate.getLat(), coordinate
+										.getLng()))
+						.icon(BitmapDescriptorFactory
+								.fromBitmap(createDrawableFromView(this,
+										customMarker))).title("Me"));
 		// distance update
 		if (latLngTimeData.size() >= 2) {
 			Coordinate startCoord = latLngTimeData.get(
@@ -916,22 +921,13 @@ public class MapsActivity extends Activity implements View.OnClickListener,
 			txt_current_distace.setText(df.format(totalDistance));
 
 			// animate interpolation
-			marker = map
-					.addMarker(new MarkerOptions()
-							.position(
-									new LatLng(startCoord.getLat(), startCoord
-											.getLng()))
-							.icon(BitmapDescriptorFactory
-									.fromBitmap(createDrawableFromView(this,
-											customMarker))).title("Me"));
-
-			Spherical latLngInterpolator = new Spherical();
-			latLngInterpolator.interpolate(5.0f, new LatLng(
-					startCoord.getLat(), startCoord.getLng()), new LatLng(
-					recentCoord.getLat(), recentCoord.getLng()));
-			MarkerAnimation.animateMarkerToICS(marker,
-					new LatLng(recentCoord.getLat(), recentCoord.getLng()),
-					latLngInterpolator, 3000);
+//			Spherical latLngInterpolator = new Spherical();
+//			latLngInterpolator.interpolate(5.0f, new LatLng(
+//					startCoord.getLat(), startCoord.getLng()), new LatLng(
+//					recentCoord.getLat(), recentCoord.getLng()));
+//			MarkerAnimation.animateMarkerToICS(marker,
+//					new LatLng(recentCoord.getLat(), recentCoord.getLng()),
+//					latLngInterpolator, 3000);
 
 		}
 

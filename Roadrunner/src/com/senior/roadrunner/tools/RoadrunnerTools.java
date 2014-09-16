@@ -8,8 +8,6 @@ import java.io.OutputStreamWriter;
 
 import org.apache.commons.io.IOUtils;
 
-import android.graphics.Bitmap;
-
 public class RoadrunnerTools {
 	public static void writeStringToFile(String path, String str) {
 		try {

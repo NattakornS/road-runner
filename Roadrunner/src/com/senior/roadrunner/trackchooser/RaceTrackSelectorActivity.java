@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
 import android.content.Context;
@@ -17,6 +18,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -58,13 +60,16 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.senior.roadrunner.R;
 import com.senior.roadrunner.data.LatLngTimeData;
 import com.senior.roadrunner.data.TrackDataBase;
 import com.senior.roadrunner.racetrack.MapsActivity;
 import com.senior.roadrunner.server.ConnectServer;
 import com.senior.roadrunner.server.DownloadTask;
-import com.senior.roadrunner.server.GetMyProfulePicture;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.tools.RoadrunnerTools;
 
@@ -103,13 +108,14 @@ public class RaceTrackSelectorActivity extends Activity implements
 	private Animation animTranslate;
 	private Menu menu;
 	private Marker marker;
-	private LatLng currentcoord;
 	private Animation animRotate;
 	private ImageView openCloseImageView;
 	private UploadActionBarView mUploadActionView;
 	private ImageView imageView;
 	private View customMarker;
 	private ListView listView;
+	protected Bitmap profileIcon;
+	private LatLng currentcoord;
 	private static final String TAG = "RaceTrackSelectorActivity";
 
 	@SuppressLint("NewApi")
@@ -146,22 +152,53 @@ public class RaceTrackSelectorActivity extends Activity implements
 		raceBtn.setOnClickListener(this);
 		// raceBtn.setAlpha(0.0f);
 		trackDataTxtView = (TextView) findViewById(R.id.track_data_txtview);
-		// facebookGetData();s
+
+		trackList = new ArrayList<TrackList>();
+		
+		listView = (ListView) findViewById(R.id.infoListView);
+
+		customMarker = ((LayoutInflater) this
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(
+				R.layout.custom_marker_layout, null);
+		imageView = (ImageView) customMarker.findViewById(R.id.profileIcon);
+		ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(
+				this)
+				.memoryCacheExtraOptions(480, 800)
+				// default = device screen dimensions
+				.discCacheExtraOptions(480, 800, CompressFormat.JPEG, 75, null)
+				.denyCacheImageMultipleSizesInMemory()
+				.memoryCache(new LruMemoryCache(2 * 1024 * 1024))
+				.memoryCacheSize(2 * 1024 * 1024)
+				.discCacheSize(50 * 1024 * 1024).discCacheFileCount(100)
+				.writeDebugLogs()
+				// .discCache(new UnlimitedDiscCache(cacheDir)) // default
+				.build();
+		ImageLoader imageLoader = ImageLoader.getInstance();
+		imageLoader.init(config);
+		String name = "https://graph.facebook.com/"
+				+ roadRunnerSetting.getFacebookId()
+				+ "/picture?width=75&height=75";
+		imageLoader.loadImage(name, new SimpleImageLoadingListener() {
+			@Override
+			public void onLoadingComplete(String imageUri, View view,
+					Bitmap loadedImage) {
+				// Do whatever you want with Bitmap
+				imageView.setImageBitmap(loadedImage);
+				profileIcon = createDrawableFromView(
+						RaceTrackSelectorActivity.this, customMarker);
+			}
+		});
 		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		currentLoc = mLocationManager
 				.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 		if (currentLoc == null) {
 			currentLoc = mLocationManager
 					.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		} else {
+			// setCurrentMarker(new LatLng(currentLoc.getLatitude(),
+			// currentLoc.getLongitude()));
+			setListData();
 		}
-		trackList = new ArrayList<TrackList>();
-		setListData();
-		listView = (ListView) findViewById(R.id.infoListView);
-		customMarker = ((LayoutInflater) this
-				.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(
-				R.layout.custom_marker_layout, null);
-		imageView = (ImageView) customMarker.findViewById(R.id.profileIcon);
-
 	}
 
 	@Override
@@ -360,10 +397,26 @@ public class RaceTrackSelectorActivity extends Activity implements
 		listView.setVisibility(View.GONE);
 		raceBtn.setVisibility(View.GONE);
 		TrackList tempValues = (TrackList) trackList.get(mPosition);
-		Toast.makeText(
-				this,
-				String.format("Total Distance : %.2f km",
-						tempValues.getDistance()), 3000).show();
+		// Toast.makeText(
+		// this,
+		// String.format("Total Distance : %.2f km",
+		// tempValues.getDistance()), 3000).show();
+		final Dialog dialog = new Dialog(this);
+		dialog.setContentView(R.layout.dialog_detail);
+		dialog.setTitle("Track detail");
+
+		// set the custom dialog components - text, image and button
+		TextView text = (TextView) dialog.findViewById(R.id.dialogText1);
+		text.setText(String.format("%.2f km", tempValues.getDistance()));
+		Button dialogButton = (Button) dialog.findViewById(R.id.dialogButtonOK);
+		// if button is clicked, close the custom dialog
+		dialogButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				dialog.dismiss();
+			}
+		});
+		dialog.show();
 		// trackDataTxtView.setText("" + tempValues.getRaceTrackName() +
 		// " \nRid:"
 		// + tempValues.getrId() + " \nLatLon:"
@@ -425,7 +478,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 			connectServer.execute();
 
 		}
-		
+
 	}
 
 	@Override
@@ -539,7 +592,7 @@ public class RaceTrackSelectorActivity extends Activity implements
 	}
 
 	public synchronized void setTeackMember(String result, int index) {
-System.out.println(result);
+		System.out.println(result);
 		ArrayList<TrackMemberList> trackMemberList = new ArrayList<TrackMemberList>();
 		try {
 			// get race track data from database server to set ListAdapter.
@@ -553,7 +606,8 @@ System.out.println(result);
 				sched.setfId(jsonObject.getString("Fid"));
 				sched.setfName(jsonObject.getString("fName"));
 				sched.setrId(jsonObject.getString("Rid"));
-				sched.setRank(jsonObject.getInt("Rank"));// rank has been query by duration.
+				sched.setRank(jsonObject.getInt("Rank"));// rank has been query
+															// by duration.
 				sched.setTrackerDir(jsonObject.getString("Trackerdir"));
 				sched.setDuration(Integer.parseInt(jsonObject.getString("Time")));
 				/******** Take Model Object in ArrayList **********/
@@ -785,17 +839,18 @@ System.out.println(result);
 		if (marker != null) {
 			marker.remove();
 		}
-		if (roadRunnerSetting.getProfileIcon() != null) {
-			imageView.setImageBitmap(roadRunnerSetting.getProfileIcon());
+		if (profileIcon == null) {
+			marker = map.addMarker(new MarkerOptions()
+					.position(currentcoord)
+					.icon(BitmapDescriptorFactory
+							.fromBitmap(createDrawableFromView(this,
+									customMarker))).title("Me"));
 		} else {
-			new GetMyProfulePicture();
+			marker = map.addMarker(new MarkerOptions().position(currentcoord)
+					.icon(BitmapDescriptorFactory.fromBitmap(profileIcon))
+					.title("Me"));
 		}
-		marker = map
-				.addMarker(new MarkerOptions()
-						.position(currentcoord)
-						.icon(BitmapDescriptorFactory
-								.fromBitmap(createDrawableFromView(this,
-										customMarker))).title("Me"));
+
 		map.animateCamera(CameraUpdateFactory
 				.newLatLngZoom(currentcoord, 15.0f));
 	}

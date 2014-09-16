@@ -81,7 +81,7 @@ public class MyActivityList extends BaseAdapter implements OnClickListener {
 			holder.date = (TextView) vi.findViewById(R.id.date);
 			holder.detail = (TextView) vi.findViewById(R.id.detail);
 			/************ Set holder with LayoutInflater ************/
-			 vi.setTag(holder);
+			vi.setTag(holder);
 		} else
 			holder = (ViewHolder) vi.getTag();
 
@@ -92,20 +92,21 @@ public class MyActivityList extends BaseAdapter implements OnClickListener {
 			MyActivityListData temp = data.get(position);
 			if (temp != null) {
 				holder.date.setText(temp.getDate());
-				holder.detail.setText(temp.getDetail());
+				holder.detail.setText(String.format("%.2f km",
+						data.get(position).getDistance()));
 				int seconds = (int) (temp.getDuration() / 1000);
 				int minutes = seconds / 60;
 				seconds = seconds % 60;
-				
+
 				holder.duration.setText("" + minutes + ":"
 						+ String.format("%02d", seconds));
 				holder.rank.setText(temp.getRank());
 				holder.trackName.setText(temp.getTrackName());
-//				System.out.println(temp.getDate());
-//				System.out.println(temp.getDetail());
-//				System.out.println(temp.getDuration());
-//				System.out.println(temp.getRank());
-//				System.out.println(temp.getTrackName());
+				// System.out.println(temp.getDate());
+				// System.out.println(temp.getDetail());
+				// System.out.println(temp.getDuration());
+				// System.out.println(temp.getRank());
+				// System.out.println(temp.getTrackName());
 			}
 		}
 		/******** Set Item Click Listner for LayoutInflater for each row ***********/

@@ -37,15 +37,15 @@ public class SplashFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.splash, container, false);
 
-        skipLoginButton = (Button) view.findViewById(R.id.skip_login_button);
-        skipLoginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (skipLoginCallback != null) {
-                    skipLoginCallback.onSkipLoginPressed();
-                }
-            }
-        });
+//        skipLoginButton = (Button) view.findViewById(R.id.skip_login_button);
+//        skipLoginButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if (skipLoginCallback != null) {
+//                    skipLoginCallback.onSkipLoginPressed();
+//                }
+//            }
+//        });
 
         return view;
     }

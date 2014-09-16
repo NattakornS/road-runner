@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.json.JSONArray;
@@ -21,7 +20,6 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,9 +27,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.facebook.AppEventsLogger;
 import com.facebook.FacebookAuthorizationException;
@@ -47,7 +43,6 @@ import com.facebook.model.GraphPlace;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.FacebookDialog;
 import com.facebook.widget.FacebookDialog.ShareDialogBuilder;
-import com.senior.roadrunner.CreateTrackActivity;
 import com.senior.roadrunner.MainActivity;
 import com.senior.roadrunner.R;
 import com.senior.roadrunner.data.LatLngTimeData;
@@ -377,7 +372,7 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 			}
 			Request request = Request.newMyUploadPhotoRequest(
 					Session.getActiveSession(), image, "Roadrunner @ "
-							+ trackName + " : \n" + stringPost, "",
+							+ trackName + " : \n" + stringPost, "Description",
 					new Request.Callback() {
 						@Override
 						public void onCompleted(Response response) {
@@ -391,6 +386,27 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 					});
 			Request.executeBatchAsync(request);
 
+//		       Request request = Request.newUploadPhotoRequest(Session.getActiveSession(), image, new Request.Callback() {
+//	                @Override
+//	                public void onCompleted(Response response) {
+//	                	showPublishResult(getString(R.string.photo_post),
+//								response.getGraphObject(),
+//								response.getError());
+//						mProgressBar.setVisibility(SmoothProgressBar.GONE);
+//						if (mUploadFBActionView != null)
+//							mUploadFBActionView.stopAnimatingBackground();
+//					}
+//	      
+//	            });
+	            
+//	            Bundle params = request.getParameters();
+//	            // Add the parameters you want, the caption in this case
+//	            params.putString("name", "Roadrunner @ "+ trackName + " : \n" + stringPost);
+//	            // Update the request parameters
+//	            request.setParameters(params);          
+//	            
+//	            request.executeAsync();
+	            
 			// request=Request.newStatusUpdateRequest(Session.getActiveSession(),
 			// "Roadrunner : \n"+stringPost, null, null, new Request.Callback(){
 			//
@@ -655,8 +671,8 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 	@SuppressLint("ShowToast")
 	public void setDataBaseServerResponse(String result) {
 		// DataBase response result
-		System.out.println("Response DataBase : " + result);
-		Toast.makeText(this, "Database : " + result, 2000).show();
+//		System.out.println("Response DataBase : " + result);
+//		Toast.makeText(this, "Database : " + result, 2000).show();
 		mProgressBar.setVisibility(SmoothProgressBar.GONE);
 		// clear Track memberlist for add a new rerank data from server.
 		trackMemberList.clear();
@@ -681,6 +697,7 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 				if (roadRunnerSetting.getFacebookId().equals(sched.getfId())) {
 					// FinishMyListViewFragment fin = FinishMyListViewFragment
 					// .getInstance(sched);
+//					myTrack.setRank(rank)
 					long mils = sched.getDuration();
 					int seconds = (int) (mils / 1000);
 					int minutes = seconds / 60;
@@ -692,7 +709,7 @@ public class FinishActivity extends FragmentActivity implements OnClickListener 
 					// fin.setDuration("" + minutes + ":"
 					// + String.format("%02d", seconds));
 					finishPlaceTxtView.setText(sched.getRank() + "");
-					finishAvgkphTxtView.setText(sched.getAVGSpeed() + "");
+					finishAvgkphTxtView.setText(String.format("%.2f", myTrack.getAVGSpeed()));
 					finishNameTxtView.setText(sched.getfName());
 					finishDurationTxtView.setText("" + minutes + ":"
 							+ String.format("%02d", seconds));
