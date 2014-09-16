@@ -1,7 +1,6 @@
 package com.senior.roadrunner.server;
 
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
@@ -10,12 +9,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.ContentBody;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
@@ -24,7 +19,6 @@ import android.os.AsyncTask;
 import android.os.PowerManager;
 import android.util.Log;
 
-import com.senior.roadrunner.R;
 import com.senior.roadrunner.racetrack.MapsActivity;
 import com.senior.roadrunner.setting.RoadRunnerSetting;
 

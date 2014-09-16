@@ -5,7 +5,6 @@ import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.SyncStateContract.Constants;
 import android.support.v4.app.ListFragment;
 import android.view.View;
 import android.view.ViewGroup;

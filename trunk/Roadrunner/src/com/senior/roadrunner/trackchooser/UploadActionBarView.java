@@ -9,7 +9,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.google.android.gms.internal.an;
 import com.senior.roadrunner.R;
 
 public class UploadActionBarView extends RelativeLayout implements

@@ -28,9 +28,6 @@ import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.ProfilePictureView;
 import com.senior.roadrunner.R;
-import com.senior.roadrunner.R.id;
-import com.senior.roadrunner.R.layout;
-import com.senior.roadrunner.R.string;
 import com.senior.roadrunner.server.GetMyProfulePicture;
 import com.senior.roadrunner.tools.RoadrunnerTools;
 
@@ -308,7 +305,7 @@ public class SettingFragment extends Fragment implements OnClickListener {
 	public void onClick(View v) {
 		if(v.equals(aboutLayout)){
 			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-			builder.setMessage("Contact : Nattakorn Sanpabopit\nE-mail : nattakor.kingman@gmail.com")
+			builder.setMessage("Contact : Nattakorn Sanpabopit\nE-mail : nattakorn.kingman@gmail.com\nPhone:+6646972500")
 					.show();
 		}else if(v.equals(weightLayout)){
 			DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {

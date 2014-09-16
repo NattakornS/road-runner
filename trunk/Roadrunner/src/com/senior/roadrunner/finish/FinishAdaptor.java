@@ -1,8 +1,6 @@
 package com.senior.roadrunner.finish;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -13,7 +11,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +31,6 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.utils.StorageUtils;
 import com.senior.roadrunner.R;
-import com.senior.roadrunner.setting.RoadRunnerSetting;
 import com.senior.roadrunner.trackchooser.TrackMemberList;
 
 public class FinishAdaptor extends BaseAdapter implements OnClickListener {

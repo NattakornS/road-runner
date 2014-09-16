@@ -2,13 +2,13 @@
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
     -->
     <style name="AppBaseTheme" parent="android:Theme.Light">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
+            backward-compatibility can go here.
         -->
     </style>
 
@@ -16,34 +16,45 @@
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
+
     <style name="main_menu">
-	    <item name="android:layout_width">fill_parent</item>
-	    <item name="android:layout_height">55dip</item>
-	    <item name="android:textColor">@color/menu_text_color</item>
-	    <item name="android:gravity">center</item>
-	    <item name="android:layout_marginLeft">45dip</item>
-	    <item name="android:layout_marginRight">45dip</item>
-	    <item name="android:textSize">30sp</item>
-	    <item name="android:textStyle">bold</item>
-	    <item name="android:shadowColor">@color/menu_shadow_color</item>
-	    <item name="android:shadowDx">1</item>
-	    <item name="android:shadowDy">1</item>
-	    <item name="android:shadowRadius">4</item>       
-	</style>
-		<style name="main_menu_btnTop" parent="main_menu">
-	    <item name="android:layout_marginTop">30dip</item>
-	</style>
-	
-	<style name="main_menu_btnNormal" parent="main_menu">
-	    <item name="android:layout_marginTop">12dip</item>
-	</style>
-	
-	<style name="ListView" parent="@android:style/Widget.ListView">
-    <item name="android:background">@color/blue_grey</item>
-    <item name="android:cacheColorHint">@android:color/transparent</item>
-    <item name="android:divider">@android:color/transparent</item>
-    <item name="android:dividerHeight">0dp</item>
-    <item name="android:listSelector">@drawable/list_item_selector</item>
-</style>
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">55dip</item>
+        <item name="android:textColor">@color/menu_text_color</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_marginLeft">45dip</item>
+        <item name="android:layout_marginRight">45dip</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:shadowColor">@color/menu_shadow_color</item>
+        <item name="android:shadowDx">1</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowRadius">4</item>
+    </style>
+
+    <style name="main_menu_btnTop" parent="main_menu">
+        <item name="android:layout_marginTop">30dip</item>
+    </style>
+
+    <style name="main_menu_btnNormal" parent="main_menu">
+        <item name="android:layout_marginTop">12dip</item>
+    </style>
+
+    <style name="ListView" parent="@android:style/Widget.ListView">
+        <item name="android:background">@color/blue_grey</item>
+        <item name="android:cacheColorHint">@android:color/transparent</item>
+        <item name="android:divider">@android:color/transparent</item>
+        <item name="android:dividerHeight">0dp</item>
+        <item name="android:listSelector">@drawable/list_item_selector</item>
+    </style>
+
+    <style name="PauseDialog" parent="@android:style/Theme.Dialog">
+        <item name="android:windowAnimationStyle">@style/PauseDialogAnimation</item>
+    </style>
+
+    <style name="PauseDialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/fadein</item>
+        <item name="android:windowExitAnimation">@anim/fadeout</item>
+    </style>
 
 </resources>
